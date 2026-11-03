@@ -8,7 +8,7 @@ cases apart without printing any session content.
 ## `fms doctor`
 
 ```
-fms doctor [--harness NAME ...] [--json]
+fms doctor [--harness NAME ...] [--json] [--fingerprint]
 ```
 
 Scans every selected harness store (all ready harnesses by default) and
@@ -70,6 +70,39 @@ Reading the result:
   location; `home` shows a redacted form of the directory fms looked in. Check
   any `FMS_<NAME>_HOME` override when the location is unexpected.
 
+## `fms doctor --fingerprint`
+
+The opt-in `--fingerprint` flag adds a redacted *shape* description of each
+present store, for diagnosing schema drift from output that is safe to paste
+into a public issue. Without the flag nothing is added, in text or JSON.
+
+Per store it reports the layout kind of every candidate transcript file
+(`jsonl`, `json`, `sqlite`, `text`, `empty`, `binary`, `unreadable`,
+`zstd-undecodable`), plus:
+
+- for `jsonl`/`json` stores: top-level field names with the JSON type of
+  their values and how often each combination occurs in the sample, and how
+  many lines or elements did not parse (`records_unparsed`);
+- for `sqlite` stores: table and column names with declared types and row
+  counts.
+
+Included: layout kinds, field and table names, JSON type names, counts, and
+the sampling bounds. Excluded: every value except its type name — prompts,
+completions, paths, session ids, timestamps, emails, tokens, and other
+free-form content never reach the output; field and table names come from the
+app's schema, not session content. Field names are capped at 64 per kind
+(then `truncated_fields` is set) and sorted, and sampling is bounded
+(first 2 MB per file, 200 records per file), so two runs over the same store
+produce identical output. The JSON shape is documented in
+[docs/json-output.md](../../../docs/json-output.md) under
+`fms doctor --json --fingerprint`.
+
+Use it when a harness update breaks reads: run
+`fms doctor --harness <name> --fingerprint`, compare the field names and
+kinds against the adapter's reference, and attach the JSON to a drift report.
+Skip it routinely — fingerprinting re-reads candidate files, so it roughly
+doubles the doctor pass on large stores.
+
 ## `fms search --verbose` / `fms latest --verbose`
 
 Adds `--verbose` to both listing commands. When any session is skipped during
@@ -97,6 +130,11 @@ fms:     /home/user/.dsh/sessions/.../session.v3.jsonl.zstd
   paths replaced by `<session>` placeholders. Home-relative store roots use
   `~`; custom roots outside the home directory appear as `<custom>`. Raw paths
   are shown only for skipped transcripts under an explicit `--verbose`.
+- `--fingerprint` is the one command surface that parses record structure,
+  and it is opt-in: only layout kinds, top-level field/table names, JSON type
+  names, counts, and sampling bounds are emitted. Values of any kind —
+  strings, numbers, ids, timestamps — are reduced to a type name and a count,
+  so no prompt, path, id, or timestamp appears in the output.
 - Everything is strictly read-only: no command creates, modifies, or locks
   store files (no SQLite WAL/journal files are produced).
 

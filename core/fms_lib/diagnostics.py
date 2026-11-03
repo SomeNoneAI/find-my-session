@@ -199,6 +199,65 @@ def environment() -> Dict[str, Any]:
     }
 
 
+def _fingerprint_lines(fingerprint: Dict[str, Any], indent: str) -> List[str]:
+    kinds = fingerprint.get("kinds") or {}
+    if not kinds:
+        return []
+    lines = [
+        "%sfingerprint: %s"
+        % (
+            indent,
+            ", ".join(
+                "%s x%d" % (name, kinds[name].get("files", 0))
+                for name in sorted(kinds)
+            ),
+        )
+    ]
+    inner = indent + "  "
+    for name in sorted(kinds):
+        entry = kinds[name]
+        if "tables" in entry:
+            lines.append(
+                "%s%s: %d rows; tables:" % (inner, name, entry.get("records", 0))
+            )
+            for table in entry.get("tables", [])[:8]:
+                columns = ", ".join(
+                    ("%s %s" % (col["name"], col["type"] or "?")).strip()
+                    for col in table.get("columns", [])
+                )
+                lines.append(
+                    "%s  %s: %d rows (%s)"
+                    % (inner, table.get("name", "?"), table.get("rows", 0), columns)
+                )
+            if entry.get("truncated_tables"):
+                lines.append("%s  … more tables" % inner)
+            continue
+        if "fields" not in entry:
+            continue
+        records = entry.get("records", 0)
+        unparsed = entry.get("records_unparsed", 0)
+        summary = "%s%s: %d records sampled" % (inner, name, records)
+        if unparsed:
+            summary += ", %d unparsed" % unparsed
+        lines.append(summary + "; fields:")
+        fields = entry.get("fields") or {}
+        shown = 0
+        for field_name, types in fields.items():
+            if shown >= 8:
+                lines.append("%s  … more field names" % inner)
+                break
+            rendered = ", ".join(
+                "%s x%d" % (type_name, count) for type_name, count in types.items()
+            )
+            lines.append("%s  %s: %s" % (inner, field_name, rendered))
+            shown += 1
+        if not fields:
+            lines.append("%s  (no top-level JSON objects)" % inner)
+        elif entry.get("truncated_fields"):
+            lines[-1] += " …"
+    return lines
+
+
 def render_doctor_text(payload: Dict[str, Any]) -> str:
     lines = [
         "fms %s" % payload.get("fms", "?"),
@@ -239,4 +298,6 @@ def render_doctor_text(payload: Dict[str, Any]) -> str:
             if hint:
                 line += " — %s" % hint
             lines.append(line)
+        if store.get("fingerprint"):
+            lines.extend(_fingerprint_lines(store["fingerprint"], "  "))
     return "\n".join(lines) + "\n"

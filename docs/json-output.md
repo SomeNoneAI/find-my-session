@@ -327,3 +327,71 @@ A store entry reports `present` (boolean), `candidates`, `readable`, and
 store is under the home directory and `<custom>` otherwise, so an overridden or
 unusual location is not echoed. An issue has `reason`, `count`, `detail`, and an
 optional `hint`; the detail is sanitized and does not include session content.
+
+### `fms doctor --json --fingerprint`
+
+Passing the opt-in `--fingerprint` flag adds one `fingerprint` object per
+present store entry. Without the flag the key is never emitted, in text or
+JSON. A fingerprint describes store *shape* only — layout kinds, top-level
+field names with value types and occurrence counts, sqlite tables, columns,
+and row counts. Values, prompts, paths, session ids, timestamps, emails, and
+tokens are never included, so the object is safe to paste into a public issue.
+
+```json
+"fingerprint": {
+  "bounds": {
+    "head_bytes": 2000000,
+    "records_per_file": 200,
+    "fields_per_kind": 64
+  },
+  "kinds": {
+    "jsonl": {
+      "files": 2,
+      "records": 27,
+      "records_unparsed": 0,
+      "fields": {
+        "cwd": {"str": 19},
+        "sessionId": {"str": 27},
+        "type": {"str": 27},
+        "version": {"str": 19}
+      }
+    },
+    "sqlite": {
+      "files": 1,
+      "records": 12,
+      "tables": [
+        {
+          "name": "chat_sessions",
+          "rows": 12,
+          "columns": [
+            {"name": "session_id", "type": "TEXT"},
+            {"name": "archived", "type": "INTEGER"}
+          ]
+        }
+      ]
+    }
+  }
+}
+```
+
+| field | type | meaning |
+| --- | --- | --- |
+| `bounds` | object | Sampling limits: bytes inspected per file, records per file, and field names per kind. |
+| `kinds` | object | One entry per layout kind, keyed by kind name. |
+| `kinds.<kind>.files` | number | Candidate files of this kind. |
+| `kinds.<kind>.records` | number | Top-level records (or sqlite rows) observed in the sample. |
+| `kinds.<kind>.records_unparsed` | number | Lines or elements that did not parse as JSON objects. |
+| `kinds.<kind>.fields` | object | Top-level field name → JSON value type → count. Sorted by field name. |
+| `kinds.<kind>.truncated_fields` | boolean | Present when more than 64 distinct field names were seen. |
+| `kinds.<kind>.tables` | array | sqlite only: table names, column names with declared types, and row counts. |
+| `kinds.<kind>.truncated_tables` | boolean | Present when more than 32 tables were seen. |
+
+Kind names: `jsonl` and `json` for record-shaped stores, `sqlite` for
+databases, `text` for decodable non-JSON content, `empty`, `binary` (NUL
+bytes), `unreadable` (OS-level read failure), and `zstd-undecodable` (a
+compressed file with no decoder on the machine). Layout kinds without
+record structure (`text`, `empty`, `binary`, `unreadable`,
+`zstd-undecodable`) report only `files`. Sampling is deterministic — the
+first 2 MB per file (decompressed when needed), 8 MB for single-document
+JSON, up to 200 records per file — and field names are sorted, so two runs
+over the same store produce the same output.

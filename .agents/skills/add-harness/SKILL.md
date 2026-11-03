@@ -33,6 +33,7 @@ Every ready adapter must cover all of these, even if the harness supplies the da
 | Archive and deleted | `SessionSummary.archived` | Default exclusion, `--include-archived`, explicit `show`/`prompts`, and no cross-edition leakage. |
 | Ref resolution | `session_id_for`, `owns` | `harness:prefix`, bare prefix, raw path (or virtual source path), and ambiguity errors. |
 | Diagnostics | `home`, `iter_session_paths`, `summarize` | `doctor --harness <name>` reports accurate candidate/readable/skipped counts; failures stay sanitized unless `--verbose` explicitly shows paths. |
+| Store fingerprint | nothing (shared, derived from candidates) | `doctor --fingerprint` yields content-free shape summaries over the fixture (kinds, field names, counts) with no values, ids, or paths; no adapter code is involved. |
 | Read-only operation | Every file and database path | Byte and mtime snapshot unchanged; no WAL or SHM side effects. |
 
 If a capability genuinely does not exist for the harness, document the gap in the reference and keep the shared behavior safe. Never invent data to satisfy the checklist.

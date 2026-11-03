@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -26,7 +27,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from cli_support import FixtureTestCase  # noqa: E402
 from deepseek_fixture import HAS_ZSTD  # noqa: E402
-from fms_lib import diagnostics, service  # noqa: E402
+from fms_lib import diagnostics, fingerprint as fingerprint_module  # noqa: E402
+from fms_lib import service  # noqa: E402
+from fms_lib.fingerprint import fingerprint_store  # noqa: E402
 from fms_lib.harnesses import deepseek as deepseek_module  # noqa: E402
 
 SESSION_ONE = "d1a60001-1111-4a1b-8c1d-111111111111"
@@ -340,6 +343,240 @@ class DoctorTests(FixtureTestCase):
                 "install the zstd CLI or use Python 3.14+",
                 json.dumps(store["issues"][0], ensure_ascii=False),
             )
+
+
+class FingerprintUnitTests(unittest.TestCase):
+    def _write_jsonl(self, path: Path, records) -> Path:
+        with path.open("w", encoding="utf-8") as handle:
+            for record in records:
+                handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+        return path
+
+    def test_jsonl_shape_and_privacy(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="fms-fp-") as raw:
+            path = self._write_jsonl(
+                Path(raw) / "session.jsonl",
+                [
+                    {
+                        "type": "session",
+                        "cwd": "/Users/example/secret-project",
+                        "n": 3,
+                        "flag": True,
+                        "note": None,
+                        "nested": {"key": "value"},
+                    },
+                    {
+                        "type": "user",
+                        "text": "TOP SECRET PROMPT WORDS",
+                        "seq": 2.5,
+                        "tags": ["alpha"],
+                    },
+                ],
+            )
+            out = fingerprint_store([path])
+        kinds = out["kinds"]
+        self.assertEqual(kinds["jsonl"]["files"], 1)
+        self.assertEqual(kinds["jsonl"]["records"], 2)
+        self.assertEqual(kinds["jsonl"]["records_unparsed"], 0)
+        fields = kinds["jsonl"]["fields"]
+        self.assertEqual(fields["type"], {"str": 2})
+        self.assertEqual(fields["n"], {"int": 1})
+        self.assertEqual(fields["seq"], {"float": 1})
+        self.assertEqual(fields["flag"], {"bool": 1})
+        self.assertEqual(fields["note"], {"null": 1})
+        self.assertEqual(fields["tags"], {"list": 1})
+        self.assertEqual(fields["nested"], {"object": 1})
+        self.assertIn("bounds", out)
+        serialized = json.dumps(out, ensure_ascii=False)
+        for private in (
+            "secret-project",
+            "TOP SECRET PROMPT WORDS",
+            "/Users/example",
+        ):
+            self.assertNotIn(private, serialized)
+
+    def test_blank_and_unparsed_lines(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="fms-fp-") as raw:
+            path = Path(raw) / "session.jsonl"
+            path.write_text('\n{"type": "a"}\nnot-json\n\n{"type": "b"}\n')
+            out = fingerprint_store([path])
+        entry = out["kinds"]["jsonl"]
+        self.assertEqual(entry["records"], 2)
+        self.assertEqual(entry["records_unparsed"], 1)
+
+    def test_json_document_and_text_fallback(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="fms-fp-") as raw:
+            document = Path(raw) / "state.json"
+            document.write_text('{\n  "version": 3,\n  "title": "SECRET TITLE"\n}')
+            broken = Path(raw) / "broken.json"
+            broken.write_text('{"version": 3,')
+            plain = Path(raw) / "notes.txt"
+            plain.write_text("just some plain notes\n")
+            out = fingerprint_store([document, broken, plain])
+        kinds = out["kinds"]
+        self.assertEqual(kinds["json"]["files"], 1)
+        self.assertEqual(kinds["json"]["records"], 1)
+        self.assertEqual(kinds["json"]["fields"]["version"], {"int": 1})
+        self.assertEqual(kinds["text"]["files"], 2)
+        self.assertEqual(kinds["json"]["fields"].get("title"), {"str": 1})
+        self.assertNotIn("SECRET TITLE", json.dumps(out, ensure_ascii=False))
+
+    def test_empty_and_binary_files(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="fms-fp-") as raw:
+            empty = Path(raw) / "empty.jsonl"
+            empty.write_text("")
+            blob = Path(raw) / "blob.bin"
+            blob.write_bytes(b"\x00\x01\x02\xff\xfe")
+            out = fingerprint_store([empty, blob])
+        self.assertEqual(out["kinds"]["empty"]["files"], 1)
+        self.assertEqual(out["kinds"]["binary"]["files"], 1)
+
+    def test_missing_file_counts_as_unreadable(self) -> None:
+        out = fingerprint_store([Path("/nonexistent/fms-fp/session.jsonl")])
+        self.assertEqual(out["kinds"]["unreadable"]["files"], 1)
+
+    def test_sqlite_shape_excludes_row_values(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="fms-fp-") as raw:
+            path = Path(raw) / "store.db"
+            connection = sqlite3.connect(str(path))
+            try:
+                connection.execute(
+                    "CREATE TABLE chat_sessions ("
+                    "session_id TEXT PRIMARY KEY, archived INTEGER)"
+                )
+                connection.executemany(
+                    "INSERT INTO chat_sessions VALUES (?, ?)",
+                    [("secret-id-1", 0), ("secret-id-2", 1)],
+                )
+                connection.commit()
+            finally:
+                connection.close()
+            out = fingerprint_store([path])
+        entry = out["kinds"]["sqlite"]
+        self.assertEqual(entry["files"], 1)
+        self.assertEqual(entry["records"], 2)
+        table = entry["tables"][0]
+        self.assertEqual(table["name"], "chat_sessions")
+        self.assertEqual(table["rows"], 2)
+        self.assertEqual(
+            table["columns"],
+            [
+                {"name": "session_id", "type": "TEXT"},
+                {"name": "archived", "type": "INTEGER"},
+            ],
+        )
+        self.assertNotIn("secret-id-1", json.dumps(out, ensure_ascii=False))
+
+    def test_field_cap_is_reported(self) -> None:
+        record = {("field%03d" % index): index for index in range(70)}
+        with tempfile.TemporaryDirectory(prefix="fms-fp-") as raw:
+            path = self._write_jsonl(Path(raw) / "wide.jsonl", [record])
+            out = fingerprint_store([path])
+        entry = out["kinds"]["jsonl"]
+        self.assertEqual(len(entry["fields"]), fingerprint_module.MAX_FIELDS)
+        self.assertTrue(entry["truncated_fields"])
+
+    def test_zstd_undecodable_without_decoder(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="fms-fp-") as raw:
+            path = Path(raw) / "session.jsonl.zstd"
+            path.write_bytes(b"\x28\xb5\x2f\xfd" + b"payload" * 32)
+            with mock.patch.object(fingerprint_module, "_zstd_module", None):
+                with mock.patch.object(
+                    fingerprint_module.shutil, "which", return_value=None
+                ):
+                    out = fingerprint_store([path])
+        self.assertEqual(out["kinds"]["zstd-undecodable"]["files"], 1)
+
+    def test_zstd_sampled_when_decoder_available(self) -> None:
+        if not HAS_ZSTD:
+            self.skipTest("zstd decoder unavailable")
+        with tempfile.TemporaryDirectory(prefix="fms-fp-") as raw:
+            plain = self._write_jsonl(
+                Path(raw) / "session.jsonl",
+                [{"type": "session", "cwd": "/Users/example/project-x"}],
+            )
+            target = plain.with_name("session.jsonl.zstd")
+            self._compress(plain, target)
+            plain.unlink()
+            out = fingerprint_store([target])
+        self.assertEqual(out["kinds"]["jsonl"]["files"], 1)
+        self.assertEqual(
+            out["kinds"]["jsonl"]["fields"]["cwd"], {"str": 1}
+        )
+        self.assertNotIn("project-x", json.dumps(out, ensure_ascii=False))
+
+    def _compress(self, source: Path, target: Path) -> None:
+        if deepseek_module._zstd is not None:
+            with deepseek_module._zstd.ZstdFile(target, "wb") as handle:
+                handle.write(source.read_bytes())
+        else:
+            with target.open("wb") as handle:
+                subprocess.run(
+                    [shutil.which("zstd"), "-q", "-c", "--", str(source)],
+                    check=True,
+                    stdout=handle,
+                    stderr=subprocess.DEVNULL,
+                )
+
+
+class DoctorFingerprintTests(FixtureTestCase):
+    def test_json_without_flag_has_no_fingerprint(self) -> None:
+        payload = self.run_json(
+            "doctor", "--harness", "deepseek", deepseek_home=self.deepseek_home
+        )
+        for store in payload["stores"]:
+            self.assertNotIn("fingerprint", store)
+
+    def test_text_fingerprint_only_with_flag(self) -> None:
+        if not HAS_ZSTD:
+            self.skipTest("zstd decoder unavailable")
+        code, out, err = self.run_cli(
+            "doctor", "--harness", "deepseek", deepseek_home=self.deepseek_home
+        )
+        self.assertEqual(code, 0, err)
+        self.assertNotIn("fingerprint", out)
+        code, out, err = self.run_cli(
+            "doctor",
+            "--harness",
+            "deepseek",
+            "--fingerprint",
+            deepseek_home=self.deepseek_home,
+        )
+        self.assertEqual(code, 0, err)
+        self.assertIn("fingerprint: jsonl x", out)
+        self.assertIn("cwd: str x", out)
+        self.assertNotIn(self.deepseek_home.name, out)
+
+    def test_json_fingerprint_shape_and_privacy(self) -> None:
+        if not HAS_ZSTD:
+            self.skipTest("zstd decoder unavailable")
+        with tempfile.TemporaryDirectory(prefix="fms-doctor-") as raw:
+            home = _build_home(Path(raw))
+            payload = self.run_json(
+                "doctor",
+                "--harness",
+                "deepseek",
+                "--fingerprint",
+                deepseek_home=home,
+            )
+        store = payload["stores"][0]
+        self.assertIn("fingerprint", store)
+        fingerprint = store["fingerprint"]
+        self.assertEqual(fingerprint["bounds"]["records_per_file"], 200)
+        kinds = fingerprint["kinds"]
+        self.assertEqual(kinds["jsonl"]["files"], 2)
+        self.assertEqual(kinds["jsonl"]["records"], 4)
+        self.assertEqual(kinds["jsonl"]["fields"]["cwd"], {"str": 2})
+        self.assertEqual(kinds["jsonl"]["fields"]["version"], {"int": 2})
+        serialized = json.dumps(payload, ensure_ascii=False)
+        for private in (
+            SESSION_ONE,
+            SESSION_TWO,
+            PROJECT,
+            "First diagnostic prompt.",
+            str(home),
+        ):
+            self.assertNotIn(private, serialized)
 
 
 class VerboseSearchTests(FixtureTestCase):

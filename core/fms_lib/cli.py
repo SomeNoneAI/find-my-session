@@ -87,7 +87,7 @@ def cmd_latest(args: argparse.Namespace) -> int:
 
 
 def cmd_doctor(args: argparse.Namespace) -> int:
-    payload = doctor(harness=args.harness)
+    payload = doctor(harness=args.harness, fingerprint=args.fingerprint)
     if args.json:
         print(json_dump(payload))
     else:
@@ -263,6 +263,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     doctor_parser.add_argument(
         "--json", action="store_true", help="emit JSON instead of text"
+    )
+    doctor_parser.add_argument(
+        "--fingerprint",
+        action="store_true",
+        help=(
+            "add a redacted shape fingerprint per store: layout kinds, "
+            "top-level field names with value types and counts only — "
+            "never prompts, paths, ids, or other content"
+        ),
     )
     doctor_parser.set_defaults(func=cmd_doctor)
 

@@ -135,12 +135,13 @@ fms latest [query ...] [--harness NAME] [--cwd PATH] [--since WHEN]
 ### doctor
 
 ```text
-fms doctor [--harness NAME] [--json]
+fms doctor [--harness NAME] [--json] [--fingerprint]
 ```
 
 - Reports environment, zstd availability, and per-store candidate, readable, and skipped counts without printing prompts, titles, cwd, or session ids.
 - Issues are grouped as `decoder-missing`, `unreadable`, `parse-error`, or `unknown`, with actionable hints when available.
 - Store paths are redacted in JSON; use `--verbose` on `search` or `latest` only when raw skipped-file paths are needed.
+- `--fingerprint` is opt-in and adds a content-free shape summary per store (layout kinds, top-level field names with types and counts only) that is safe to paste into a public issue when reporting format drift.
 - This command summarizes every candidate in the selected stores. Prefer `--harness` on large installations. See `references/diagnostics.md` for fields and privacy boundaries.
 
 ### show

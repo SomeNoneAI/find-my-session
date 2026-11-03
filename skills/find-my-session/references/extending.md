@@ -149,6 +149,7 @@ Add tests to `tests/test_cli.py` or a new `tests/test_<harness>.py`:
 - `prompts` count, oldest and newest paging, offset past the end, character caps, JSON fields, and exclusion of tool results, sidechains, meta records, and compaction.
 - Missing and ambiguous refs.
 - `doctor --harness <name>` candidate/readable/skipped counts and sanitized failure categories; `search --verbose` warns without polluting stdout.
+- `doctor --fingerprint` works over the same candidates with no adapter work: fixture transcripts keep producing content-free shape summaries (no values, ids, or paths in the fingerprint).
 - Read-only snapshot: file bytes and mtimes are unchanged after commands.
 - Fixture validity and privacy markers.
 

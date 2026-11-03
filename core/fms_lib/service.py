@@ -6,6 +6,7 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 from .diagnostics import ScanReport, environment, issue_dicts, store_home
 from .errors import UserError
+from .fingerprint import fingerprint_store
 from .harnesses.base import HarnessAdapter
 from .models import PromptListing, SessionDetail, SessionSummary, UserPrompt
 from .registry import adapter_for_path, get_adapters, lookup_harness
@@ -144,7 +145,9 @@ def search_sessions(
     return _limit(results, limit)
 
 
-def doctor(harness: Optional[Sequence[str]] = None) -> Dict[str, Any]:
+def doctor(
+    harness: Optional[Sequence[str]] = None, fingerprint: bool = False
+) -> Dict[str, Any]:
     """Report store readability per harness without exposing session content."""
     payload = environment()
     stores: List[Dict[str, Any]] = []
@@ -154,19 +157,24 @@ def doctor(harness: Optional[Sequence[str]] = None) -> Dict[str, Any]:
         present = home.is_dir()
         if present:
             _gather_summaries([adapter], report)
-        stores.append(
-            {
-                "harness": adapter.name,
-                "variants": adapter.variants,
-                "store": adapter.store_hint,
-                "home": store_home(home),
-                "present": present,
-                "candidates": report.candidates,
-                "readable": report.readable,
-                "skipped": len(report.skipped),
-                "issues": issue_dicts(report),
-            }
-        )
+        store: Dict[str, Any] = {
+            "harness": adapter.name,
+            "variants": adapter.variants,
+            "store": adapter.store_hint,
+            "home": store_home(home),
+            "present": present,
+            "candidates": report.candidates,
+            "readable": report.readable,
+            "skipped": len(report.skipped),
+            "issues": issue_dicts(report),
+        }
+        if fingerprint and present:
+            try:
+                paths = list(adapter.iter_session_paths())
+            except OSError:
+                paths = []
+            store["fingerprint"] = fingerprint_store(paths)
+        stores.append(store)
     payload["stores"] = stores
     return payload
 
