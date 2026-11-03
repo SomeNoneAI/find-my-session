@@ -16,6 +16,13 @@ All notable changes to this project are documented here. The format follows
   summaries, prompt extraction with synthetic and slash-command filtering,
   per-session deep search over virtual `opencode.db#<id>` source paths,
   synthetic runtime fixtures, and a per-harness reference.
+- Gemini CLI (`gemini-cli`, alias `gemini`) over `~/.gemini/tmp/<project>/chats/`:
+  one replayable JSONL chat log per session combining full-array `$set`
+  snapshots with appended bare message records, cwd recovery from the
+  project's `.project_root`, prompt extraction that skips injected
+  `<session_context>` turns and `functionResponse` tool results, tool names
+  and API error text in the digest, streaming deep search, synthetic
+  fixture tests, and a per-harness reference.
 
 ## [0.1.1] - 2026-11-03
 

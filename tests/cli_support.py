@@ -235,6 +235,8 @@ from antigravity_fixture import (  # noqa: E402
 from minimax_code_fixture import build_minimax_code_home  # noqa: E402
 from cursor_fixture import build_cursor_home  # noqa: E402
 from opencode_fixture import build_opencode_home  # noqa: E402
+
+FIXTURE_GEMINI_HOME = Path(__file__).resolve().parent / "fixtures" / "gemini-cli-home"
 from deepseek_fixture import (  # noqa: E402
     COMPACT_SUMMARY as DEEPSEEK_COMPACT_SUMMARY,
     HAS_ZSTD as DEEPSEEK_HAS_ZSTD,
@@ -285,6 +287,10 @@ SESSION_STAMPS = {
     SESSION_B: _utc(2026, 10, 27, 15, 30),
     SESSION_C: _utc(2026, 10, 21, 10, 5),
     SESSION_D: _utc(2026, 10, 24, 11, 10),
+    # Gemini CLI chat logs, keyed by file stem.
+    "session-2026-10-20T09-10-11111111": _utc(2026, 10, 20, 9, 10),
+    "session-2026-10-21T10-00-22222222": _utc(2026, 10, 21, 10, 0),
+    "session-2026-10-22T11-30-33333333": _utc(2026, 10, 22, 11, 30),
 }
 
 
@@ -382,6 +388,9 @@ class FixtureTestCase(unittest.TestCase):
         cls.opencode_home = build_opencode_home(root / "opencode-home")
         cls.empty_opencode_home = root / "empty-opencode-home"
         cls.empty_opencode_home.mkdir()
+        cls.gemini_home = _copy_fixture_home(FIXTURE_GEMINI_HOME, root / "gemini-home")
+        cls.empty_gemini_home = root / "empty-gemini-home"
+        cls.empty_gemini_home.mkdir()
         cls.no_cursor_db = root / "missing-conversation-search.db"
         cls.empty_claude_home = root / "empty-claude-home"
         cls.empty_claude_home.mkdir()
@@ -426,6 +435,7 @@ class FixtureTestCase(unittest.TestCase):
         minimax_code_home: Path = None,
         cursor_home: Path = None,
         opencode_home: Path = None,
+        gemini_home: Path = None,
         cn_db: Path = None,
         qoder_db: Path = None,
         zcode_app_db: Path = None,
@@ -466,6 +476,7 @@ class FixtureTestCase(unittest.TestCase):
             "FMS_CURSOR_HOME": str(cursor_home or self.cursor_home),
             "FMS_CURSOR_APP_DB": str(cursor_app_db or self.cursor_db),
             "FMS_OPENCODE_HOME": str(opencode_home or self.opencode_home),
+            "FMS_GEMINI_CLI_HOME": str(gemini_home or self.gemini_home),
             "FMS_QODER_CN_APP_DB": str(cn_db or self.no_app_db),
             "FMS_QODER_APP_DB": str(qoder_db or self.no_app_db),
             "FMS_ZCODE_APP_DB": str(zcode_app_db or self.zcode_app_db),
@@ -503,6 +514,7 @@ class FixtureTestCase(unittest.TestCase):
         minimax_code_home: Path = None,
         cursor_home: Path = None,
         opencode_home: Path = None,
+        gemini_home: Path = None,
         cn_db: Path = None,
         qoder_db: Path = None,
         zcode_app_db: Path = None,
@@ -539,6 +551,7 @@ class FixtureTestCase(unittest.TestCase):
             cursor_home=cursor_home,
             cursor_app_db=cursor_app_db,
             opencode_home=opencode_home,
+            gemini_home=gemini_home,
         )
         self.assertEqual(code, 0, err)
         return json.loads(out)

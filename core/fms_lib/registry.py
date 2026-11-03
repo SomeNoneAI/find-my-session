@@ -15,6 +15,7 @@ from .harnesses.codearts_agent import CodeArtsAgentAdapter
 from .harnesses.codex import CodexAdapter
 from .harnesses.cursor import CursorAdapter
 from .harnesses.deepseek import DeepSeekAdapter
+from .harnesses.gemini_cli import GeminiCLIAdapter
 from .harnesses.grok_build import GrokBuildAdapter
 from .harnesses.kimi_code import KimiCodeAdapter
 from .harnesses.minimax_code import MiniMaxCodeAdapter
@@ -52,6 +53,7 @@ READY: Tuple[HarnessAdapter, ...] = (
     MiniMaxCodeAdapter(),
     CursorAdapter(),
     OpenCodeAdapter(),
+    GeminiCLIAdapter(),
 )
 
 PLANNED: Tuple[PlannedHarness, ...] = (
