@@ -237,6 +237,7 @@ from cursor_fixture import build_cursor_home  # noqa: E402
 from opencode_fixture import build_opencode_home  # noqa: E402
 
 FIXTURE_GEMINI_HOME = Path(__file__).resolve().parent / "fixtures" / "gemini-cli-home"
+FIXTURE_QWEN_HOME = Path(__file__).resolve().parent / "fixtures" / "qwen-home"
 from deepseek_fixture import (  # noqa: E402
     COMPACT_SUMMARY as DEEPSEEK_COMPACT_SUMMARY,
     HAS_ZSTD as DEEPSEEK_HAS_ZSTD,
@@ -391,6 +392,9 @@ class FixtureTestCase(unittest.TestCase):
         cls.gemini_home = _copy_fixture_home(FIXTURE_GEMINI_HOME, root / "gemini-home")
         cls.empty_gemini_home = root / "empty-gemini-home"
         cls.empty_gemini_home.mkdir()
+        cls.qwen_home = _copy_fixture_home(FIXTURE_QWEN_HOME, root / "qwen-home")
+        cls.empty_qwen_home = root / "empty-qwen-home"
+        cls.empty_qwen_home.mkdir()
         cls.no_cursor_db = root / "missing-conversation-search.db"
         cls.empty_claude_home = root / "empty-claude-home"
         cls.empty_claude_home.mkdir()
@@ -436,6 +440,7 @@ class FixtureTestCase(unittest.TestCase):
         cursor_home: Path = None,
         opencode_home: Path = None,
         gemini_home: Path = None,
+        qwen_home: Path = None,
         cn_db: Path = None,
         qoder_db: Path = None,
         zcode_app_db: Path = None,
@@ -477,6 +482,7 @@ class FixtureTestCase(unittest.TestCase):
             "FMS_CURSOR_APP_DB": str(cursor_app_db or self.cursor_db),
             "FMS_OPENCODE_HOME": str(opencode_home or self.opencode_home),
             "FMS_GEMINI_CLI_HOME": str(gemini_home or self.gemini_home),
+            "FMS_QWEN_HOME": str(qwen_home or self.qwen_home),
             "FMS_QODER_CN_APP_DB": str(cn_db or self.no_app_db),
             "FMS_QODER_APP_DB": str(qoder_db or self.no_app_db),
             "FMS_ZCODE_APP_DB": str(zcode_app_db or self.zcode_app_db),
@@ -515,6 +521,7 @@ class FixtureTestCase(unittest.TestCase):
         cursor_home: Path = None,
         opencode_home: Path = None,
         gemini_home: Path = None,
+        qwen_home: Path = None,
         cn_db: Path = None,
         qoder_db: Path = None,
         zcode_app_db: Path = None,
@@ -552,6 +559,7 @@ class FixtureTestCase(unittest.TestCase):
             cursor_app_db=cursor_app_db,
             opencode_home=opencode_home,
             gemini_home=gemini_home,
+            qwen_home=qwen_home,
         )
         self.assertEqual(code, 0, err)
         return json.loads(out)

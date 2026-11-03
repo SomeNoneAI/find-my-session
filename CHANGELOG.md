@@ -23,6 +23,12 @@ All notable changes to this project are documented here. The format follows
   `<session_context>` turns and `functionResponse` tool results, tool names
   and API error text in the digest, streaming deep search, synthetic
   fixture tests, and a per-harness reference.
+- Qwen Code (`qwen`) over `~/.qwen/projects/<encoded-cwd>/chats/`: one JSONL
+  log per chat with Claude Code-style record envelopes and Gemini-style
+  message parts, cwd/branch/version from the record envelope, per-session
+  todos from `~/.qwen/todos/`, `ui_telemetry` system records skipped,
+  `functionCall` tool details in the digest, streaming deep search,
+  synthetic fixture tests, and a per-harness reference.
 
 ## [0.1.1] - 2026-11-03
 

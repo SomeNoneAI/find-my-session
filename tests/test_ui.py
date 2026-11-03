@@ -53,6 +53,7 @@ def synthetic_environment(root: Path) -> dict:
         "FMS_CURSOR_HOME": str(empty),
         "FMS_OPENCODE_HOME": str(empty),
         "FMS_GEMINI_CLI_HOME": str(empty),
+        "FMS_QWEN_HOME": str(empty),
         "FMS_QODER_CN_APP_DB": str(missing_db),
         "FMS_QODER_APP_DB": str(missing_db),
         "FMS_ZCODE_APP_DB": str(missing_db),

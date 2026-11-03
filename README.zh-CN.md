@@ -25,7 +25,7 @@
 
 ## 支持的 harness
 
-已有十八个可用适配器，另有两个在计划中。实测版本、端与注意事项见[兼容矩阵](docs/compatibility.md)；各 harness 的存储细节见 [references/](skills/find-my-session/references/)。
+已有十九个可用适配器，另有两个在计划中。实测版本、端与注意事项见[兼容矩阵](docs/compatibility.md)；各 harness 的存储细节见 [references/](skills/find-my-session/references/)。
 
 | Harness | 引用前缀 | 默认目录 |
 | --- | --- | --- |
@@ -47,6 +47,7 @@
 | Cursor | `cursor` | `~/.cursor/projects` |
 | OpenCode | `opencode` | `~/.local/share/opencode` |
 | Gemini CLI | `gemini-cli` | `~/.gemini` |
+| Qwen Code | `qwen` | `~/.qwen` |
 | CodeBuddy | `codebuddy`（计划中） | `~/.codebuddy` |
 | Cline（VS Code 扩展） | `cline-vscode`（计划中） | VS Code globalStorage |
 

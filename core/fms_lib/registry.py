@@ -22,6 +22,7 @@ from .harnesses.minimax_code import MiniMaxCodeAdapter
 from .harnesses.opencode import OpenCodeAdapter
 from .harnesses.qoder import QoderAdapter
 from .harnesses.qoder_cn import QoderCNAdapter
+from .harnesses.qwen import QwenAdapter
 from .harnesses.workbuddy import WorkBuddyAdapter
 from .harnesses.workbuddy_cn import WorkBuddyCNAdapter
 from .harnesses.zcode import ZCodeAdapter
@@ -54,6 +55,7 @@ READY: Tuple[HarnessAdapter, ...] = (
     CursorAdapter(),
     OpenCodeAdapter(),
     GeminiCLIAdapter(),
+    QwenAdapter(),
 )
 
 PLANNED: Tuple[PlannedHarness, ...] = (

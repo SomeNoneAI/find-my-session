@@ -1,0 +1,1 @@
+{"uuid": "u5", "parentUuid": null, "sessionId": "bbbbbbbb-2222-4b2c-9d2e-222222222222", "timestamp": "2026-10-20T09:30:00.000Z", "type": "user", "cwd": "/Users/example/project-alpha", "gitBranch": "main", "version": "0.14.0", "message": {"role": "user", "parts": [{"text": "\u7ee7\u7eed"}]}}
