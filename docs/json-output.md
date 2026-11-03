@@ -282,6 +282,28 @@ With `--count`, the object stops after `total`:
 }
 ```
 
+## `fms resume --json`
+
+```json
+{
+  "ref": "claude-code:c1a0de03",
+  "harness": "claude-code",
+  "resume_argv": ["claude", "--resume", "c1a0de03-3333-4c3d-9e4f-333333333333"],
+  "executed": false
+}
+```
+
+| field | type | meaning |
+| --- | --- | --- |
+| `ref` | string | Resolved session reference. |
+| `harness` | string | Harness that owns the session. |
+| `resume_argv` | array or null | The command to reopen the session, as an argv list; `null` when no resume command is verified for the harness. |
+| `executed` | boolean | Whether `--exec` ran the command. |
+
+`resume_argv` is an argv list, never a shell string. The mapping is
+deliberately small: only commands verified against the real app are
+included.
+
 ## `fms doctor --json`
 
 Environment details plus one store entry per selected harness. `doctor` never

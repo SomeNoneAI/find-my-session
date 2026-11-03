@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 import argparse
+import shlex
+import subprocess
 import sys
 from typing import Optional, Sequence
 
 from . import __version__
 from .diagnostics import ScanReport, hint_for, render_doctor_text
 from .errors import UserError
-from .registry import harness_rows
+from .registry import get_adapters, harness_rows
 from .render import (
     json_dump,
     render_harness_tsv,
@@ -17,7 +19,7 @@ from .render import (
     render_show_json,
     render_show_markdown,
 )
-from .service import doctor, list_prompts, load_session, search_sessions
+from .service import doctor, list_prompts, load_session, resolve_session, search_sessions
 
 PROGRAM = "fms"
 
@@ -131,6 +133,38 @@ def cmd_prompts(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_resume(args: argparse.Namespace) -> int:
+    adapter, summary = resolve_session(args.ref, get_adapters(args.harness))
+    argv = adapter.resume_argv(summary)
+    if args.json:
+        print(
+            json_dump(
+                {
+                    "ref": summary.ref,
+                    "harness": adapter.name,
+                    "resume_argv": argv,
+                    "executed": bool(argv and args.exec),
+                }
+            )
+        )
+        return 0
+    if argv is None:
+        sys.stdout.write(
+            "no verified resume command for harness '%s' yet; "
+            "hand off with: fms show %s\n" % (adapter.name, summary.ref)
+        )
+        return 0
+    sys.stdout.write(shlex.join(argv) + "\n")
+    if args.exec:
+        sys.stderr.write("fms: launching %s\n" % shlex.join(argv))
+        try:
+            return subprocess.run(argv).returncode
+        except FileNotFoundError as exc:
+            sys.stderr.write("fms: %s\n" % exc)
+            return 2
+    return 0
+
+
 def cmd_show(args: argparse.Namespace) -> int:
     detail = load_session(args.ref, harness=args.harness)
     if args.format == "json":
@@ -174,6 +208,7 @@ def build_parser() -> argparse.ArgumentParser:
             "  fms show qoder-cn:3f2a9c1d --messages 3 --format json\n"
             "  fms prompts qoder-cn:3f2a9c1d --count\n"
             "  fms prompts qoder-cn:3f2a9c1d --limit 20 --offset 40\n"
+            "  fms resume claude-code:c1a0de03 --exec\n"
             "  fms doctor --harness deepseek\n"
             "\nPrefer --harness to avoid scanning every store."
         ),
@@ -274,6 +309,30 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     doctor_parser.set_defaults(func=cmd_doctor)
+
+    resume = subparsers.add_parser(
+        "resume",
+        help="print (or with --exec, run) the harness command that reopens a session",
+    )
+    resume.add_argument(
+        "ref",
+        help="session ref like qoder-cn:3f2a9c1d, a unique id prefix, or a transcript path",
+    )
+    resume.add_argument(
+        "--harness",
+        action="append",
+        metavar="NAME",
+        help="restrict bare-prefix lookup to a harness",
+    )
+    resume.add_argument(
+        "--exec",
+        action="store_true",
+        help="run the resume command instead of only printing it",
+    )
+    resume.add_argument(
+        "--json", action="store_true", help="emit JSON instead of text"
+    )
+    resume.set_defaults(func=cmd_resume)
 
     show = subparsers.add_parser(
         "show", help="show a bounded handoff digest for one session"

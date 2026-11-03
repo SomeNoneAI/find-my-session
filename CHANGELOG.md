@@ -6,6 +6,14 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `fms resume <ref> [--exec] [--json]`: print (or run) the harness command
+  that reopens a session — `claude --resume <id>` and `codex resume <id>`
+  today, with a handoff-digest fallback for harnesses whose resume command
+  is not verified yet. Adapters opt in via the new optional `resume_argv`
+  hook.
+
 ## [0.1.2] - 2026-11-04
 
 ### Added

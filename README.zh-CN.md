@@ -93,6 +93,7 @@ fms search "额度 接力" --harness kimi-code        # 按关键字查找会话
 fms latest --harness kimi-code --cwd .          # 当前仓库最近一次的会话
 fms show kimi-code:e5f6a7b8                     # 低 token 接力摘要
 fms prompts kimi-code:e5f6a7b8 --count          # 先统计用户输入，再用 --limit/--offset 分页
+fms resume claude-code:e1a2b3c4 --exec          # 直接跳回某个会话
 ```
 
 搜索建议显式指定 `--harness`；省略 query 即列出最近会话。归档会话默认不参与 `search`/`latest`，除非传入 `--include-archived`。`show` 全程只读，并会输出原始文件路径；摘要不够时，agent 可以再去 grep 原文件。
@@ -106,6 +107,7 @@ fms prompts kimi-code:e5f6a7b8 --count          # 先统计用户输入，再用
 | `fms latest` | 返回最近一个匹配会话。 |
 | `fms show <ref>` | 输出单个会话的接力摘要。 |
 | `fms prompts <ref>` | 列出单个会话的全部用户输入，支持计数、分页与排序。 |
+| `fms resume <ref> [--exec]` | 输出（用 `--exec` 则直接运行）在该 harness 中重新打开此会话的命令；未验证续接命令时回退为接力摘要。 |
 | `fms doctor [--harness] [--json] [--fingerprint]` | 检查本地环境与存储（解码器可用性、目录可读性、各 harness 健康状况）；`--fingerprint` 额外输出不含内容的存储形态摘要，便于上报格式漂移。 |
 
 ## 常用选项

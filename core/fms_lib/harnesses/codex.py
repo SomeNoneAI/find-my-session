@@ -813,6 +813,9 @@ class CodexAdapter(HarnessAdapter):
                     timestamp=parse_timestamp(record.get("timestamp")),
                 )
 
+    def resume_argv(self, summary: SessionSummary) -> Optional[List[str]]:
+        return ["codex", "resume", summary.session_id]
+
     def contains(self, summary: SessionSummary, tokens: Sequence[str]) -> bool:
         remaining = {normalize_text(token) for token in tokens if token}
         remaining.discard("")

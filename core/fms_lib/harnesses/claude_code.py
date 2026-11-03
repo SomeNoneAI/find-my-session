@@ -405,6 +405,9 @@ class ClaudeCodeAdapter(HarnessAdapter):
             archived=False,
         )
 
+    def resume_argv(self, summary: SessionSummary) -> Optional[List[str]]:
+        return ["claude", "--resume", summary.session_id]
+
     def iter_prompts(self, summary: SessionSummary) -> Iterator[UserPrompt]:
         if _is_subagent_path(summary.path):
             return

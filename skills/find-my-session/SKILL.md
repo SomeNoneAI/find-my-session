@@ -132,6 +132,16 @@ fms latest [query ...] [--harness NAME] [--cwd PATH] [--since WHEN]
 
 `latest` filters by the same query and metadata, then orders by update time. `search` orders by match quality, then update time.
 
+### resume
+
+```text
+fms resume REF [--harness NAME] [--exec] [--json]
+```
+
+- Prints the harness command that reopens the session (Claude Code: `claude --resume <id>`; Codex: `codex resume <id>`); `--exec` runs it in the foreground.
+- Harnesses without a verified resume command print a handoff hint pointing at `fms show`; never guess a resume command.
+- Prefer `--exec` only when the user asked to reopen the session; printing is the safe default.
+
 ### doctor
 
 ```text

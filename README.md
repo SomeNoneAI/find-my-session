@@ -93,6 +93,7 @@ fms search "quota handoff" --harness kimi-code  # find sessions by keywords
 fms latest --harness kimi-code --cwd .          # most recent session in this repo
 fms show kimi-code:e5f6a7b8                     # low-token handoff digest
 fms prompts kimi-code:e5f6a7b8 --count          # count human prompts, then page with --limit/--offset
+fms resume claude-code:e1a2b3c4 --exec          # jump straight back into a session
 ```
 
 Search prefers an explicit `--harness`; omit the query to list recent sessions. Archived sessions are excluded from `search`/`latest` unless `--include-archived` is passed. `show` stays read-only and prints the raw source path so an agent can grep the original file when the digest is not enough.
@@ -106,6 +107,7 @@ Search prefers an explicit `--harness`; omit the query to list recent sessions. 
 | `fms latest` | Return the most recent matching session. |
 | `fms show <ref>` | Print a handoff digest for one session. |
 | `fms prompts <ref>` | List every human prompt in one session; count, page, and order them. |
+| `fms resume <ref> [--exec]` | Print (or run) the harness command that reopens the session; falls back to the handoff digest when no resume command is verified. |
 | `fms doctor [--harness] [--json] [--fingerprint]` | Check the local environment and stores (decoder availability, readable roots, per-harness health); `--fingerprint` adds a content-free shape summary for drift reports. |
 
 ## Useful options
