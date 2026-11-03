@@ -1,0 +1,4 @@
+{"sessionId": "33333333-4444-4c3d-9e4f-333333333333", "projectHash": "0adc0adc0adc0adc0adc0adc0adc0adc0adc0adc0adc0adc0adc0adc0adc0adc", "startTime": "2026-10-22T11:30:00.000Z", "lastUpdated": "2026-10-22T11:30:00.000Z", "kind": "main"}
+{"$set": {"messages": [{"id": "bctx", "timestamp": "2026-10-22T11:30:00.000Z", "type": "user", "content": [{"text": "<session_context>\nThis is the Gemini CLI. We are setting up the context for our chat.\nToday's date is 2026-10-20.\n</session_context>"}]}], "lastUpdated": "2026-10-22T11:30:00.000Z"}}
+{"id": "b2", "timestamp": "2026-10-22T11:31:00.000Z", "type": "user", "content": [{"text": "Draft the migration notes for the digest."}]}
+{"id": "b3", "timestamp": "2026-10-22T11:32:00.000Z", "type": "gemini", "model": "synthetic-gemini-2", "thoughts": [], "tokens": {"total": 100}, "content": [{"text": "Draft ready for review."}]}

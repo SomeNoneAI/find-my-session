@@ -33,4 +33,7 @@ fms_ui/frontend/dist/
 *.local
 .fms-cache/
 tmp/
+# ...except the Gemini CLI fixture, whose real layout sits under tmp/
+!tests/fixtures/gemini-cli-home/tmp/
+!tests/fixtures/gemini-cli-home/tmp/**
 .workbuddy-ai/
