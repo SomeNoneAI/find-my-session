@@ -1,6 +1,6 @@
 # Reporting drift, missing support, and unclear docs
 
-Use this after a run showed that the skill does not match the harness on disk, and the user agreed to report it. The deliverable is a GitHub issue the user can submit without editing: one title, one body, no session content.
+Use this after a run showed that the skill does not match the harness on disk, and the user agreed to report it. The deliverable is a GitHub issue the user can submit without editing: one title, one body, no session content. The [drift report template](https://github.com/SomeNoneAI/find-my-session/issues/new?template=drift_report.yml) mirrors the evidence table below as a structured form; use it when the harness and versions are known.
 
 ## What is worth reporting
 

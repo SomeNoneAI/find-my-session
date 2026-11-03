@@ -59,6 +59,6 @@ Synthetic fixtures prove the parser logic, not ongoing compatibility: a harness 
 
 ## Reporting drift（反馈漂移）
 
-If a harness, edition, or version is unsupported, or a real store no longer matches what its reference documents, ask your agent to draft a report using [references/contribution.md](../skills/find-my-session/references/contribution.md): it defines the consent-first flow, the redacted evidence to collect, and the issue format for the [issue tracker](https://github.com/SomeNoneAI/find-my-session/issues). Never attach real session files, credentials, or private paths.
+If a harness, edition, or version is unsupported, or a real store no longer matches what its reference documents, ask your agent to draft a report using [references/contribution.md](../skills/find-my-session/references/contribution.md): it defines the consent-first flow, the redacted evidence to collect, and the issue format for the [issue tracker](https://github.com/SomeNoneAI/find-my-session/issues). The [drift report template](https://github.com/SomeNoneAI/find-my-session/issues/new?template=drift_report.yml) collects the same evidence as a structured form. Never attach real session files, credentials, or private paths.
 
 If you verified a harness against a newer real version, update the "Verified against" cell with the version and date, and mention the platform you used.

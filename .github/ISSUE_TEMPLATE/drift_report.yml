@@ -1,0 +1,72 @@
+name: Drift report
+description: Report a store or behavior change in a supported harness, or documentation drift
+title: "[drift] "
+labels:
+  - drift
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Report what you observed on your machine, following the privacy gate in
+        [references/contribution.md](https://github.com/SomeNoneAI/find-my-session/blob/main/skills/find-my-session/references/contribution.md):
+        prefer shape over content — file and directory names, record types, counts,
+        exit codes. Replace anything identifying with `<project>`, `<session-id>`,
+        or `~/` placeholders, and say that you did.
+  - type: input
+    id: harness
+    attributes:
+      label: Harness and variant
+      placeholder: Kimi Code desktop
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: App or CLI version
+      placeholder: "0.43.0"
+    validations:
+      required: true
+  - type: input
+    id: fms_version
+    attributes:
+      label: fms version
+      description: Output of `fms --version`.
+      placeholder: fms 0.1.2
+    validations:
+      required: true
+  - type: textarea
+    id: platform
+    attributes:
+      label: Platform
+      description: Output of `uname -sm`, plus the OS version.
+      placeholder: Darwin arm64, macOS 26.1
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What the documentation says
+      description: The sentence from SKILL.md or references/<harness>.md that no longer matches, with the file name.
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: What you observed instead
+      description: Redacted output, exit codes, store layout shapes, or doctor output with local paths removed. Do not attach session files.
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: fms doctor output (redacted)
+      description: "`fms doctor --harness <name> --json` output with any local paths removed. A `--fingerprint` JSON is ideal: it contains field names and counts only."
+      render: json
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: This report contains no real session content, credentials, tokens, or private paths.
+          required: true
+        - label: I verified the store against the version named above and can re-test a fix.
