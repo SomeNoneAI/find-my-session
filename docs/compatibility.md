@@ -12,6 +12,14 @@ This is the single detailed compatibility matrix for find-my-session. The README
 
 Synthetic fixtures prove the parser logic, not ongoing compatibility: a harness app can change its schema in any release, and a fixture that passes today says nothing about next month's build. "Verified" is always a point-in-time statement about the recorded version and date.
 
+## Platform support
+
+| Platform | Status | Details |
+| --- | --- | --- |
+| macOS | Supported | Primary development and live-verification platform; CI runs on `macos-latest`. |
+| Linux | Supported | Pure standard-library Python with POSIX paths; CI runs on `ubuntu-latest`. |
+| Windows | Experimental | Exercised by a non-blocking `windows-latest` CI job. Path handling is expected to work, but no harness store has been verified on Windows and failures are not release blockers. |
+
 ## Ready harnesses
 
 | Harness | Status | Verified against | Expected / unverified | Reference |
@@ -31,6 +39,7 @@ Synthetic fixtures prove the parser logic, not ongoing compatibility: a harness 
 | Antigravity (`antigravity`) | Implemented · Verified | macOS arm64, Antigravity 2.28.0 desktop + Antigravity IDE 2.6.0, 2026-10-29; both editions share one migrated store | No compaction record observed, so `compact_summary` stays empty | [antigravity.md](../skills/find-my-session/references/antigravity.md) |
 | Antigravity CLI (`antigravity-cli`) | Implemented · Verified | macOS arm64, `agy` 1.4.9, 2026-10-29 | — | [antigravity-cli.md](../skills/find-my-session/references/antigravity-cli.md) |
 | MiniMax Code (`minimax-code`) | Implemented · Verified | macOS arm64, `mcode` 0.7.1 CLI, 2026-11-03; 19 top-level conversations listed from the live runtime database (2 internal task sessions filtered); read-only behavior confirmed on a frozen copy of the real store | MiniMax Code 3.1.10 desktop app was observed using the same runtime database but was not confirmed as a session producer; no archived row existed live, so archive filtering is verified by synthetic fixture only | [minimax-code.md](../skills/find-my-session/references/minimax-code.md) |
+| Cursor (`cursor`) | Implemented · Partial | macOS arm64, Cursor 3.23.23 desktop app, 2026-11-03; 4 transcripts listed from the live store, 2 archived rows excluded by default; read-only behavior confirmed against the live store | The `cursor-agent` CLI is expected to share `~/.cursor/projects` but no CLI-originated transcript was observed; the cwd is empty when the editor's `workspaceStorage` manifest for that folder is gone or the session ran without a folder; `model` and `version` are not recorded locally; the older Composer chat store in `state.vscdb` is a different format and is not read | [cursor.md](../skills/find-my-session/references/cursor.md) |
 
 ## Planned harnesses
 

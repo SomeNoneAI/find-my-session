@@ -19,36 +19,57 @@ third-party packages; CI installs coverage tooling only for the optional
 report. Tests use isolated fixture homes and environment overrides; they never
 read the developer's real sessions.
 
-The browser panel frontend lives in `ui/frontend/` (Vue 3 + TypeScript +
-Vite). Node.js is needed only for frontend development — building the tracked
-static output in `ui/static/`, type-checking, and running the Vitest suite:
+Lint and type checks use development-only tools. Install the `dev` extra, or run
+the pinned tools with `uvx`:
 
 ```bash
-cd ui/frontend
+python3 -m pip install -e ".[dev]"
+ruff check .
+mypy
+```
+
+Python 3.9 is supported through 0.1.x; 0.2 is planned to require 3.10+ (see
+[ROADMAP.md](ROADMAP.md)). Windows runs in an experimental, non-blocking CI
+job; treat Windows failures as useful reports unless the change explicitly
+targets Windows.
+
+The browser panel frontend lives in `fms_ui/frontend/` (Vue 3 + TypeScript +
+Vite). Node.js is needed only for frontend development — building the tracked
+static output in `fms_ui/static/`, type-checking, and running the Vitest suite:
+
+```bash
+cd fms_ui/frontend
 npm ci
 npm run typecheck
 npm test
 npm run build   # rewrites ../static (index.html, app.js, styles.css, ...)
 ```
 
-Commit the rebuilt `ui/static/` together with the source change so the Python
+Commit the rebuilt `fms_ui/static/` together with the source change so the Python
 server and release artifacts stay runnable without Node.js.
 
 ```bash
 git clone https://github.com/SomeNoneAI/find-my-session.git
 cd find-my-session
 python3 -m unittest discover -s tests -v
-python3 -m compileall -q core ui skills/find-my-session/scripts tools tests
+python3 -m compileall -q core fms_ui skills/find-my-session/scripts tools tests
 ```
 
 ## Repository layout
 
 - `core/fms_lib/` — shared CLI, query service, models, and harness adapters.
 - `skills/find-my-session/` — skill entrypoint, `SKILL.md`, and adapter references.
-- `ui/` — local browser panel server and the tracked static frontend build.
-- `ui/frontend/` — Vue 3 + TypeScript + Vite source; `npm run build` emits into `ui/static/`.
+- `fms_ui/` — local browser panel server and the tracked static frontend build.
+- `fms_ui/frontend/` — Vue 3 + TypeScript + Vite source; `npm run build` emits into `fms_ui/static/`.
 - `tools/build_artifacts.py` — builds both release artifacts.
 - `tests/` — standard-library unittest suite and synthetic fixtures.
+
+## Changing output
+
+Search results stay metadata-only, and `show` stays bounded. Keep `--json`
+changes additive before 1.0: do not remove or rename a field without a changelog
+entry, and update [docs/json-output.md](docs/json-output.md) whenever a field,
+default, or truncation rule changes.
 
 ## Building the artifacts
 

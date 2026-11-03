@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="734" viewBox="0 0 980 734" role="img" aria-label="fms search and fms show in a terminal">
+<rect width="980" height="734" rx="14" fill="#0d1117"/>
+<rect width="980" height="44" rx="14" fill="#161b22"/>
+<rect y="30" width="980" height="14" fill="#161b22"/>
+<circle cx="24" cy="22" r="6.5" fill="#ff5f57"/><circle cx="44" cy="22" r="6.5" fill="#febc2e"/><circle cx="64" cy="22" r="6.5" fill="#28c840"/>
+<text x="398" y="27" font-family="SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="13" fill="#8b949e">find-my-session — fms show</text>
+<g xml:space="preserve" font-family="SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="14.5">
+<text x="26" y="74" fill="#7ee787">$</text>
+<text x="44" y="74" fill="#e6edf3" font-weight="600">fms search "theme toggle" --harness qoder-cn</text>
+<text x="26" y="96" fill="#8b949e">ref&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;updated&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;cwd&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;title</text>
+<text x="26" y="118" fill="#c9d1d9">qoder-cn:b2c3d4e5&#160;&#160;&#160;2026-10-27&#160;23:30&#160;&#160;/Users/example/project-beta&#160;&#160;Add&#160;a&#160;dark&#160;mode&#160;toggle&#160;to&#160;settings</text>
+<text x="26" y="162" fill="#7ee787">$</text>
+<text x="44" y="162" fill="#e6edf3" font-weight="600">fms show qoder-cn:b2c3d4e5</text>
+<text x="26" y="184" fill="#7ee787" font-weight="600"># qoder-cn:b2c3d4e5</text>
+<text x="26" y="228" fill="#c9d1d9">- harness: qoder-cn (desktop, cli)</text>
+<text x="26" y="250" fill="#c9d1d9">- cwd: `/Users/example/project-beta`</text>
+<text x="26" y="272" fill="#c9d1d9">- branch: `main`</text>
+<text x="26" y="294" fill="#c9d1d9">- updated: 2026-10-27 23:30</text>
+<text x="26" y="316" fill="#c9d1d9">- turns: 1</text>
+<text x="26" y="338" fill="#8b949e">- source: `~/.qoder-cn/projects/-Users-example-project-beta/</text>
+<text x="26" y="360" fill="#8b949e">  b2c3d4e5-2222-4b2c-9d2e-222222222222.jsonl`</text>
+<text x="26" y="404" fill="#79c0ff" font-weight="600">## Task</text>
+<text x="26" y="426" fill="#c9d1d9">Add a dark mode toggle to settings</text>
+<text x="26" y="470" fill="#79c0ff" font-weight="600">## Compact summary (latest compaction)</text>
+<text x="26" y="492" fill="#c9d1d9">This session is being continued from a previous conversation that ran out of context.</text>
+<text x="26" y="514" fill="#c9d1d9">Earlier work added a theme provider, a settings panel scaffold, and the</text>
+<text x="26" y="536" fill="#c9d1d9">ThemeToggle component. Remaining work: verify contrast in light and dark themes.</text>
+<text x="26" y="580" fill="#79c0ff" font-weight="600">## Todos (1 open / 2 total)</text>
+<text x="26" y="602" fill="#e3b341">- [pending] Verify contrast in light and dark themes</text>
+<text x="26" y="646" fill="#79c0ff" font-weight="600">## Recent tools</text>
+<text x="26" y="668" fill="#c9d1d9">- 22:00 Write: /Users/example/project-beta/src/settings/ThemeToggle.tsx</text>
+<text x="26" y="690" fill="#c9d1d9">- 23:00 Edit: /Users/example/project-beta/src/settings/ThemeToggle.tsx</text>
+</g>
+</svg>

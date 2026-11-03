@@ -8,11 +8,52 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- Cursor (`cursor`, aliases `cursor-agent` and `cursor-ide`) over
+  `~/.cursor/projects`: one JSONL transcript per agent conversation under
+  `agent-transcripts/<session-id>/`, the desktop conversation index for titles,
+  update times, branches, and archive state, `workspaceStorage` manifests to
+  recover the real cwd, subagent transcript filtering, `<user_query>` prompt
+  extraction, compaction summaries, todo capture, turn error text, deep search,
+  synthetic fixture tests, and a per-harness reference.
 - MiniMax Code (`minimax-code`, aliases `minimax` and `mcode`) over
   `~/.minimax/v2`: dated `messages.jsonl` transcripts plus one runtime SQLite
   database, database-authoritative listing and prompts, todo events, archive
   and internal-session filtering, compaction fallback, deep search, synthetic
   fixture tests, and a per-harness reference.
+- PyPI Trusted Publishing in the release workflow, alongside the existing
+  GitHub Release assets and build provenance attestations.
+- Ruff and mypy checks in CI, with the initial mypy findings fixed.
+- Dependabot updates for GitHub Actions, Python development dependencies, and
+  the frontend.
+- An experimental, non-blocking Windows CI job (synthetic fixtures only).
+- `docs/json-output.md`, a field-level contract for `--json` output and its
+  pre-1.0 stability policy.
+- README demo assets for the CLI digest and the browser panel, generated from
+  synthetic fixture data.
+
+### Changed
+
+- The top-level `ui` package is now `fms_ui`, avoiding a generic package name
+  in installed environments. Both READMEs, build artifacts, tests, and the
+  frontend paths were updated.
+- Package metadata is single-sourced: the version comes from
+  `fms_lib.__version__`, with classifiers, keywords, authors, project URLs, and
+  an SPDX license expression.
+- The release workflow now checks the tag against the package version, rebuilds
+  the frontend, smoke-tests standalone launchers, checksums every asset, and
+  publishes Python distributions to PyPI through OIDC.
+- Shared adapter helpers (`is_generic`, `choose_title`, `file_path`,
+  `tool_detail`) moved to `harnesses/common.py`; harness-specific parsing stays
+  in each adapter.
+- The skill description is shorter and no longer enumerates every harness; the
+  authoritative list stays in the skill body and `fms harnesses`.
+
+### Fixed
+
+- Mypy findings in the Codex, MiniMax Code, Qoder, Kimi Code, and UI server
+  code paths.
+- Release tests now check the actual source layout of the sdist and the SPDX
+  license metadata.
 
 ## [0.1.0] - 2026-11-03
 

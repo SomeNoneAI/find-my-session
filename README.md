@@ -1,5 +1,10 @@
 # find-my-session
 
+[![CI](https://github.com/SomeNoneAI/find-my-session/actions/workflows/ci.yml/badge.svg)](https://github.com/SomeNoneAI/find-my-session/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/find-my-session.svg)](https://pypi.org/project/find-my-session/)
+[![Python 3.9–3.14](https://img.shields.io/badge/python-3.9%E2%80%933.14-blue.svg)](pyproject.toml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 A local, read-only session finder and handoff tool for coding agents, shipped in two forms that share one `fms_lib` core:
 
 - **find-my-session-skill** — an agent skill (`fms` CLI) that finds the right session across harnesses and prints a low-token handoff digest instead of the whole transcript.
@@ -7,11 +12,17 @@ A local, read-only session finder and handoff tool for coding agents, shipped in
 
 When a harness runs out of quota, you usually remember *what* you were doing but not *where* the session lives. `fms` answers that with one compact command.
 
+![fms search and fms show in a terminal](docs/assets/demo.svg)
+
+![The find-my-session browser panel reading a synthetic session store](docs/assets/ui.png)
+
+Screenshots use synthetic fixture data.
+
 [中文说明](README.zh-CN.md)
 
 ## Supported harnesses
 
-Fifteen adapters are ready; two more are planned. Verified versions, surfaces, and caveats live in the [compatibility matrix](docs/compatibility.md); per-harness store details live in [references/](skills/find-my-session/references/).
+Sixteen adapters are ready; two more are planned. Verified versions, surfaces, and caveats live in the [compatibility matrix](docs/compatibility.md); per-harness store details live in [references/](skills/find-my-session/references/).
 
 | Harness | Ref prefix | Store |
 | --- | --- | --- |
@@ -30,20 +41,22 @@ Fifteen adapters are ready; two more are planned. Verified versions, surfaces, a
 | Antigravity | `antigravity` | `~/.gemini/antigravity` |
 | Antigravity CLI | `antigravity-cli` | `~/.gemini/antigravity-cli` |
 | MiniMax Code | `minimax-code` | `~/.minimax/v2` |
+| Cursor | `cursor` | `~/.cursor/projects` |
 | CodeBuddy | `codebuddy` (planned) | `~/.codebuddy` |
 | Cline (VS Code extension) | `cline-vscode` (planned) | VS Code globalStorage |
 
 ## Requirements
 
-- Python 3.9 or newer; macOS or Linux (Windows is not tested yet)
+- Python 3.9 or newer; macOS or Linux. Python 3.9 is end-of-life upstream and 0.2 is planned to require 3.10+ (see [ROADMAP.md](ROADMAP.md)).
 - No third-party Python packages
 - Compressed stores (`codex` `.jsonl.zst`, `deepseek` `.zstd`) need a zstd decoder: Python 3.14+ or the `zstd` CLI; otherwise those sessions are skipped
+- Windows is exercised by an experimental, non-blocking CI job but is not supported yet; see [ROADMAP.md](ROADMAP.md)
 
 ## Install
 
 ### CLI and UI commands
 
-`pipx install git+https://github.com/SomeNoneAI/find-my-session.git` installs the `fms` and `fms-ui` commands. Use `pipx upgrade find-my-session` to upgrade or `pipx uninstall find-my-session` to remove them.
+`pipx install find-my-session` installs the `fms` and `fms-ui` commands from PyPI. To run an unreleased commit, install from Git instead: `pipx install git+https://github.com/SomeNoneAI/find-my-session.git`. Use `pipx upgrade find-my-session` to upgrade or `pipx uninstall find-my-session` to remove them. With `uv`, `uvx --from find-my-session fms ...` runs the PyPI release without a permanent install.
 
 ### For agents: the skill
 
@@ -62,9 +75,9 @@ Fifteen adapters are ready; two more are planned. Verified versions, surfaces, a
 
 1. **Release ZIP.** Download `find-my-session-ui.zip` from the [latest release](https://github.com/SomeNoneAI/find-my-session/releases/latest), extract it, and run `python3 fms-ui` from the extracted directory (or `./fms-ui` when your extractor preserves executable bits). Replace that directory to upgrade or delete it to uninstall.
 2. **pipx.** The same pipx install above provides the `fms-ui` command.
-3. **Source checkout.** Run `ui/fms-ui` (use `--no-browser --port 8765` to pick a port without opening a browser).
+3. **Source checkout.** Run `fms_ui/fms-ui` (use `--no-browser --port 8765` to pick a port without opening a browser).
 
-The panel starts a read-only server on `127.0.0.1` with keyword and metadata filters, session overviews, paged user prompts, recent turns, and copyable refs. The static frontend uses only same-origin JSON APIs — no Node.js, no external assets. Language follows the local system, with an explicit zh/en switch. The interface also follows the system light/dark preference, with a manual toggle and a non-black dark palette. The frontend is built with Vue 3 + TypeScript + Vite; Node.js is needed only when developing it from `ui/frontend/`, never to run the panel.
+The panel starts a read-only server on `127.0.0.1` with keyword and metadata filters, session overviews, paged user prompts, recent turns, and copyable refs. The static frontend uses only same-origin JSON APIs — no Node.js, no external assets. Language follows the local system, with an explicit zh/en switch. The interface also follows the system light/dark preference, with a manual toggle and a non-black dark palette. The frontend is built with Vue 3 + TypeScript + Vite; Node.js is needed only when developing it from `fms_ui/frontend/`, never to run the panel.
 
 ## Quick start
 
@@ -104,7 +117,7 @@ Search prefers an explicit `--harness`; omit the query to list recent sessions. 
 | `--include-archived` | search, latest | Include archived sessions. Off by default. |
 | `--verbose` | search, latest | Warn about skipped sessions on stderr without changing stdout. |
 | `--messages N` / `--chars N` / `--summary-chars N` | show | Cap turns, per-message characters, and summary characters. |
-| `--json` | harnesses, search, latest, prompts, doctor | Machine-readable output; use `--format json` for `show`. |
+| `--json` | harnesses, search, latest, prompts, doctor | Machine-readable output; use `--format json` for `show`. See [docs/json-output.md](docs/json-output.md) for the field contract. |
 
 Session references use `harness:session-prefix` (for example `kimi-code:e5f6a7b8`); a raw transcript path from a supported store works too. Desktop/CLI surfaces that share one store share one ref space — see the [compatibility matrix](docs/compatibility.md) for which surfaces are verified.
 
@@ -118,13 +131,14 @@ Session references use `harness:session-prefix` (for example `kimi-code:e5f6a7b8
 
 - [CONTRIBUTING.md](CONTRIBUTING.md) — setup, tests, and how to add or verify a harness.
 - [docs/compatibility.md](docs/compatibility.md) — the detailed, per-harness compatibility matrix.
+- [docs/json-output.md](docs/json-output.md) — the `--json` field contract and pre-1.0 stability policy.
 - [ROADMAP.md](ROADMAP.md) — near-term plans.
 - [SECURITY.md](SECURITY.md) — supported versions and private vulnerability reporting.
 - [skills/find-my-session/references/](skills/find-my-session/references/) — per-harness store schemas and verification recipes; start with [extending.md](skills/find-my-session/references/extending.md) to add a harness.
 
 ```bash
 python3 -m unittest discover -s tests -v
-python3 -m compileall -q core ui skills/find-my-session/scripts tools tests
+python3 -m compileall -q core fms_ui skills/find-my-session/scripts tools tests
 python3 tools/build_artifacts.py   # rebuild dist/find-my-session-skill(.zip) and dist/find-my-session-ui(.zip)
 ```
 
