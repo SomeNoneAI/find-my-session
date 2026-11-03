@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import http.client
+import io
 import json
 import os
 import queue
@@ -12,18 +13,20 @@ import tempfile
 import threading
 import unittest
 import zipfile
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest import mock
 from urllib.parse import urlencode
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CORE_DIR = REPO_ROOT / "core"
-UI_ENTRYPOINT = REPO_ROOT / "ui" / "fms-ui"
+UI_ENTRYPOINT = REPO_ROOT / "fms_ui" / "fms-ui"
 sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(CORE_DIR))
 
 from fms_lib import __version__  # noqa: E402
-from ui.server import create_server  # noqa: E402
+from fms_ui import server as server_module  # noqa: E402
+from fms_ui.server import create_server  # noqa: E402
 
 
 def synthetic_environment(root: Path) -> dict:
@@ -47,12 +50,14 @@ def synthetic_environment(root: Path) -> dict:
         "FMS_ANTIGRAVITY_CLI_HOME": str(empty),
         "FMS_DEEPSEEK_HOME": str(empty),
         "FMS_MINIMAX_CODE_HOME": str(empty),
+        "FMS_CURSOR_HOME": str(empty),
         "FMS_QODER_CN_APP_DB": str(missing_db),
         "FMS_QODER_APP_DB": str(missing_db),
         "FMS_ZCODE_APP_DB": str(missing_db),
         "FMS_WORKBUDDY_APP_DB": str(missing_db),
         "FMS_WORKBUDDY_CN_APP_DB": str(missing_db),
         "FMS_MINIMAX_CODE_APP_DB": str(missing_db),
+        "FMS_CURSOR_APP_DB": str(missing_db),
     }
 
 
@@ -133,7 +138,7 @@ class UIApiTests(UITestCase):
         self.assertEqual(data["error"], "not found")
 
     def test_built_frontend_is_self_contained(self) -> None:
-        html = (REPO_ROOT / "ui" / "static" / "index.html").read_text(encoding="utf-8")
+        html = (REPO_ROOT / "fms_ui" / "static" / "index.html").read_text(encoding="utf-8")
         self.assertNotIn("http://", html)
         self.assertNotIn("https://", html)
         self.assertNotIn("eval", html)
@@ -204,6 +209,7 @@ class UIApiTests(UITestCase):
     def test_invalid_requests_and_host_protection(self) -> None:
         for path in (
             "/api/sessions?limit=-1",
+            "/api/sessions?limit=abc",
             "/api/sessions?deep=perhaps",
             "/api/session",
             "/api/prompts?ref=qoder-cn:a1b2c3d4&order=sideways",
@@ -212,9 +218,20 @@ class UIApiTests(UITestCase):
             self.assertEqual(status, 400, path)
             self.assertTrue(data["error"])
 
-        status, _, data = self.request_json("/api/harnesses", host="evil.example")
-        self.assertEqual(status, 403)
-        self.assertEqual(data["error"], "forbidden host")
+        status, _, data = self.request_json("/api/unknown")
+        self.assertEqual(status, 404)
+        self.assertEqual(data["error"], "not found")
+
+        for host in ("evil.example", "[::1"):
+            status, _, data = self.request_json("/api/harnesses", host=host)
+            self.assertEqual(status, 403, host)
+            self.assertEqual(data["error"], "forbidden host")
+
+    def test_missing_static_asset_is_not_found(self) -> None:
+        with mock.patch.object(server_module, "STATIC_DIR", self.root / "empty"):
+            status, _, data = self.request_json("/app.js")
+        self.assertEqual(status, 404)
+        self.assertEqual(data["error"], "not found")
 
     def test_requests_do_not_modify_session_store(self) -> None:
         def snapshot() -> dict:
@@ -254,6 +271,56 @@ class UIServerStartupTests(unittest.TestCase):
                 self.assertGreater(server.server_port, 0)
             finally:
                 server.server_close()
+
+
+class UIServerMainTests(unittest.TestCase):
+    def test_main_rejects_out_of_range_port(self) -> None:
+        stderr = io.StringIO()
+        with redirect_stderr(stderr):
+            code = server_module.main(["--port", "70000"])
+        self.assertEqual(code, 2)
+        self.assertIn("between 0 and 65535", stderr.getvalue())
+
+    def test_main_reports_bind_failure(self) -> None:
+        stderr = io.StringIO()
+        with mock.patch.object(
+            server_module, "create_server", side_effect=OSError("address in use")
+        ), redirect_stderr(stderr):
+            code = server_module.main(["--port", "8765"])
+        self.assertEqual(code, 2)
+        self.assertIn("cannot start local server: address in use", stderr.getvalue())
+
+    def test_main_serves_and_closes_on_interrupt(self) -> None:
+        server = mock.Mock()
+        server.server_address = ("127.0.0.1", 43210)
+        server.serve_forever.side_effect = KeyboardInterrupt
+        stdout = io.StringIO()
+        with mock.patch.object(
+            server_module, "create_server", return_value=server
+        ), mock.patch.object(
+            server_module.session_cache, "start_background_maintenance"
+        ), redirect_stdout(stdout):
+            code = server_module.main(["--no-browser", "--port", "0"])
+        self.assertEqual(code, 0)
+        self.assertIn("http://127.0.0.1:43210/", stdout.getvalue())
+        server.server_close.assert_called_once()
+
+    def test_main_opens_browser_unless_disabled(self) -> None:
+        server = mock.Mock()
+        server.server_address = ("127.0.0.1", 43211)
+        server.serve_forever.side_effect = KeyboardInterrupt
+        timer = mock.Mock()
+        with mock.patch.object(
+            server_module, "create_server", return_value=server
+        ), mock.patch.object(
+            server_module.session_cache, "start_background_maintenance"
+        ), mock.patch.object(
+            server_module.threading, "Timer", return_value=timer
+        ) as timer_class, redirect_stdout(io.StringIO()):
+            code = server_module.main(["--port", "0"])
+        self.assertEqual(code, 0)
+        self.assertEqual(timer_class.call_args.args[0], 0.4)
+        timer.start.assert_called_once()
 
 
 class ArtifactBuildTests(unittest.TestCase):

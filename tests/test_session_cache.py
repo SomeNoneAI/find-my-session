@@ -16,8 +16,8 @@ sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(CORE_DIR))
 
 from fms_lib import service  # noqa: E402
-from ui import session_cache  # noqa: E402
-from ui.server import api_response  # noqa: E402
+from fms_ui import session_cache  # noqa: E402
+from fms_ui.server import api_response  # noqa: E402
 
 try:
     from test_ui import synthetic_environment

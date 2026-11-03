@@ -6,8 +6,8 @@ find-my-session is a read-only, cross-harness agent-session finder and handoff t
 
 - `core/fms_lib/` — shared CLI, query service, diagnostics, models, rendering, and harness adapters.
 - `skills/find-my-session/` — skill-specific entrypoint and docs: `SKILL.md`, `scripts/fms`, `references/`.
-- `ui/` — standalone local UI server, `fms-ui` entrypoint, packaged usage guide, and language-neutral static frontend.
-- `ui/frontend/` — Vue 3 + TypeScript + Vite source for the static frontend; `npm run build` emits the tracked build products into `ui/static/` (`index.html`, `app.js`, `styles.css`, plus `theme-init.js` and `favicon.svg` from `public/`). Node.js is a development-only dependency; the runtime server stays standard-library Python.
+- `fms_ui/` — standalone local UI server, `fms-ui` entrypoint, packaged usage guide, and language-neutral static frontend.
+- `fms_ui/frontend/` — Vue 3 + TypeScript + Vite source for the static frontend; `npm run build` emits the tracked build products into `fms_ui/static/` (`index.html`, `app.js`, `styles.css`, plus `theme-init.js` and `favicon.svg` from `public/`). Node.js is a development-only dependency; the runtime server stays standard-library Python.
 - `tools/build_artifacts.py` — builds self-contained skill and UI directories, ZIPs, and checksums.
 - `pyproject.toml` — pip/pipx packaging for the `fms` and `fms-ui` commands.
 - `docs/compatibility.md` — single detailed compatibility and live-verification matrix.
@@ -34,15 +34,15 @@ find-my-session is a read-only, cross-harness agent-session finder and handoff t
 - Run before finishing:
 
   ```bash
-  python3 -m compileall -q core ui skills/find-my-session/scripts tools tests
+  python3 -m compileall -q core fms_ui skills/find-my-session/scripts tools tests
   python3 -m unittest discover -s tests
   python3 tools/build_artifacts.py
   ```
 
-- After any `ui/frontend/` change, also rebuild the tracked static output and keep it in the same commit:
+- After any `fms_ui/frontend/` change, also rebuild the tracked static output and keep it in the same commit:
 
   ```bash
-  cd ui/frontend && npm ci && npm run typecheck && npm test && npm run build
+  cd fms_ui/frontend && npm ci && npm run typecheck && npm test && npm run build
   ```
 
   The Python checks above never require Node.js.

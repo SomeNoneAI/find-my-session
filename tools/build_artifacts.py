@@ -59,11 +59,11 @@ def build_artifacts(output: Path) -> List[Path]:
     ui = artifacts["find-my-session-ui"]
     ui.mkdir()
     shutil.copy2(REPO_ROOT / "LICENSE", ui / "LICENSE")
-    shutil.copy2(REPO_ROOT / "ui" / "README.md", ui / "README.md")
-    shutil.copy2(REPO_ROOT / "ui" / "fms-ui", ui / "fms-ui")
-    shutil.copy2(REPO_ROOT / "ui" / "server.py", ui / "server.py")
-    shutil.copy2(REPO_ROOT / "ui" / "session_cache.py", ui / "session_cache.py")
-    _copy_tree(REPO_ROOT / "ui" / "static", ui / "static")
+    shutil.copy2(REPO_ROOT / "fms_ui" / "README.md", ui / "README.md")
+    shutil.copy2(REPO_ROOT / "fms_ui" / "fms-ui", ui / "fms-ui")
+    shutil.copy2(REPO_ROOT / "fms_ui" / "server.py", ui / "server.py")
+    shutil.copy2(REPO_ROOT / "fms_ui" / "session_cache.py", ui / "session_cache.py")
+    _copy_tree(REPO_ROOT / "fms_ui" / "static", ui / "static")
     _copy_tree(REPO_ROOT / "core" / "fms_lib", ui / "fms_lib")
 
     archives = []

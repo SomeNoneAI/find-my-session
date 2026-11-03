@@ -1,28 +1,96 @@
 [build-system]
-requires = ["setuptools>=61"]
+requires = ["setuptools>=77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "find-my-session"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Read-only, cross-harness agent-session finder and handoff tool"
 readme = "README.md"
 requires-python = ">=3.9"
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "find-my-session contributors" }]
+keywords = [
+    "agent",
+    "ai",
+    "claude-code",
+    "cli",
+    "codex",
+    "developer-tools",
+    "handoff",
+    "session-search",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Utilities",
+]
 dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "build>=1.2",
+    "coverage>=7.6",
+    "mypy>=1.11,<2",
+    "ruff>=0.9",
+]
 
 [project.scripts]
 fms = "fms_lib.cli:main"
-fms-ui = "ui.server:main"
+fms-ui = "fms_ui.server:main"
 
 [project.urls]
 Homepage = "https://github.com/SomeNoneAI/find-my-session"
 Repository = "https://github.com/SomeNoneAI/find-my-session"
 Issues = "https://github.com/SomeNoneAI/find-my-session/issues"
+Changelog = "https://github.com/SomeNoneAI/find-my-session/blob/main/CHANGELOG.md"
+Roadmap = "https://github.com/SomeNoneAI/find-my-session/blob/main/ROADMAP.md"
 
 [tool.setuptools]
-package-dir = { "fms_lib" = "core/fms_lib", "ui" = "ui" }
-packages = ["fms_lib", "fms_lib.harnesses", "ui"]
+package-dir = { "fms_lib" = "core/fms_lib", "fms_ui" = "fms_ui" }
+packages = ["fms_lib", "fms_lib.harnesses", "fms_ui"]
 
 [tool.setuptools.package-data]
-ui = ["static/*"]
+fms_ui = ["static/*"]
+
+[tool.setuptools.dynamic]
+version = { attr = "fms_lib.__version__" }
+
+[tool.ruff]
+target-version = "py39"
+line-length = 100
+extend-exclude = [
+    "dist",
+    "fms_ui/frontend",
+    "fms_ui/static",
+    "tmp",
+]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+# Re-export hub for every fixture module; tests import these names from here.
+"tests/cli_support.py" = ["F401"]
+# Test modules bootstrap sys.path before importing project modules.
+"tests/*" = ["I001"]
+
+[tool.mypy]
+python_version = "3.9"
+mypy_path = "core"
+files = ["core/fms_lib", "fms_ui"]
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true

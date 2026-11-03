@@ -448,12 +448,14 @@ class ServiceCompatibilityTests(FixtureTestCase):
             "FMS_ANTIGRAVITY_CLI_HOME": str(empty),
             "FMS_DEEPSEEK_HOME": str(deepseek_home),
             "FMS_MINIMAX_CODE_HOME": str(empty),
+            "FMS_CURSOR_HOME": str(empty),
             "FMS_QODER_CN_APP_DB": str(self.no_app_db),
             "FMS_QODER_APP_DB": str(self.no_app_db),
             "FMS_ZCODE_APP_DB": str(self.no_app_db),
             "FMS_WORKBUDDY_APP_DB": str(self.no_app_db),
             "FMS_WORKBUDDY_CN_APP_DB": str(self.no_app_db),
             "FMS_MINIMAX_CODE_APP_DB": str(self.no_app_db),
+            "FMS_CURSOR_APP_DB": str(self.no_app_db),
         }
 
     def test_existing_callers_ignore_the_report_parameter(self) -> None:
@@ -468,7 +470,7 @@ class ServiceCompatibilityTests(FixtureTestCase):
                 self.assertEqual(detail.summary.session_id, SESSION_ONE)
 
     def test_ui_endpoints_still_work(self) -> None:
-        from ui.server import api_response
+        from fms_ui.server import api_response
 
         with tempfile.TemporaryDirectory(prefix="fms-compat-") as raw:
             home = _build_home(Path(raw))

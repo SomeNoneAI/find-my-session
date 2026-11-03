@@ -22,10 +22,10 @@ Thumbs.db
 # Build artifacts
 dist/
 
-# Frontend tooling (ui/static build output stays tracked)
-ui/frontend/node_modules/
-ui/frontend/coverage/
-ui/frontend/dist/
+# Frontend tooling (fms_ui/static build output stays tracked)
+fms_ui/frontend/node_modules/
+fms_ui/frontend/coverage/
+fms_ui/frontend/dist/
 
 # Local configuration and scratch data
 .env

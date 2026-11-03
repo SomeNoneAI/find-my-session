@@ -8,7 +8,7 @@ The UI is the human-facing release; the separate skill release is for agents.
 - Python 3.9 or newer
 - macOS or Linux; Windows is not tested
 - No third-party Python packages and no Node.js at runtime
-- Node.js 22+ only if you want to rebuild the frontend from `ui/frontend/` sources
+- Node.js 22+ only if you want to rebuild the frontend from `fms_ui/frontend/` sources
 - Python 3.14+ or the `zstd` command for compressed Codex and DeepSeek stores
 
 ## Run
