@@ -114,8 +114,13 @@ class BuiltArtifactsTests(unittest.TestCase):
             ),
         )
         for command, expected in checks:
+            # The launchers are Python scripts with a shebang: direct
+            # execution needs POSIX; Windows runs them via sys.executable.
+            argv = [str(command)]
+            if os.name == "nt":
+                argv = [sys.executable, str(command)]
             result = subprocess.run(
-                [str(command), "--version"], capture_output=True, text=True
+                [*argv, "--version"], capture_output=True, text=True
             )
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(result.stdout.strip(), expected)
