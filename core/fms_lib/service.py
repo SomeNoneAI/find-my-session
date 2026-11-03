@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple
 
 from .diagnostics import ScanReport, environment, issue_dicts, store_home
 from .errors import UserError
@@ -145,6 +145,33 @@ def search_sessions(
     return _limit(results, limit)
 
 
+def _fingerprint_paths(adapter: HarnessAdapter) -> List[Path]:
+    """Real, existing files behind the adapter's candidates.
+
+    Database-row adapters yield virtual ``<db>#<id>`` paths; the fingerprint
+    describes the underlying store files, deduplicated in candidate order.
+    """
+    paths: List[Path] = []
+    seen: Set[Path] = set()
+    try:
+        candidates = list(adapter.iter_session_paths())
+    except OSError:
+        return paths
+    for candidate in candidates:
+        target = candidate
+        if not target.is_file():
+            target = Path(str(target).split("#", 1)[0])
+        try:
+            real = target.expanduser().resolve()
+        except OSError:
+            continue
+        if not real.is_file() or real in seen:
+            continue
+        seen.add(real)
+        paths.append(real)
+    return paths
+
+
 def doctor(
     harness: Optional[Sequence[str]] = None, fingerprint: bool = False
 ) -> Dict[str, Any]:
@@ -169,11 +196,9 @@ def doctor(
             "issues": issue_dicts(report),
         }
         if fingerprint and present:
-            try:
-                paths = list(adapter.iter_session_paths())
-            except OSError:
-                paths = []
-            store["fingerprint"] = fingerprint_store(paths)
+            store["fingerprint"] = fingerprint_store(
+                _fingerprint_paths(adapter)
+            )
         stores.append(store)
     payload["stores"] = stores
     return payload

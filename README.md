@@ -24,7 +24,7 @@ Screenshots use synthetic fixture data.
 
 ## Supported harnesses
 
-Sixteen adapters are ready; two more are planned. Verified versions, surfaces, and caveats live in the [compatibility matrix](docs/compatibility.md); per-harness store details live in [references/](skills/find-my-session/references/).
+Seventeen adapters are ready; two more are planned. Verified versions, surfaces, and caveats live in the [compatibility matrix](docs/compatibility.md); per-harness store details live in [references/](skills/find-my-session/references/).
 
 | Harness | Ref prefix | Store |
 | --- | --- | --- |
@@ -44,6 +44,7 @@ Sixteen adapters are ready; two more are planned. Verified versions, surfaces, a
 | Antigravity CLI | `antigravity-cli` | `~/.gemini/antigravity-cli` |
 | MiniMax Code | `minimax-code` | `~/.minimax/v2` |
 | Cursor | `cursor` | `~/.cursor/projects` |
+| OpenCode | `opencode` | `~/.local/share/opencode` |
 | CodeBuddy | `codebuddy` (planned) | `~/.codebuddy` |
 | Cline (VS Code extension) | `cline-vscode` (planned) | VS Code globalStorage |
 

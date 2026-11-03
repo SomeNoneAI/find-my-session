@@ -6,6 +6,17 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- OpenCode (`opencode`) over `~/.local/share/opencode/opencode.db`: one
+  SQLite row store for the CLI, TUI, and IDE extension, with `session_v2`
+  preferred over the legacy `session` mirror during the upstream 2.x schema
+  migration, subagent child-session exclusion, `time_archived` archive
+  state, todo table capture, `patch`-part edited files, compaction
+  summaries, prompt extraction with synthetic and slash-command filtering,
+  per-session deep search over virtual `opencode.db#<id>` source paths,
+  synthetic runtime fixtures, and a per-harness reference.
+
 ## [0.1.1] - 2026-11-03
 
 ### Added

@@ -51,6 +51,7 @@ def synthetic_environment(root: Path) -> dict:
         "FMS_DEEPSEEK_HOME": str(empty),
         "FMS_MINIMAX_CODE_HOME": str(empty),
         "FMS_CURSOR_HOME": str(empty),
+        "FMS_OPENCODE_HOME": str(empty),
         "FMS_QODER_CN_APP_DB": str(missing_db),
         "FMS_QODER_APP_DB": str(missing_db),
         "FMS_ZCODE_APP_DB": str(missing_db),

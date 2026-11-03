@@ -18,6 +18,7 @@ from .harnesses.deepseek import DeepSeekAdapter
 from .harnesses.grok_build import GrokBuildAdapter
 from .harnesses.kimi_code import KimiCodeAdapter
 from .harnesses.minimax_code import MiniMaxCodeAdapter
+from .harnesses.opencode import OpenCodeAdapter
 from .harnesses.qoder import QoderAdapter
 from .harnesses.qoder_cn import QoderCNAdapter
 from .harnesses.workbuddy import WorkBuddyAdapter
@@ -50,6 +51,7 @@ READY: Tuple[HarnessAdapter, ...] = (
     AntigravityCLIAdapter(),
     MiniMaxCodeAdapter(),
     CursorAdapter(),
+    OpenCodeAdapter(),
 )
 
 PLANNED: Tuple[PlannedHarness, ...] = (
