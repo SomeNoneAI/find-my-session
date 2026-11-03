@@ -10,11 +10,12 @@ callers may show only under an explicit verbose flag.
 
 from __future__ import annotations
 
+import importlib
 import platform
 import shutil
 from dataclasses import dataclass, field
-from threading import Lock
 from pathlib import Path
+from threading import Lock
 from typing import Any, Dict, List, Optional, Tuple
 
 from . import __version__
@@ -169,7 +170,7 @@ def issue_dicts(report: ScanReport) -> List[Dict[str, Any]]:
 
 def _python_zstd() -> bool:
     try:  # Python 3.14+
-        from compression import zstd  # noqa: F401
+        importlib.import_module("compression.zstd")
 
         return True
     except ImportError:  # pragma: no cover - depends on interpreter

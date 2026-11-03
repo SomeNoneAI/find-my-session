@@ -2,12 +2,10 @@ from __future__ import annotations
 
 import json
 import re
-import unittest
 
 from cli_support import FixtureTestCase
 from deepseek_fixture import (
     COMPACT_SUMMARY as DEEPSEEK_COMPACT_SUMMARY,
-    HAS_ZSTD as DEEPSEEK_HAS_ZSTD,
     MODEL_ALT as DEEPSEEK_MODEL_ALT,
     NEEDLE_ARCHIVED as DEEPSEEK_ARCHIVED_NEEDLE,
     NEEDLE_DEEP_ONLY as DEEPSEEK_DEEP_ONLY_NEEDLE,

@@ -3,7 +3,7 @@ from __future__ import annotations
 import difflib
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence, Set, Tuple
 
 from .errors import UserError
 from .harnesses.antigravity import AntigravityAdapter
@@ -106,7 +106,7 @@ def lookup_harness(name: str) -> HarnessAdapter:
 def get_adapters(requested: Optional[Sequence[str]]) -> List[HarnessAdapter]:
     if not requested:
         return list(READY)
-    names = set()
+    names: Set[str] = set()
     for value in requested:
         for part in str(value).split(","):
             key = part.strip().casefold()

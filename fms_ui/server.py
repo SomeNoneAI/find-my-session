@@ -229,7 +229,10 @@ class LocalHTTPServer(ThreadingHTTPServer):
         # Skip the reverse-DNS lookup in the base class: on some CI hosts it
         # blocks for many seconds, delaying startup past client timeouts.
         socketserver.TCPServer.server_bind(self)
-        self.server_name = self.server_address[0]
+        host = self.server_address[0]
+        if isinstance(host, (bytes, bytearray)):
+            host = bytes(host).decode("ascii", "replace")
+        self.server_name = host
         self.server_port = self.server_address[1]
 
 

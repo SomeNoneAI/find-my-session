@@ -13,7 +13,7 @@ import json
 import os
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List
 
 SESSION_MAIN = "c1a0de01-1111-4a1b-8c1d-111111111111"
 SESSION_AUX = "c1a0de02-2222-4b2c-9d2e-222222222222"
