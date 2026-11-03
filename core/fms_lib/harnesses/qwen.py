@@ -73,7 +73,7 @@ def _parts(message: Any) -> List[Dict[str, Any]]:
     return [part for part in parts if isinstance(part, dict)] if isinstance(parts, list) else []
 
 
-def _message_text(message: Dict[str, Any]) -> str:
+def _message_text(message: Any) -> str:
     texts = []
     for part in _parts(message):
         text = part.get("text")
