@@ -58,7 +58,7 @@ MESSAGES_SUFFIX = ".messages.json"
 COMPACTION_SUFFIX = ".compaction.json"
 
 _ARRAY_START_RE = re.compile(rb'(?m)^[ \t]*"messages"[ \t]*:[ \t]*\[')
-_MESSAGE_START_RE = re.compile(rb"(?m)^ {2,8}(?=\{[ \t]*$)")
+_MESSAGE_START_RE = re.compile(rb"(?m)^ {2,8}(?=\{[ \t\r]*$)")
 _HEAD_UPDATED_RE = re.compile(r'"updated_at"\s*:\s*"([^"]+)"')
 _USER_INPUT_RE = re.compile(r"<user_input(?:\s[^>]*)?>(.*?)</user_input>", re.S)
 _USER_INPUT_OPEN_RE = re.compile(r"<user_input(?:\s[^>]*)?>")

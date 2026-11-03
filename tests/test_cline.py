@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
+import tempfile
 from pathlib import Path
 
 from cli_support import FixtureTestCase
@@ -449,6 +451,26 @@ class ClineTests(FixtureTestCase):
             "search", "--harness", "cline", "--include-archived", "--limit", "0"
         )
         self.assertEqual(snapshot(), before)
+
+    def test_crlf_transcript_parses_identically(self) -> None:
+        # A real Windows Cline install can store the pretty-printed
+        # transcript with CRLF line endings; prompts must survive.
+        with tempfile.TemporaryDirectory(prefix="fms-cline-crlf-") as raw:
+            home = Path(raw)
+            shutil.copytree(self.cline_home, home / "cline-home")
+            for messages in (home / "cline-home").rglob("*.messages.json"):
+                data = messages.read_bytes().replace(b"\n", b"\r\n")
+                messages.write_bytes(data)
+            code, out, err = self.run_cli(
+                "prompts", "cline:c1a0e", "--count", cline_home=home / "cline-home"
+            )
+            self.assertEqual(code, 0, err)
+            self.assertEqual(out.strip(), "2")
+            code, out, err = self.run_cli(
+                "show", "cline:c1a0e", cline_home=home / "cline-home"
+            )
+            self.assertEqual(code, 0, err)
+            self.assertIn(CLINE_PROMPTS_AUX[1], out)
 
     def test_fixture_data_is_synthetic(self) -> None:
         email = re.compile(r"[\w.+-]+@[\w-]+\.[\w.]+")
