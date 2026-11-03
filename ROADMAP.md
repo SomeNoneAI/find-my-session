@@ -8,6 +8,7 @@ Public direction for find-my-session. No dates are promised; order is roughly pr
 - **Releases.** Automated GitHub Releases publish both ZIPs (`find-my-session-skill.zip`, `find-my-session-ui.zip`), the Python distributions, and a `SHA256SUMS.txt`, with build provenance attestations.
 - **Diagnostics.** `fms doctor [--harness] [--json]` checks decoder availability, readable stores, and per-harness health; `--verbose` on `search`/`latest` reports skipped sessions, so a broken or drifted store is obvious before it wastes a handoff.
 - **JSON contract.** Keep `--json` additive before 1.0 and document every field in [docs/json-output.md](docs/json-output.md).
+- **Supply-chain checks.** CodeQL analyzes Python on every change; the OpenSSF Scorecard evaluation and adoption plan is documented in [docs/scorecard.md](docs/scorecard.md).
 
 ## Python support
 
