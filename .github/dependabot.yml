@@ -32,3 +32,9 @@ updates:
       frontend:
         patterns:
           - "*"
+    ignore:
+      # vue-tsc 3.x cannot run under TypeScript 7 (resolveTscPath crash);
+      # lift this when vue-tsc ships support.
+      - dependency-name: "typescript"
+        versions:
+          - ">=7"
