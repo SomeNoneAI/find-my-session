@@ -1,7 +1,6 @@
 * text=auto eol=lf
-*.jsonl text eol=lf
-*.png binary
-*.jpg binary
-*.jpeg binary
-*.gif binary
-*.zip binary
+
+# Synthetic fixtures must be byte-stable: adapters parse them with byte
+# offsets and windows, so line-ending conversion on Windows checkouts
+# would shift offsets and change parse results.
+tests/fixtures/** -text

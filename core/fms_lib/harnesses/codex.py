@@ -45,6 +45,7 @@ from ..util import (
 )
 from .base import HarnessAdapter
 from .common import choose_title as _choose_title
+from .common import file_path
 from .common import is_generic as _is_generic
 
 try:  # Python 3.14+
@@ -436,12 +437,9 @@ def _patch_paths(text: str) -> List[str]:
 
 
 def _file_path(value: str, cwd: str) -> str:
-    value = os.path.expanduser(value.strip())
-    if not value:
+    if not isinstance(value, str):
         return ""
-    if cwd and not os.path.isabs(value):
-        value = os.path.join(cwd, value)
-    return os.path.normpath(value)
+    return file_path({"path": value.strip()}, cwd, ("path",))
 
 
 def _tool_arguments(payload: Dict[str, Any]) -> Any:

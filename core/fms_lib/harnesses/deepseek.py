@@ -47,6 +47,7 @@ from ..util import (
 )
 from .base import HarnessAdapter
 from .common import choose_title as _choose_title
+from .common import file_path
 
 try:  # Python 3.14+
     from compression import zstd as _zstd  # type: ignore[import-not-found]
@@ -338,12 +339,9 @@ def _best_transcript(session_dir: Path) -> Optional[Path]:
 
 
 def _file_path(value: Any, cwd: str) -> str:
-    if not isinstance(value, str) or not value.strip():
+    if not isinstance(value, str):
         return ""
-    text = os.path.expanduser(value.strip())
-    if cwd and not os.path.isabs(text):
-        text = os.path.join(cwd, text)
-    return os.path.normpath(text)
+    return file_path({"path": value.strip()}, cwd, ("path",))
 
 
 def _tool_detail(name: str, arguments: Dict[str, Any]) -> str:

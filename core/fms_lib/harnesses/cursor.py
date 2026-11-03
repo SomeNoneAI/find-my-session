@@ -34,6 +34,7 @@ from ..util import (
     parse_timestamp,
 )
 from .base import HarnessAdapter
+from .common import file_path
 
 MAX_PROMPT_CHARS = 4_000
 MAX_SUMMARY_CHARS = 20_000
@@ -309,20 +310,7 @@ def _tool_detail(name: str, arguments: Any) -> str:
 
 
 def _file_path(arguments: Any, cwd: str) -> str:
-    if not isinstance(arguments, dict):
-        return ""
-    value = ""
-    for key in FILE_KEYS:
-        candidate = arguments.get(key)
-        if isinstance(candidate, str) and candidate.strip():
-            value = candidate.strip()
-            break
-    if not value:
-        return ""
-    value = os.path.expanduser(value)
-    if cwd and not os.path.isabs(value):
-        value = os.path.join(cwd, value)
-    return os.path.normpath(value)
+    return file_path(arguments, cwd, FILE_KEYS)
 
 
 def _is_edit_tool(name: str) -> bool:

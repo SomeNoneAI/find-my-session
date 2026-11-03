@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import sqlite3
 from pathlib import Path
@@ -371,7 +372,9 @@ class MiniMaxCodeTests(FixtureTestCase):
             {"read": 1, "edit": 2, "write": 1, "bash": 2},
         )
         self.assertTrue(data["path"].endswith("messages.jsonl"))
-        self.assertIn("/sessions/2026/10/27/", data["path"])
+        self.assertIn(
+            os.path.join("sessions", "2026", "10", "27") + os.sep, data["path"]
+        )
 
     def test_show_by_transcript_path(self) -> None:
         data = self.show_json("minimax-code:c0de4001", "--messages", "0")
