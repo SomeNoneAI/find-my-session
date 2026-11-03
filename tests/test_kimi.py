@@ -278,6 +278,38 @@ class KimiCodeTests(FixtureTestCase):
         self.assertEqual(code, 0, err)
         self.assertIn("# kimi-code:e5f6a7b8", out)
 
+    def test_show_uses_event_log_when_wire_is_missing(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="fms-kimi-events-") as raw:
+            home = _copy_fixture_home(
+                FIXTURE_KIMI_HOME, Path(raw) / "kimi-home"
+            )
+            wire = next(
+                home.glob(
+                    "sessions/*/session_%s/agents/main/wire.jsonl" % SESSION_E
+                )
+            )
+            wire.unlink()
+
+            code, out, err = self.run_cli(
+                "show", "kimi-code:e5f6a7b8", kimi_home=home
+            )
+            self.assertEqual(code, 0, err)
+            self.assertIn("## Task\nRefactor handoff parser for the CLI", out)
+            self.assertIn(
+                "## Compact summary (latest compaction)\nHandoff parser event summary.",
+                out,
+            )
+            self.assertIn(
+                "`/Users/example/project-alpha/src/handoff.ts`", out
+            )
+            self.assertIn("- turns: 6", out)
+
+            code, out, err = self.run_cli(
+                "prompts", "kimi-code:e5f6a7b8", "--count", kimi_home=home
+            )
+            self.assertEqual(code, 0, err)
+            self.assertEqual(out.strip(), "5")
+
     def test_show_wire_fallback_session(self) -> None:
         code, out, err = self.run_cli("show", "kimi-code:a7b8c9d0")
         self.assertEqual(code, 0, err)
