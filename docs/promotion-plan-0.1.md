@@ -119,6 +119,30 @@ Verify each repo is active before opening the PR.
 | [e2b-dev/awesome-ai-agents](https://github.com/e2b-dev/awesome-ai-agents) | Broad | Agents/tools section, one line |
 | GitHub topics | Self-serve | Add `agent-skills`, `claude-code`, `codex`, `cursor`, `ai-cli` topics on the repo itself |
 
+## Ready-to-paste list entries
+
+Adjust heading levels to each list's format; keep descriptions factual and
+under each list's line-length conventions.
+
+**awesome-claude-code (Tools section):**
+
+> - [find-my-session](https://github.com/SomeNoneAI/find-my-session) — Read-only CLI that searches Claude Code's local sessions (plus 18 other coding agents) and prints a low-token handoff digest — task, todos, recent tools, and every human prompt — so you can resume work in another harness after hitting a quota. Ships as an agent skill; `pipx install find-my-session`.
+
+**awesome-claude-skills (Skills section):**
+
+> - [find-my-session](https://github.com/SomeNoneAI/find-my-session) — Agent skill: find and hand off past coding-agent sessions across 19 harnesses (Claude Code, Codex, Cursor, OpenCode, ...). Read-only, stdlib-only Python, local browser panel included. Install: download `find-my-session-skill.zip` from the latest release or `pipx install find-my-session`.
+
+**awesome-codex-cli (Tools section):**
+
+> - [find-my-session](https://github.com/SomeNoneAI/find-my-session) — Cross-harness session finder that reads Codex's local rollout store (desktop/IDE/CLI, including resumed rollout chains and `.jsonl.zst` segments) alongside 18 other agents, and prints a bounded handoff digest for continuing work elsewhere. Read-only; `pipx install find-my-session`.
+
+**awesome-ai-agents (Developer tools):**
+
+> - [find-my-session](https://github.com/SomeNoneAI/find-my-session) — Local, read-only session finder and handoff tool for coding agents: search 19 harnesses' local stores by keyword/cwd/time and print a low-token digest instead of the whole transcript. Agent skill + local web panel; stdlib-only Python.
+
+Before opening each PR, check the list's CONTRIBUTING for section names and
+alphabetical placement, and re-verify the harness count in the wording.
+
 ## Order and follow-up
 
 1. Land #10 (PyPI), verify the gate above.
