@@ -91,9 +91,12 @@ Updated after 0.1.1: the PyPI release landed via Trusted Publishing
 branch protection was confirmed active on `main` with required status
 checks.
 
-Updated after the first published scan (2026-11-04, score 5.2): release
-workflow permissions are now job-scoped and the frontend manifest pins the
-exact locked versions (Token-Permissions and Pinned-Dependencies fixed).
+Updated after the first published scan (2026-11-04, score 5.2 → 6.0 after
+fixes): release workflow permissions are now job-scoped (Token-Permissions
+10/10) and the frontend manifest pins the exact locked versions;
+Pinned-Dependencies stays partial because the check prefers commit-hash
+pins for npm beyond the lockfile's integrity hashes, which is not standard
+practice for an application manifest.
 Remaining low scores are structural or need maintainer action:
 `Maintained` and `Contributors` reflect the project's age; `Code-Review`
 wants enforced reviews (traded off for a solo maintainer, see the
