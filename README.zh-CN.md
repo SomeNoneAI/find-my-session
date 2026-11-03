@@ -14,6 +14,8 @@
 
 ![在终端中运行 fms search 与 fms show](docs/assets/demo.svg)
 
+![对单个会话的用户输入计数并分页](docs/assets/prompts-paging.svg)
+
 ![find-my-session 浏览器面板，读取合成会话存储](docs/assets/ui.png)
 
 截图使用合成 fixture 数据。
@@ -100,7 +102,7 @@ fms prompts kimi-code:e5f6a7b8 --count          # 先统计用户输入，再用
 | `fms latest` | 返回最近一个匹配会话。 |
 | `fms show <ref>` | 输出单个会话的接力摘要。 |
 | `fms prompts <ref>` | 列出单个会话的全部用户输入，支持计数、分页与排序。 |
-| `fms doctor [--harness] [--json]` | 检查本地环境与存储（解码器可用性、目录可读性、各 harness 健康状况）。 |
+| `fms doctor [--harness] [--json] [--fingerprint]` | 检查本地环境与存储（解码器可用性、目录可读性、各 harness 健康状况）；`--fingerprint` 额外输出不含内容的存储形态摘要，便于上报格式漂移。 |
 
 ## 常用选项
 

@@ -14,6 +14,8 @@ When a harness runs out of quota, you usually remember *what* you were doing but
 
 ![fms search and fms show in a terminal](docs/assets/demo.svg)
 
+![Counting and paging the human prompts of one session](docs/assets/prompts-paging.svg)
+
 ![The find-my-session browser panel reading a synthetic session store](docs/assets/ui.png)
 
 Screenshots use synthetic fixture data.
@@ -100,7 +102,7 @@ Search prefers an explicit `--harness`; omit the query to list recent sessions. 
 | `fms latest` | Return the most recent matching session. |
 | `fms show <ref>` | Print a handoff digest for one session. |
 | `fms prompts <ref>` | List every human prompt in one session; count, page, and order them. |
-| `fms doctor [--harness] [--json]` | Check the local environment and stores (decoder availability, readable roots, per-harness health). |
+| `fms doctor [--harness] [--json] [--fingerprint]` | Check the local environment and stores (decoder availability, readable roots, per-harness health); `--fingerprint` adds a content-free shape summary for drift reports. |
 
 ## Useful options
 
