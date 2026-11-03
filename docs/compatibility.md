@@ -50,6 +50,10 @@ Synthetic fixtures prove the parser logic, not ongoing compatibility: a harness 
 | --- | --- | --- | --- | --- |
 | CodeBuddy (`codebuddy`) | Planned | `~/.codebuddy` | Domestic CodeBuddy desktop/IDE is a different product with its own store; reserved, not researched or implemented | — |
 | Cline VS Code extension (`cline-vscode`) | Planned | VS Code `globalStorage/saoudrizwan.claude-dev` | Different transcript format from the Cline desktop/CLI store; not implemented | [cline.md](../skills/find-my-session/references/cline.md) |
+| Trae / Trae CN (`trae`, `trae-cn`) | Research | VS Code-fork app data + `~/.trae`, `~/.trae-cn` | Chat bodies not found locally (state.vscdb carries UI state only); [issue #27](https://github.com/SomeNoneAI/find-my-session/issues/27) | — |
+| Windsurf / Codeium | Research | `~/.windsurf`, `~/.codeium/windsurf` | IDE not installed on the research machine; store unknown; [issue #28](https://github.com/SomeNoneAI/find-my-session/issues/28) | — |
+| Continue | Research | `~/.continue` | Skills only at home level; sessions believed editor-side; [issue #29](https://github.com/SomeNoneAI/find-my-session/issues/29) | — |
+| Augment Code | Research | `~/.augment` | Rules/skills only at home level; store unknown; [issue #30](https://github.com/SomeNoneAI/find-my-session/issues/30) | — |
 
 ## Interpreting this matrix
 
