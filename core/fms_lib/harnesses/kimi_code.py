@@ -19,6 +19,16 @@ from ..util import (
     parse_timestamp,
 )
 from .base import HarnessAdapter
+from .common import (
+    choose_title as _choose_title,
+)
+from .common import (
+    file_path,
+    tool_detail_for,
+)
+from .common import (
+    is_generic as _is_generic,
+)
 
 HEAD_BYTES = 1_000_000
 HEAD_RECORDS = 300
@@ -34,23 +44,6 @@ PROMPT_SKIP_PREFIXES = (
     "<user-prompt-submit-hook>",
     "<local-command",
 )
-
-GENERIC_PROMPTS = {
-    "continue",
-    "go on",
-    "keep going",
-    "next",
-    "ok",
-    "yes",
-    "继续",
-    "接着",
-    "继续吧",
-    "好的",
-    "好",
-    "下一步",
-    "?",
-    "？",
-}
 
 EDIT_TOOLS = {
     "Edit",
@@ -105,22 +98,6 @@ def _meaningful_prompt(value: str) -> bool:
     return True
 
 
-def _is_generic(value: str) -> bool:
-    compact = re.sub(r"\s+", " ", value).strip().casefold()
-    if not compact or len(compact) <= 1:
-        return True
-    if re.fullmatch(r"[\d\W_]+", compact):
-        return True
-    return compact in GENERIC_PROMPTS
-
-
-def _choose_title(first_prompt: str, last_prompt: str) -> str:
-    for candidate in (last_prompt, first_prompt):
-        if candidate and not _is_generic(candidate):
-            return one_line(candidate, 100)
-    return one_line(last_prompt or first_prompt, 100)
-
-
 def _session_id_from_name(name: str) -> str:
     return name[len("session_") :] if name.startswith("session_") else name
 
@@ -142,45 +119,26 @@ def _parse_tool_args(raw: Any) -> Dict[str, Any]:
 
 
 def _tool_detail(name: str, args: Any) -> str:
-    if not isinstance(args, dict):
-        return ""
-    keys_by_name = {
-        "Bash": ("command",),
-        "Read": ("path",),
-        "Write": ("path",),
-        "Edit": ("path",),
-        "Grep": ("pattern", "path"),
-        "Glob": ("pattern", "path"),
-        "Skill": ("skill",),
-        "NotifyUser": ("title", "message"),
-        "TaskOutput": ("task_id",),
-        "ReadMediaFile": ("path",),
-    }
-    for key in keys_by_name.get(name, ()):
-        value = args.get(key)
-        if isinstance(value, str) and value.strip():
-            return one_line(value, 160)
-    for value in args.values():
-        if isinstance(value, str) and value.strip():
-            return one_line(value, 160)
-    return ""
+    return tool_detail_for(
+        name,
+        args,
+        {
+            "Bash": ("command",),
+            "Read": ("path",),
+            "Write": ("path",),
+            "Edit": ("path",),
+            "Grep": ("pattern", "path"),
+            "Glob": ("pattern", "path"),
+            "Skill": ("skill",),
+            "NotifyUser": ("title", "message"),
+            "TaskOutput": ("task_id",),
+            "ReadMediaFile": ("path",),
+        },
+    )
 
 
 def _file_path(args: Any, cwd: str) -> str:
-    if not isinstance(args, dict):
-        return ""
-    value = ""
-    for key in FILE_KEYS:
-        candidate = args.get(key)
-        if isinstance(candidate, str) and candidate.strip():
-            value = candidate.strip()
-            break
-    if not value:
-        return ""
-    value = os.path.expanduser(value)
-    if cwd and not os.path.isabs(value):
-        value = os.path.join(cwd, value)
-    return os.path.normpath(value)
+    return file_path(args, cwd, FILE_KEYS)
 
 
 def _is_composer_prompt(payload: Dict[str, Any]) -> bool:
@@ -739,13 +697,13 @@ class KimiCodeAdapter(HarnessAdapter):
                             continue
                         if block.get("type") != "text":
                             continue
-                        text = block.get("text")
-                        if not isinstance(text, str) or not text.strip():
+                        text_value = block.get("text")
+                        if not isinstance(text_value, str) or not text_value.strip():
                             continue
                         if current is None:
                             current = Exchange(timestamp=timestamp)
                         current.assistant_texts.append(
-                            block_text(text, MAX_ASSISTANT_CHARS)
+                            block_text(text_value, MAX_ASSISTANT_CHARS)
                         )
                         if len(current.assistant_texts) > 3:
                             current.assistant_texts = current.assistant_texts[-3:]

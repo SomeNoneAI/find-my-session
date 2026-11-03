@@ -28,6 +28,8 @@ from ..util import (
     parse_timestamp,
 )
 from .base import HarnessAdapter
+from .common import file_path, tool_detail
+from .common import is_generic as _is_generic
 
 MAX_PROMPT_CHARS = 4_000
 MAX_SUMMARY_CHARS = 20_000
@@ -50,23 +52,6 @@ PROMPT_SKIP_PREFIXES = (
     "<user-prompt-submit-hook>",
     "<local-command",
 )
-
-GENERIC_PROMPTS = {
-    "continue",
-    "go on",
-    "keep going",
-    "next",
-    "ok",
-    "yes",
-    "继续",
-    "接着",
-    "继续吧",
-    "好的",
-    "好",
-    "下一步",
-    "?",
-    "？",
-}
 
 EDIT_TOOLS = {
     "edit",
@@ -112,15 +97,6 @@ def _meaningful_prompt(value: str) -> bool:
     if re.fullmatch(r"/\S+", text):
         return False
     return True
-
-
-def _is_generic(value: str) -> bool:
-    compact = re.sub(r"\s+", " ", value).strip().casefold()
-    if not compact or len(compact) <= 1:
-        return True
-    if re.fullmatch(r"[\d\W_]+", compact):
-        return True
-    return compact in GENERIC_PROMPTS
 
 
 def _part_text(part: Any) -> str:
@@ -218,29 +194,11 @@ def _arguments(record: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _tool_detail(arguments: Dict[str, Any]) -> str:
-    for key in TEXT_KEYS:
-        value = arguments.get(key)
-        if isinstance(value, str) and value.strip():
-            return one_line(value, 160)
-    for value in arguments.values():
-        if isinstance(value, str) and value.strip():
-            return one_line(value, 160)
-    return ""
+    return tool_detail(arguments, TEXT_KEYS)
 
 
 def _file_path(arguments: Dict[str, Any], cwd: str) -> str:
-    value = ""
-    for key in FILE_KEYS:
-        candidate = arguments.get(key)
-        if isinstance(candidate, str) and candidate.strip():
-            value = candidate.strip()
-            break
-    if not value:
-        return ""
-    value = os.path.expanduser(value)
-    if cwd and not os.path.isabs(value):
-        value = os.path.join(cwd, value)
-    return os.path.normpath(value)
+    return file_path(arguments, cwd, FILE_KEYS)
 
 
 def _record_timestamp(record: Dict[str, Any]) -> Optional[datetime]:

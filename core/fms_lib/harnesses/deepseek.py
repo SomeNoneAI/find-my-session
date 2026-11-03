@@ -23,7 +23,18 @@ from collections import Counter, OrderedDict, deque
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Deque, Dict, Iterator, List, Optional, Sequence, Set, Tuple
+from typing import (
+    Any,
+    Deque,
+    Dict,
+    Iterator,
+    List,
+    Literal,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+)
 
 from ..models import Exchange, SessionDetail, SessionSummary, ToolCall, UserPrompt
 from ..util import (
@@ -35,6 +46,7 @@ from ..util import (
     parse_timestamp,
 )
 from .base import HarnessAdapter
+from .common import choose_title as _choose_title
 
 try:  # Python 3.14+
     from compression import zstd as _zstd  # type: ignore[import-not-found]
@@ -46,23 +58,6 @@ TRANSCRIPT_RE = re.compile(r"^session(?:\.v(\d+))?\.jsonl\.zstd$")
 MAX_PROMPT_CHARS = 4_000
 MAX_SUMMARY_CHARS = 20_000
 MAX_ASSISTANT_CHARS = 5_000
-
-GENERIC_PROMPTS = {
-    "continue",
-    "go on",
-    "keep going",
-    "next",
-    "ok",
-    "yes",
-    "继续",
-    "接着",
-    "继续吧",
-    "好的",
-    "好",
-    "下一步",
-    "?",
-    "？",
-}
 
 EDIT_TOOLS = {"edit", "write"}
 
@@ -93,7 +88,7 @@ class _ProcessStream:
     def __enter__(self):
         return self._process.stdout
 
-    def __exit__(self, exc_type, exc, tb) -> bool:
+    def __exit__(self, exc_type, exc, tb) -> "Literal[False]":
         stream = self._process.stdout
         if stream is not None:
             try:
@@ -190,22 +185,6 @@ def _human_prompt(record: Dict[str, Any]) -> str:
 
 def _record_time(record: Dict[str, Any]) -> Optional[datetime]:
     return parse_timestamp(record.get("time"))
-
-
-def _is_generic(value: str) -> bool:
-    compact = re.sub(r"\s+", " ", value).strip().casefold()
-    if not compact or len(compact) <= 1:
-        return True
-    if re.fullmatch(r"[\d\W_]+", compact):
-        return True
-    return compact in GENERIC_PROMPTS
-
-
-def _choose_title(first_prompt: str, last_prompt: str) -> str:
-    for candidate in (last_prompt, first_prompt):
-        if candidate and not _is_generic(candidate):
-            return one_line(candidate, 100)
-    return one_line(last_prompt or first_prompt, 100)
 
 
 def _bare_session_id(value: Any) -> str:

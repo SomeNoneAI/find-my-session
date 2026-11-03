@@ -22,7 +22,17 @@ import subprocess
 from collections import Counter, OrderedDict, deque
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Deque, Dict, Iterator, List, Optional, Sequence, Tuple
+from typing import (
+    Any,
+    Deque,
+    Dict,
+    Iterator,
+    List,
+    Literal,
+    Optional,
+    Sequence,
+    Tuple,
+)
 
 from ..models import Exchange, SessionDetail, SessionSummary, ToolCall, UserPrompt
 from ..util import (
@@ -34,6 +44,8 @@ from ..util import (
     parse_timestamp,
 )
 from .base import HarnessAdapter
+from .common import choose_title as _choose_title
+from .common import is_generic as _is_generic
 
 try:  # Python 3.14+
     from compression import zstd as _zstd  # type: ignore[import-not-found]
@@ -86,23 +98,6 @@ INJECTED_PREFIXES = (
     "the following is the codex agent history",
 )
 
-GENERIC_PROMPTS = {
-    "continue",
-    "go on",
-    "keep going",
-    "next",
-    "ok",
-    "yes",
-    "继续",
-    "接着",
-    "继续吧",
-    "好的",
-    "好",
-    "下一步",
-    "?",
-    "？",
-}
-
 EDIT_TOOLS = {"apply_patch"}
 
 
@@ -127,7 +122,7 @@ class _ProcessStream:
     def __enter__(self):
         return self._process.stdout
 
-    def __exit__(self, exc_type, exc, tb) -> bool:
+    def __exit__(self, exc_type, exc, tb) -> "Literal[False]":
         stream = self._process.stdout
         if stream is not None:
             try:
@@ -394,22 +389,6 @@ def _model_from_lines(lines: Sequence[bytes]) -> str:
 def _content_kind(payload: Dict[str, Any]) -> str:
     kind = payload.get("type")
     return kind if isinstance(kind, str) else ""
-
-
-def _is_generic(value: str) -> bool:
-    compact = re.sub(r"\s+", " ", value).strip().casefold()
-    if not compact or len(compact) <= 1:
-        return True
-    if re.fullmatch(r"[\d\W_]+", compact):
-        return True
-    return compact in GENERIC_PROMPTS
-
-
-def _choose_title(first_prompt: str, last_prompt: str) -> str:
-    for candidate in (last_prompt, first_prompt):
-        if candidate and not _is_generic(candidate):
-            return one_line(candidate, 100)
-    return one_line(last_prompt or first_prompt, 100)
 
 
 def _record_position(record: Dict[str, Any], fallback: int) -> int:
@@ -765,7 +744,8 @@ class CodexAdapter(HarnessAdapter):
         if not title:
             title = _choose_title(first_prompt, last_prompt) or session_id
 
-        cwd = meta.get("cwd") if isinstance(meta.get("cwd"), str) else ""
+        raw_cwd = meta.get("cwd")
+        cwd = raw_cwd if isinstance(raw_cwd, str) else ""
         model = _model_from_lines(recent_lines) or self._model_from(head_records)
 
         oldest_meta = meta if oldest == path else self._session_meta(oldest)

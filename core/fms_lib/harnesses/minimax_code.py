@@ -31,6 +31,8 @@ from ..util import (
     parse_timestamp,
 )
 from .base import HarnessAdapter
+from .common import file_path, tool_detail
+from .common import is_generic as _is_generic
 
 MAX_PROMPT_CHARS = 4_000
 MAX_SUMMARY_CHARS = 20_000
@@ -59,23 +61,6 @@ SYNTHETIC_MARKERS = (
     "the todowrite tool hasn't been used recently",
     "this session is being continued from a previous conversation",
 )
-
-GENERIC_PROMPTS = {
-    "continue",
-    "go on",
-    "keep going",
-    "next",
-    "ok",
-    "yes",
-    "继续",
-    "接着",
-    "继续吧",
-    "好的",
-    "好",
-    "下一步",
-    "?",
-    "？",
-}
 
 HUMAN_SOURCES = {"api", "code_review"}
 
@@ -127,15 +112,6 @@ def _meaningful_prompt(value: str) -> bool:
     if any(marker in lowered for marker in SYNTHETIC_MARKERS):
         return False
     return True
-
-
-def _is_generic(value: str) -> bool:
-    compact = re.sub(r"\s+", " ", value).strip().casefold()
-    if not compact or len(compact) <= 1:
-        return True
-    if re.fullmatch(r"[\d\W_]+", compact):
-        return True
-    return compact in GENERIC_PROMPTS
 
 
 def _display_id(raw_id: str) -> str:
@@ -261,29 +237,11 @@ def _tool_arguments(call: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _tool_detail(arguments: Dict[str, Any]) -> str:
-    for key in TEXT_KEYS:
-        value = arguments.get(key)
-        if isinstance(value, str) and value.strip():
-            return one_line(value, 160)
-    for value in arguments.values():
-        if isinstance(value, str) and value.strip():
-            return one_line(value, 160)
-    return ""
+    return tool_detail(arguments, TEXT_KEYS)
 
 
 def _file_path(arguments: Dict[str, Any], cwd: str) -> str:
-    value = ""
-    for key in FILE_KEYS:
-        candidate = arguments.get(key)
-        if isinstance(candidate, str) and candidate.strip():
-            value = candidate.strip()
-            break
-    if not value:
-        return ""
-    value = os.path.expanduser(value)
-    if cwd and not os.path.isabs(value):
-        value = os.path.join(cwd, value)
-    return os.path.normpath(value)
+    return file_path(arguments, cwd, FILE_KEYS)
 
 
 def _normalize_todos(value: Any) -> Optional[List[Dict[str, Any]]]:
@@ -425,7 +383,7 @@ class MiniMaxCodeAdapter(HarnessAdapter):
                     columns = _table_columns(
                         connection, "local_runtime_sessions"
                     )
-                    if "session_id" in columns:
+                    if "session_id" in columns and "history_relative_dir" in columns:
                         clauses: List[str] = []
                         if "parent_session_id" in columns:
                             clauses.append("parent_session_id IS NULL")
@@ -437,19 +395,16 @@ class MiniMaxCodeAdapter(HarnessAdapter):
                             clauses.append(
                                 "COALESCE(visibility, 'visible') != 'hidden'"
                             )
-                        selected = ["session_id"]
-                        if "history_relative_dir" in columns:
-                            selected.append("history_relative_dir")
-                        query = "SELECT %s FROM local_runtime_sessions" % (
-                            ", ".join(selected)
+                        query = (
+                            "SELECT history_relative_dir "
+                            "FROM local_runtime_sessions"
                         )
                         if clauses:
                             query += " WHERE " + " AND ".join(clauses)
                         if "updated_at_ms" in columns:
                             query += " ORDER BY updated_at_ms DESC"
                         for row in connection.execute(query):
-                            raw_id = str(row[0])
-                            relative = row[1] if len(row) > 1 else ""
+                            relative = row[0]
                             path = self._path_for(root, relative)
                             if path is None or not path.is_file():
                                 continue
@@ -940,7 +895,7 @@ class MiniMaxCodeAdapter(HarnessAdapter):
         first_prompt = summary.first_prompt
         last_prompt = summary.last_prompt
         started = summary.started
-        updated = summary.updated
+        updated: Optional[datetime] = summary.updated
         turn_count = 0
         error_text = self._session_error(connection, raw_id)
 
@@ -989,11 +944,11 @@ class MiniMaxCodeAdapter(HarnessAdapter):
                 msg_type = message.get("msg_type")
                 if msg_type is not None and msg_type not in (1, 2):
                     continue
-                text = message.get("msg_content")
-                if isinstance(text, str) and text.strip():
+                assistant_text = message.get("msg_content")
+                if isinstance(assistant_text, str) and assistant_text.strip():
                     if current is None:
                         current = Exchange(timestamp=timestamp)
-                    self._append_text(current, text)
+                    self._append_text(current, assistant_text)
                 raw_calls = message.get("tool_calls")
                 if isinstance(raw_calls, list):
                     for call in raw_calls:
@@ -1067,7 +1022,7 @@ class MiniMaxCodeAdapter(HarnessAdapter):
         first_prompt = summary.first_prompt
         last_prompt = summary.last_prompt
         started = summary.started
-        updated = summary.updated
+        updated: Optional[datetime] = summary.updated
         turn_count = 0
 
         def append_current() -> None:
@@ -1134,10 +1089,9 @@ class MiniMaxCodeAdapter(HarnessAdapter):
                 if kind != "toolCall":
                     continue
                 name = str(block.get("name") or "tool")
-                arguments = (
-                    block.get("arguments")
-                    if isinstance(block.get("arguments"), dict)
-                    else {}
+                raw_arguments = block.get("arguments")
+                arguments: Dict[str, Any] = (
+                    raw_arguments if isinstance(raw_arguments, dict) else {}
                 )
                 tool = ToolCall(
                     name=name,

@@ -21,6 +21,12 @@ from ..util import (
     parse_timestamp,
 )
 from .base import HarnessAdapter
+from .common import (
+    choose_title as _choose_title,
+)
+from .common import (
+    file_path,
+)
 
 HEAD_BYTES = 2_000_000
 HEAD_RECORDS = 200
@@ -40,23 +46,6 @@ CONTINUATION_PREFIXES = (
     "this session is being continued from a previous conversation",
     "the conversation is being continued",
 )
-
-GENERIC_PROMPTS = {
-    "continue",
-    "go on",
-    "keep going",
-    "next",
-    "ok",
-    "yes",
-    "继续",
-    "接着",
-    "继续吧",
-    "好的",
-    "好",
-    "下一步",
-    "?",
-    "？",
-}
 
 EDIT_TOOLS = {
     "Edit",
@@ -154,22 +143,6 @@ def _meaningful_prompt(value: str) -> bool:
     return True
 
 
-def _is_generic(value: str) -> bool:
-    compact = re.sub(r"\s+", " ", value).strip().casefold()
-    if not compact or len(compact) <= 1:
-        return True
-    if re.fullmatch(r"[\d\W_]+", compact):
-        return True
-    return compact in GENERIC_PROMPTS
-
-
-def _choose_title(first_prompt: str, last_prompt: str) -> str:
-    for candidate in (last_prompt, first_prompt):
-        if candidate and not _is_generic(candidate):
-            return one_line(candidate, 100)
-    return one_line(last_prompt or first_prompt, 100)
-
-
 def _is_tool_result(record: Dict[str, Any]) -> bool:
     if "toolUseResult" in record:
         return True
@@ -209,20 +182,7 @@ def _tool_detail(name: str, tool_input: Any) -> str:
 
 
 def _file_path(tool_input: Any, cwd: str) -> str:
-    if not isinstance(tool_input, dict):
-        return ""
-    value = ""
-    for key in FILE_KEYS:
-        candidate = tool_input.get(key)
-        if isinstance(candidate, str) and candidate.strip():
-            value = candidate.strip()
-            break
-    if not value:
-        return ""
-    value = os.path.expanduser(value)
-    if cwd and not os.path.isabs(value):
-        value = os.path.join(cwd, value)
-    return os.path.normpath(value)
+    return file_path(tool_input, cwd, FILE_KEYS)
 
 
 class QoderFamilyAdapter(HarnessAdapter):
@@ -512,12 +472,12 @@ class QoderFamilyAdapter(HarnessAdapter):
                     continue
                 block_type = block.get("type")
                 if block_type == "text":
-                    text = block.get("text")
-                    if not isinstance(text, str) or not text.strip():
+                    text_value = block.get("text")
+                    if not isinstance(text_value, str) or not text_value.strip():
                         continue
                     if current is None:
                         current = Exchange(timestamp=timestamp)
-                    current.assistant_texts.append(block_text(text, 5_000))
+                    current.assistant_texts.append(block_text(text_value, 5_000))
                     if len(current.assistant_texts) > 3:
                         current.assistant_texts = current.assistant_texts[-3:]
                 elif block_type == "tool_use":

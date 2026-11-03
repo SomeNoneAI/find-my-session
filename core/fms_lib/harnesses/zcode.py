@@ -18,6 +18,8 @@ from ..util import (
     parse_timestamp,
 )
 from .base import HarnessAdapter
+from .common import file_path, tool_detail
+from .common import is_generic as _is_generic
 
 MAX_PROMPT_CHARS = 4_000
 MAX_SUMMARY_CHARS = 20_000
@@ -37,23 +39,6 @@ SYNTHETIC_MARKERS = (
     "the todowrite tool hasn't been used recently",
     "this session is being continued from a previous conversation",
 )
-
-GENERIC_PROMPTS = {
-    "continue",
-    "go on",
-    "keep going",
-    "next",
-    "ok",
-    "yes",
-    "继续",
-    "接着",
-    "继续吧",
-    "好的",
-    "好",
-    "下一步",
-    "?",
-    "？",
-}
 
 EDIT_TOOLS = {
     "Edit",
@@ -102,15 +87,6 @@ def _meaningful_prompt(value: str) -> bool:
     if text.startswith("[Image #") and len(text) < 12:
         return False
     return True
-
-
-def _is_generic(value: str) -> bool:
-    compact = re.sub(r"\s+", " ", value).strip().casefold()
-    if not compact or len(compact) <= 1:
-        return True
-    if re.fullmatch(r"[\d\W_]+", compact):
-        return True
-    return compact in GENERIC_PROMPTS
 
 
 def _display_id(raw_id: str) -> str:
@@ -184,33 +160,11 @@ def _error_text(message: Dict[str, Any]) -> str:
 
 
 def _tool_detail(name: str, tool_input: Any) -> str:
-    if not isinstance(tool_input, dict):
-        return ""
-    for key in TEXT_KEYS:
-        value = tool_input.get(key)
-        if isinstance(value, str) and value.strip():
-            return one_line(value, 160)
-    for value in tool_input.values():
-        if isinstance(value, str) and value.strip():
-            return one_line(value, 160)
-    return ""
+    return tool_detail(tool_input, TEXT_KEYS)
 
 
 def _file_path(tool_input: Any, cwd: str) -> str:
-    if not isinstance(tool_input, dict):
-        return ""
-    value = ""
-    for key in FILE_KEYS:
-        candidate = tool_input.get(key)
-        if isinstance(candidate, str) and candidate.strip():
-            value = candidate.strip()
-            break
-    if not value:
-        return ""
-    value = os.path.expanduser(value)
-    if cwd and not os.path.isabs(value):
-        value = os.path.join(cwd, value)
-    return os.path.normpath(value)
+    return file_path(tool_input, cwd, FILE_KEYS)
 
 
 def _context_info(message: Dict[str, Any]) -> Tuple[str, str]:

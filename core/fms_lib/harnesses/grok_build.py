@@ -20,6 +20,16 @@ from ..util import (
     parse_timestamp,
 )
 from .base import HarnessAdapter
+from .common import (
+    choose_title as _choose_title,
+)
+from .common import (
+    file_path,
+    tool_detail_for,
+)
+from .common import (
+    is_generic as _is_generic,
+)
 
 HEAD_BYTES = 2_000_000
 HEAD_RECORDS = 400
@@ -44,23 +54,6 @@ _SLASH_COMMAND_RE = re.compile(r"/[A-Za-z0-9_:.-]+")
 _INTERRUPT_RE = re.compile(r"\[Request interrupted by user[^\]]*\]")
 _ABSOLUTE_RE = re.compile(r"^(?:/|[A-Za-z]:[\\/])")
 _CONTINUATION_PREFIX = "This session is being continued from a previous conversation"
-
-GENERIC_PROMPTS = {
-    "continue",
-    "go on",
-    "keep going",
-    "next",
-    "ok",
-    "yes",
-    "继续",
-    "接着",
-    "继续吧",
-    "好的",
-    "好",
-    "下一步",
-    "?",
-    "？",
-}
 
 EDIT_TOOLS = {
     "search_replace",
@@ -294,22 +287,6 @@ def _last_prompt(
     return last
 
 
-def _is_generic(value: str) -> bool:
-    compact = re.sub(r"\s+", " ", value).strip().casefold()
-    if not compact or len(compact) <= 1:
-        return True
-    if re.fullmatch(r"[\d\W_]+", compact):
-        return True
-    return compact in GENERIC_PROMPTS
-
-
-def _choose_title(first_prompt: str, last_prompt: str) -> str:
-    for candidate in (last_prompt, first_prompt):
-        if candidate and not _is_generic(candidate):
-            return one_line(candidate, 100)
-    return one_line(last_prompt or first_prompt, 100)
-
-
 def _is_subagent_kind(value: Any) -> bool:
     return isinstance(value, str) and value.strip().casefold().startswith("subagent")
 
@@ -338,33 +315,11 @@ def _file_mtime(path: Path) -> Optional[datetime]:
 
 
 def _file_path(arguments: Any, cwd: str) -> str:
-    if not isinstance(arguments, dict):
-        return ""
-    value = ""
-    for key in FILE_KEYS:
-        candidate = arguments.get(key)
-        if isinstance(candidate, str) and candidate.strip():
-            value = candidate.strip()
-            break
-    if not value:
-        return ""
-    value = os.path.expanduser(value)
-    if cwd and not os.path.isabs(value):
-        value = os.path.join(cwd, value)
-    return os.path.normpath(value)
+    return file_path(arguments, cwd, FILE_KEYS)
 
 
 def _tool_detail(name: str, arguments: Any) -> str:
-    if not isinstance(arguments, dict):
-        return ""
-    for key in TOOL_DETAIL_KEYS.get(name, ()):
-        value = arguments.get(key)
-        if isinstance(value, str) and value.strip():
-            return one_line(value, 160)
-    for value in arguments.values():
-        if isinstance(value, str) and value.strip():
-            return one_line(value, 160)
-    return ""
+    return tool_detail_for(name, arguments, TOOL_DETAIL_KEYS)
 
 
 def _normalize_todos(value: Any) -> List[Dict[str, Any]]:

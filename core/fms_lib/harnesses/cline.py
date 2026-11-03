@@ -28,6 +28,14 @@ from ..util import (
     parse_timestamp,
 )
 from .base import HarnessAdapter
+from .common import (
+    GENERIC_PROMPTS as COMMON_GENERIC_PROMPTS,
+)
+from .common import (
+    choose_title,
+    file_path,
+    is_generic,
+)
 
 HEAD_BYTES = 1_000_000
 HEAD_RECORDS = 400
@@ -55,24 +63,10 @@ _HEAD_UPDATED_RE = re.compile(r'"updated_at"\s*:\s*"([^"]+)"')
 _USER_INPUT_RE = re.compile(r"<user_input(?:\s[^>]*)?>(.*?)</user_input>", re.S)
 _USER_INPUT_OPEN_RE = re.compile(r"<user_input(?:\s[^>]*)?>")
 
-GENERIC_PROMPTS = {
-    "continue",
-    "go on",
-    "keep going",
-    "next",
-    "ok",
-    "yes",
+GENERIC_PROMPTS = COMMON_GENERIC_PROMPTS | {
     "hi",
     "hello",
-    "继续",
-    "接着",
-    "继续吧",
-    "好的",
-    "好",
-    "下一步",
     "你好",
-    "?",
-    "？",
 }
 
 INJECTED_PREFIXES = (
@@ -378,31 +372,15 @@ def _remove_found_tokens(
 
 
 def _edited_path(arguments: Any, cwd: str) -> str:
-    if not isinstance(arguments, dict):
-        return ""
-    value = arguments.get("path")
-    if not isinstance(value, str) or not value.strip():
-        return ""
-    path = os.path.expanduser(value.strip())
-    if cwd and not os.path.isabs(path):
-        path = os.path.join(cwd, path)
-    return os.path.normpath(path)
+    return file_path(arguments, cwd, ("path",))
 
 
 def _is_generic(value: str) -> bool:
-    compact = re.sub(r"\s+", " ", value).strip().casefold()
-    if not compact or len(compact) <= 1:
-        return True
-    if re.fullmatch(r"[\d\W_]+", compact):
-        return True
-    return compact in GENERIC_PROMPTS
+    return is_generic(value, GENERIC_PROMPTS)
 
 
 def _choose_title(first_prompt: str, last_prompt: str) -> str:
-    for candidate in (last_prompt, first_prompt):
-        if candidate and not _is_generic(candidate):
-            return one_line(candidate, 100)
-    return one_line(last_prompt or first_prompt, 100)
+    return choose_title(first_prompt, last_prompt, GENERIC_PROMPTS)
 
 
 class ClineAdapter(HarnessAdapter):
