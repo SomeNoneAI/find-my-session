@@ -1,6 +1,7 @@
 # find-my-session
 
 [![CI](https://github.com/SomeNoneAI/find-my-session/actions/workflows/ci.yml/badge.svg)](https://github.com/SomeNoneAI/find-my-session/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/SomeNoneAI/find-my-session/badge)](https://scorecard.dev/viewer.html?url=github.com/SomeNoneAI/find-my-session)
 [![PyPI](https://img.shields.io/pypi/v/find-my-session.svg)](https://pypi.org/project/find-my-session/)
 [![Python 3.9–3.14](https://img.shields.io/badge/python-3.9%E2%80%933.14-blue.svg)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)

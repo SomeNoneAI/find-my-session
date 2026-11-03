@@ -79,8 +79,12 @@ Actionable items are grouped at the end.
 
 ## Actionable now
 
-1. Decide whether to add the Scorecard workflow above and the README badge;
-   otherwise this document stands as the evaluation the issue asked for.
+Nothing is pending: the Scorecard workflow is adopted
+(`.github/workflows/scorecard.yml`, weekly, SHA-pinned to v2.5.0,
+`publish_results: true`), so scores publish to the public API and the
+README badge resolves once the first run completes. Remaining optional
+polish: require review before merge on `main` (branch protection already
+requires the status checks).
 
 Updated after 0.1.1: the PyPI release landed via Trusted Publishing
 (completing the Packaging check), `SECURITY.md` was confirmed in place, and
