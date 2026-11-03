@@ -90,3 +90,16 @@ Updated after 0.1.1: the PyPI release landed via Trusted Publishing
 (completing the Packaging check), `SECURITY.md` was confirmed in place, and
 branch protection was confirmed active on `main` with required status
 checks.
+
+Updated after the first published scan (2026-11-04, score 5.2): release
+workflow permissions are now job-scoped and the frontend manifest pins the
+exact locked versions (Token-Permissions and Pinned-Dependencies fixed).
+Remaining low scores are structural or need maintainer action:
+`Maintained` and `Contributors` reflect the project's age; `Code-Review`
+wants enforced reviews (traded off for a solo maintainer, see the
+Branch-Protection row); `Signed-Releases` does not yet detect GitHub build
+provenance attestations, which every release already carries; `CII-Best-
+Practices` needs a maintainer to register on bestpractices.dev;
+`Branch-Protection` cannot be read without a token with admin scope
+(pass `BRANCH_PROTECTION_TOKEN` to the action to fix the read, not the
+protection itself).
