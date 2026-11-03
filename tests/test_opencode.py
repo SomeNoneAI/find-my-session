@@ -10,7 +10,6 @@ from __future__ import annotations
 import json
 import shutil
 import sqlite3
-import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -415,15 +414,17 @@ class OpenCodeTests(FixtureTestCase):
                 writer.close()
 
     def test_fixture_data_is_synthetic(self) -> None:
-        from opencode_fixture import SCHEMA  # noqa: F401
+        import opencode_fixture
 
-        module = sys.modules["opencode_fixture"]
-        for name in dir(module):
-            value = getattr(module, name)
-            if isinstance(value, str) and value.startswith("/Users/"):
+        for name in dir(opencode_fixture):
+            if name.startswith("__") or not name.isupper():
+                continue
+            value = getattr(opencode_fixture, name)
+            if isinstance(value, str) and "/Users/" in value:
                 self.assertTrue(
-                    value.startswith("/Users/example/"),
-                    "unexpected real path in fixture: %s" % value,
+                    "/Users/example/" in value,
+                    "unexpected real path in fixture constant %s: %s"
+                    % (name, value),
                 )
 
 
