@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-03
+
 ### Added
 
 - Cursor (`cursor`, aliases `cursor-agent` and `cursor-ide`) over
@@ -22,6 +24,19 @@ All notable changes to this project are documented here. The format follows
   fixture tests, and a per-harness reference.
 - PyPI Trusted Publishing in the release workflow, alongside the existing
   GitHub Release assets and build provenance attestations.
+- `fms doctor --fingerprint`, an opt-in redacted shape summary per store:
+  layout kinds, top-level field names with value types and counts, sqlite
+  tables, columns, and row counts. No values, paths, ids, or timestamps are
+  emitted, so output is safe to paste into a public issue when reporting
+  format drift. Documented in `references/diagnostics.md` and
+  `docs/json-output.md`.
+- A CodeQL workflow analyzing Python on `main` and pull requests, plus
+  `docs/scorecard.md`, the OpenSSF Scorecard evaluation and adoption plan.
+- A README demo of `fms prompts` count and paging
+  (`docs/assets/prompts-paging.svg`, synthetic data), linked from both
+  READMEs.
+- `docs/promotion-plan-0.1.md`, the 0.1 announcement draft and awesome-list
+  submission plan.
 - Ruff and mypy checks in CI, with the initial mypy findings fixed.
 - Dependabot updates for GitHub Actions, Python development dependencies, and
   the frontend.
