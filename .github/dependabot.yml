@@ -33,8 +33,10 @@ updates:
         patterns:
           - "*"
     ignore:
-      # vue-tsc 3.x cannot run under TypeScript 7 (resolveTscPath crash);
-      # lift this when vue-tsc ships support.
+      # vue-tsc 3.x cannot run under TypeScript 7 (resolveTscPath crash), and
+      # TypeScript 6 hard-errors on tsconfig baseUrl (TS5101) before that
+      # option is migrated. Lift this together: migrate baseUrl, then raise
+      # the floor once vue-tsc ships TS 7 support.
       - dependency-name: "typescript"
         versions:
-          - ">=7"
+          - ">=6"
