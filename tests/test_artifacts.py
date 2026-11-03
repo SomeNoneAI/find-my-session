@@ -89,6 +89,10 @@ class BuiltArtifactsTests(unittest.TestCase):
             expected = hashlib.sha256(archive.read_bytes()).hexdigest()
             self.assertEqual(entries[archive.name], expected)
 
+    @unittest.skipIf(
+        os.name == "nt",
+        "executable bits are not representable on Windows file systems",
+    )
     def test_zip_launchers_preserve_executable_bits(self) -> None:
         for archive_path, launcher in (
             (self.skill_archive, "scripts/fms"),

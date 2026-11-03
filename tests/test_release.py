@@ -125,7 +125,11 @@ class WheelBuildTests(unittest.TestCase):
                 metadata_name = next(
                     n for n in names if n.endswith(".dist-info/METADATA")
                 )
-                metadata = archive.read(metadata_name).decode("utf-8")
+                metadata = (
+                    archive.read(metadata_name)
+                    .decode("utf-8")
+                    .replace("\r\n", "\n")
+                )
                 self.assertIn("Name: find-my-session\n", metadata)
                 self.assertIn("Version: %s\n" % __version__, metadata)
                 self.assertIn("Requires-Python: >=3.9\n", metadata)

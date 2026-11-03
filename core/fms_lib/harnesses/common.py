@@ -61,6 +61,13 @@ def choose_title(
 def file_path(
     arguments: Any, cwd: str, keys: Sequence[str] = FILE_KEYS
 ) -> str:
+    """Echo a recorded path in the style the harness stored it.
+
+    Absolute paths (leading slash or drive letter) pass through
+    untouched; relative paths join onto ``cwd`` using the recorded
+    path's own separator. No normalization happens: the digest shows
+    what the harness wrote, not what this OS would write.
+    """
     if not isinstance(arguments, dict):
         return ""
     value = ""
@@ -71,10 +78,15 @@ def file_path(
             break
     if not value:
         return ""
-    value = os.path.expanduser(value)
-    if cwd and not os.path.isabs(value):
-        value = os.path.join(cwd, value)
-    return os.path.normpath(value)
+    if value.startswith("~"):
+        value = os.path.expanduser(value)
+    absolute = value.startswith(("/", "\\")) or (
+        len(value) > 1 and value[1] == ":"
+    )
+    if absolute or not cwd:
+        return value
+    separator = "\\" if "\\" in value else "/"
+    return cwd.rstrip("/\\") + separator + value
 
 
 def tool_detail(arguments: Any, keys: Sequence[str] = ()) -> str:
