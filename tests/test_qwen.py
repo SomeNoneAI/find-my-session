@@ -107,7 +107,7 @@ class QwenTests(FixtureTestCase):
         self.assertIn("- harness: qwen (cli)", out)
         self.assertIn("- cwd: `%s`" % PROJECT_ALPHA, out)
         self.assertIn("- branch: `main`", out)
-        self.assertIn("- version: `0.14.0`", out)
+        self.assertIn("- version: `0.8.2`", out)
         self.assertIn("- turns: 3", out)
         self.assertIn("- model: `%s`" % MODEL_MAIN, out)
         self.assertIn("- source: `", out)
