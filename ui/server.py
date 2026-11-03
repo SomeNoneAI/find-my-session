@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import mimetypes
+import socketserver
 import sys
 import threading
 import webbrowser
@@ -223,8 +224,17 @@ class UIRequestHandler(BaseHTTPRequestHandler):
         return
 
 
+class LocalHTTPServer(ThreadingHTTPServer):
+    def server_bind(self) -> None:
+        # Skip the reverse-DNS lookup in the base class: on some CI hosts it
+        # blocks for many seconds, delaying startup past client timeouts.
+        socketserver.TCPServer.server_bind(self)
+        self.server_name = self.server_address[0]
+        self.server_port = self.server_address[1]
+
+
 def create_server(port: int = 8765) -> ThreadingHTTPServer:
-    return ThreadingHTTPServer(("127.0.0.1", port), UIRequestHandler)
+    return LocalHTTPServer(("127.0.0.1", port), UIRequestHandler)
 
 
 def build_parser() -> argparse.ArgumentParser:

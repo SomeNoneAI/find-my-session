@@ -241,6 +241,19 @@ class UIEntrypointTests(unittest.TestCase):
             self.assertTrue(os.access(UI_ENTRYPOINT, os.X_OK))
 
 
+class UIServerStartupTests(unittest.TestCase):
+    def test_create_server_skips_reverse_dns(self) -> None:
+        with mock.patch(
+            "socket.getfqdn", side_effect=AssertionError("reverse DNS lookup")
+        ):
+            server = create_server(0)
+            try:
+                self.assertEqual(server.server_name, "127.0.0.1")
+                self.assertGreater(server.server_port, 0)
+            finally:
+                server.server_close()
+
+
 class ArtifactBuildTests(unittest.TestCase):
     def test_skill_and_ui_artifacts_run_independently(self) -> None:
         with tempfile.TemporaryDirectory(prefix="fms-artifacts-") as raw:
