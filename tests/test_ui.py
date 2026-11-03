@@ -254,9 +254,10 @@ class UIApiTests(UITestCase):
 
 class UIEntrypointTests(unittest.TestCase):
     def test_version_and_executable_bit(self) -> None:
-        result = subprocess.run(
-            [str(UI_ENTRYPOINT), "--version"], capture_output=True, text=True
-        )
+        argv = [str(UI_ENTRYPOINT)]
+        if os.name == "nt":
+            argv = [sys.executable, str(UI_ENTRYPOINT)]
+        result = subprocess.run([*argv, "--version"], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout.strip(), "fms-ui " + __version__)
         if os.name != "nt":
@@ -360,8 +361,11 @@ class ArtifactBuildTests(unittest.TestCase):
             environment = dict(os.environ)
             environment.update(synthetic_environment(root))
             skill_fms = output / "find-my-session-skill" / "scripts" / "fms"
+            skill_argv = [str(skill_fms)]
+            if os.name == "nt":
+                skill_argv = [sys.executable, str(skill_fms)]
             result = subprocess.run(
-                [str(skill_fms), "search", "--harness", "qoder-cn", "--json"],
+                [*skill_argv, "search", "--harness", "qoder-cn", "--json"],
                 capture_output=True,
                 text=True,
                 env=environment,

@@ -5,6 +5,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -56,8 +57,12 @@ class EntrypointTests(FixtureTestCase):
         env["FMS_KIMI_CODE_HOME"] = str(self.kimi_home)
         env["FMS_ZCODE_HOME"] = str(self.zcode_home)
         env["FMS_ZCODE_APP_DB"] = str(self.zcode_app_db)
+        argv = [command]
+        if os.name == "nt":
+            # The launchers are Python scripts; the shebang does not apply.
+            argv = [sys.executable, command]
         return subprocess.run(
-            [command, "--version"], capture_output=True, text=True, env=env
+            [*argv, "--version"], capture_output=True, text=True, env=env
         )
 
     def test_entrypoint_runs_directly(self) -> None:
