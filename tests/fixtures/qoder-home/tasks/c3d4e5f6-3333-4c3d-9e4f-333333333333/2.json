@@ -1,0 +1,10 @@
+{
+  "id": "2",
+  "subject": "Retry failed webhook deliveries",
+  "description": "Wrap the dispatcher in the shared retry helper.",
+  "activeForm": "Adding retries",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [],
+  "businessInfo": {"stage": "done"}
+}

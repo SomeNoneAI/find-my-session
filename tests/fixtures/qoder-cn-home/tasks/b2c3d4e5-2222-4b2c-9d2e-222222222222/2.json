@@ -1,0 +1,9 @@
+{
+  "id": "2",
+  "subject": "Verify contrast in light and dark themes",
+  "description": "Check the toggle and surrounding settings text against both themes.",
+  "activeForm": "Verifying theme contrast",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

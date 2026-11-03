@@ -1,0 +1,60 @@
+name: Harness support request
+description: Propose a new harness adapter
+title: "[harness] "
+labels:
+  - harness
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Help us locate a harness store without exposing real session content. Paths and synthetic schema examples are enough.
+  - type: input
+    id: harness
+    attributes:
+      label: Harness name
+      placeholder: ChatGPT Codex
+    validations:
+      required: true
+  - type: input
+    id: vendor
+    attributes:
+      label: Vendor or project URL
+      placeholder: https://example.com
+  - type: checkboxes
+    id: variants
+    attributes:
+      label: Variants to support
+      options:
+        - label: Desktop application
+        - label: CLI
+        - label: IDE extension
+        - label: International and regional builds
+  - type: textarea
+    id: paths
+    attributes:
+      label: Known storage paths
+      description: List platform-specific directories and file names. Do not attach files.
+      placeholder: |
+        macOS: ~/.example/projects/<id>.jsonl
+        Linux: ~/.example/projects/<id>.jsonl
+    validations:
+      required: true
+  - type: textarea
+    id: schema
+    attributes:
+      label: Synthetic record schema
+      description: Show field names and representative shapes with fake values.
+      render: json
+  - type: textarea
+    id: notes
+    attributes:
+      label: Variant differences and caveats
+      description: Compression, SQLite, protobuf, encryption, version differences, or missing metadata.
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: This request contains no real session content, credentials, tokens, or private paths.
+          required: true
+        - label: I can help test this adapter on a real installation.

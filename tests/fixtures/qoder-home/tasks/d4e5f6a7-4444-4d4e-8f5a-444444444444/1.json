@@ -1,0 +1,10 @@
+{
+  "id": "1",
+  "subject": "Verify CSV escaping for quoted fields",
+  "description": "Add coverage for commas, quotes, and newlines in invoice descriptions.",
+  "activeForm": "Verifying CSV escaping",
+  "status": "in_progress",
+  "blocks": [],
+  "blockedBy": [],
+  "businessInfo": {"stage": "processing"}
+}

@@ -1,0 +1,4 @@
+{"type":"session_meta","session_id":"task-11112222333344445555","task_type":"subagent","created_at":"2026-10-21T10:02:00.000Z"}
+{"type":"progress","session_id":"task-11112222333344445555","timestamp":"2026-10-21T10:02:05.000Z","message":"subagent-only-marker"}
+{"type":"user","session_id":"task-11112222333344445555","timestamp":"2026-10-21T10:02:10.000Z","message":{"role":"user","content":"Inspect retry helpers only."}}
+{"type":"assistant","session_id":"task-11112222333344445555","timestamp":"2026-10-21T10:02:20.000Z","message":{"role":"assistant","content":"The retry helper accepts a maximum attempt count."}}

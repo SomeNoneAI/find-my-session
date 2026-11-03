@@ -1,0 +1,7 @@
+{"type":"metadata","created_at":"2026-10-24T08:00:00.000Z","protocol_version":1}
+{"type":"turn.prompt","time":"2026-10-24T08:00:05.000Z","agentId":"main","promptId":"p-g1","turnId":"t-g1","origin":{"kind":"user"},"input":[{"type":"text","text":"Migration checklist for legacy sessions"}]}
+{"type":"agent.message.appended","time":"2026-10-24T08:00:10.000Z","agentId":"main","kind":"assistant","message":{"meta":{},"message":{"role":"assistant","content":[{"type":"text","text":"Migrated the legacy session index. wire-only-needle"}],"toolCalls":[{"name":"Edit","arguments":{"path":"src/migrate.ts","old_string":"oldIndex","new_string":"newIndex"}}]}}}
+{"type":"turn.prompt","time":"2026-10-24T08:01:00.000Z","agentId":"main","promptId":"p-g-task","turnId":"t-g1","origin":{"kind":"task"},"input":[{"type":"text","text":"task-generated prompt"}]}
+{"type":"turn.steer","time":"2026-10-24T08:02:00.000Z","agentId":"main","messageId":"m-g-skill","turnId":"t-g1","origin":{"kind":"skill_activation"},"input":[{"type":"text","text":"skill activation body"}]}
+{"type":"agent.message.appended","time":"2026-10-24T08:02:10.000Z","agentId":"main","kind":"user","message":{"meta":{},"message":{"role":"user","content":[{"type":"text","text":"tool result text must not be a prompt"}],"toolCalls":[]}}}
+{"type":"llm.request","time":"2026-10-24T08:05:00.000Z","agentId":"main","model":"kimi-for-coding","modelAlias":"kimi-for-coding","provider":"synthetic","messageCount":4,"maxTokens":4096}

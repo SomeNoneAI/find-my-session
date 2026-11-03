@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/
+
+# Build artifacts
+dist/
+
+# Frontend tooling (ui/static build output stays tracked)
+ui/frontend/node_modules/
+ui/frontend/coverage/
+ui/frontend/dist/
+
+# Local configuration and scratch data
+.env
+.env.*
+*.local
+.fms-cache/
+tmp/
+.workbuddy-ai/

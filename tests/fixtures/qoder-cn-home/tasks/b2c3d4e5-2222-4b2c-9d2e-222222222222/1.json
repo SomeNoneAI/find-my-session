@@ -1,0 +1,9 @@
+{
+  "id": "1",
+  "subject": "Add the theme provider",
+  "description": "Create a theme provider and persist the selected mode.",
+  "activeForm": "Adding the theme provider",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,10 @@
+{
+  "id": "1",
+  "subject": "Add replay protection for webhook deliveries",
+  "description": "Reject duplicate delivery ids before retrying.",
+  "activeForm": "Adding replay protection",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [],
+  "businessInfo": {"stage": "processing"}
+}

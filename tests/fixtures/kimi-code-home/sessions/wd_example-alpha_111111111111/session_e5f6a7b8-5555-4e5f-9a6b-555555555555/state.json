@@ -1,0 +1,19 @@
+{
+  "id": "session_e5f6a7b8-5555-4e5f-9a6b-555555555555",
+  "title": "Refactor handoff parser",
+  "titleKind": "custom",
+  "isCustomTitle": true,
+  "archived": false,
+  "cwd": "/Users/example/project-alpha",
+  "createdAt": "2026-10-26T09:00:00.000Z",
+  "updatedAt": "2026-10-26T09:10:00.000Z",
+  "lastPrompt": "Explain the token budget",
+  "lastTurnReason": "completed",
+  "version": "0.43.0",
+  "agents": {
+    "main": {
+      "agentId": "main",
+      "status": "idle"
+    }
+  }
+}

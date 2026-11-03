@@ -1,0 +1,8 @@
+{"type":"metadata","created_at":"2026-10-22T12:00:00.000Z","protocol_version":1}
+{"type":"turn.prompt","time":"2026-10-22T12:01:00.000Z","agentId":"main","promptId":"p-f1","turnId":"t-f1","origin":{"kind":"user"},"input":[{"type":"text","text":"Export invoices as CSV"}]}
+{"type":"agent.message.appended","time":"2026-10-22T12:02:00.000Z","agentId":"main","kind":"assistant","message":{"meta":{},"message":{"role":"assistant","content":[{"type":"text","text":"Added the CSV exporter. archived-needle"}],"toolCalls":[{"name":"Edit","arguments":{"path":"/Users/example/project-beta/src/invoice.ts","old_string":"rows","new_string":"csvRows"}}]}}}
+{"type":"tools.update_store","time":"2026-10-22T12:03:00.000Z","agentId":"main","key":"todo","value":[{"title":"Validate invoice totals","status":"pending"}]}
+{"type":"turn.prompt","time":"2026-10-22T12:10:00.000Z","agentId":"main","promptId":"p-f2","turnId":"t-f2","origin":{"kind":"user"},"input":[{"type":"text","text":"Include a totals row"}]}
+{"type":"agent.message.appended","time":"2026-10-22T12:11:00.000Z","agentId":"main","kind":"assistant","message":{"meta":{},"message":{"role":"assistant","content":[{"type":"text","text":"Added a totals row at the end of the export."}],"toolCalls":[]}}}
+{"type":"context.apply_compaction","time":"2026-10-22T12:12:00.000Z","agentId":"main","summary":"Invoice export compaction summary.","contextSummary":"Synthetic context summary for invoice export.","compactedCount":2,"keptUserMessageCount":2,"tokensBefore":8000,"tokensAfter":4000}
+{"type":"llm.request","time":"2026-10-22T12:12:01.000Z","agentId":"main","model":"kimi-for-coding","modelAlias":"kimi-for-coding","provider":"synthetic","messageCount":5,"maxTokens":4096}

@@ -1,0 +1,135 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: ${{ matrix.os }} / Python ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            python-version: "3.9"
+          - os: ubuntu-latest
+            python-version: "3.13"
+          - os: macos-latest
+            python-version: "3.13"
+          - os: ubuntu-latest
+            python-version: "3.14"
+          - os: macos-latest
+            python-version: "3.14"
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install zstd
+        if: matrix.python-version == '3.9'
+        run: sudo apt-get update && sudo apt-get install -y zstd
+
+      - name: Compile
+        run: python -m compileall -q core ui skills/find-my-session/scripts tools tests
+
+      - name: Test
+        run: python -m unittest discover -s tests -v
+
+  frontend:
+    name: Frontend (Vue 3 + TypeScript + Vite)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ui/frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: ui/frontend
+        run: npm ci
+
+      - name: Type-check
+        working-directory: ui/frontend
+        run: npm run typecheck
+
+      - name: Test frontend
+        working-directory: ui/frontend
+        run: npm test
+
+      - name: Build frontend
+        working-directory: ui/frontend
+        run: npm run build
+
+      - name: Check built assets are committed
+        run: |
+          if [ -n "$(git status --porcelain -- ui/static)" ]; then
+            echo "ui/static is out of date; run npm run build in ui/frontend and commit the result:"
+            git status --porcelain -- ui/static
+            exit 1
+          fi
+
+  build:
+    name: Build and smoke-test artifacts
+    runs-on: ubuntu-latest
+    needs: [test, frontend]
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Build artifacts
+        run: python tools/build_artifacts.py --output dist
+
+      - name: Verify checksums
+        run: cd dist && sha256sum -c SHA256SUMS.txt
+
+      - name: Smoke test artifacts
+        run: |
+          python -m zipfile -l dist/find-my-session-skill.zip
+          python -m zipfile -l dist/find-my-session-ui.zip
+          test -f dist/find-my-session-skill/LICENSE
+          test -f dist/find-my-session-ui/LICENSE
+          test -f dist/find-my-session-ui/README.md
+          dist/find-my-session-skill/scripts/fms --version
+          dist/find-my-session-ui/fms-ui --version
+
+  coverage:
+    name: Coverage report
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install coverage tooling
+        run: python -m pip install coverage
+
+      - name: Measure test coverage
+        run: PYTHONPATH=core:. python -m coverage run --source=fms_lib,ui -m unittest discover -s tests
+
+      - name: Report coverage
+        run: python -m coverage report --show-missing

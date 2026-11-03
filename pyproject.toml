@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "find-my-session"
+version = "0.1.0"
+description = "Read-only, cross-harness agent-session finder and handoff tool"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+dependencies = []
+
+[project.scripts]
+fms = "fms_lib.cli:main"
+fms-ui = "ui.server:main"
+
+[project.urls]
+Homepage = "https://github.com/SomeNoneAI/find-my-session"
+Repository = "https://github.com/SomeNoneAI/find-my-session"
+Issues = "https://github.com/SomeNoneAI/find-my-session/issues"
+
+[tool.setuptools]
+package-dir = { "fms_lib" = "core/fms_lib", "ui" = "ui" }
+packages = ["fms_lib", "fms_lib.harnesses", "ui"]
+
+[tool.setuptools.package-data]
+ui = ["static/*"]

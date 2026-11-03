@@ -1,0 +1,9 @@
+{
+  "id": "3",
+  "subject": "Add tests for refresh failure",
+  "description": "Cover expired tokens, rejected refresh, and network errors.",
+  "activeForm": "Adding refresh failure tests",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

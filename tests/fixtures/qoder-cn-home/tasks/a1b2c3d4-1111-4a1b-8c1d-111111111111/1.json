@@ -1,0 +1,9 @@
+{
+  "id": "1",
+  "subject": "Inspect the current auth flow",
+  "description": "Read the token storage and identify where expiry should be checked.",
+  "activeForm": "Inspecting the auth flow",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

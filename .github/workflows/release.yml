@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Check tag matches package version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PACKAGE_VERSION="$(python -c "import sys; sys.path.insert(0, 'core'); from fms_lib import __version__; print(__version__)")"
+          echo "tag: ${TAG_VERSION}, package: ${PACKAGE_VERSION}"
+          test "${TAG_VERSION}" = "${PACKAGE_VERSION}"
+
+      - name: Compile
+        run: python -m compileall -q core ui skills/find-my-session/scripts tools tests
+
+      - name: Test
+        run: python -m unittest discover -s tests -v
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ui/frontend/package-lock.json
+
+      - name: Build frontend
+        working-directory: ui/frontend
+        run: |
+          npm ci
+          npm run typecheck
+          npm test
+          npm run build
+
+      - name: Check built assets match the tag
+        run: |
+          if [ -n "$(git status --porcelain -- ui/static)" ]; then
+            echo "ui/static is out of date at this tag:"
+            git status --porcelain -- ui/static
+            exit 1
+          fi
+
+      - name: Build artifacts
+        run: python tools/build_artifacts.py --output dist
+
+      - name: Verify checksums
+        run: cd dist && sha256sum -c SHA256SUMS.txt
+
+      - name: Smoke test artifacts
+        run: |
+          dist/find-my-session-skill/scripts/fms --version
+          dist/find-my-session-ui/fms-ui --version
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "Find My Session ${GITHUB_REF_NAME#v}" \
+            --generate-notes \
+            dist/find-my-session-skill.zip \
+            dist/find-my-session-ui.zip \
+            dist/SHA256SUMS.txt

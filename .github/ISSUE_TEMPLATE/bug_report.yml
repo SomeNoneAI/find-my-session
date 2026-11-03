@@ -1,0 +1,72 @@
+name: Bug report
+description: Report a parsing, search, output, or CLI problem
+title: "[bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Remove tokens, usernames, private repository paths, and conversation content before submitting.
+  - type: input
+    id: harness
+    attributes:
+      label: Harness and variant
+      description: For example QoderCN desktop, QoderCN CLI, or a planned harness.
+      placeholder: QoderCN CLI
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Platform and Python version
+      placeholder: macOS 15.6, Python 3.14.6
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: find-my-session version
+      description: Output of `fms --version`.
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command
+      description: The exact command that failed.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Sanitized output or traceback
+      description: Remove secrets and private data. Use a synthetic reproduction when possible.
+      render: shell
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Doctor output (optional)
+      description: Run `fms doctor --json` when sessions are missing or unreadable. Review and redact it before submitting.
+      render: json
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: I removed real session content, credentials, tokens, and private paths from this report.
+          required: true
