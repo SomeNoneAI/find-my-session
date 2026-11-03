@@ -377,9 +377,12 @@ class ArtifactBuildTests(unittest.TestCase):
                 listener.bind(("127.0.0.1", 0))
                 port = listener.getsockname()[1]
             environment["PYTHONUNBUFFERED"] = "1"
+            ui_argv = [str(output / "find-my-session-ui" / "fms-ui")]
+            if os.name == "nt":
+                ui_argv = [sys.executable, *ui_argv]
             process = subprocess.Popen(
                 [
-                    str(output / "find-my-session-ui" / "fms-ui"),
+                    *ui_argv,
                     "--no-browser",
                     "--port",
                     str(port),
