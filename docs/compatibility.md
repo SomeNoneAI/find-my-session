@@ -18,7 +18,7 @@ Synthetic fixtures prove the parser logic, not ongoing compatibility: a harness 
 | --- | --- | --- |
 | macOS | Supported | Primary development and live-verification platform; CI runs on `macos-latest`. |
 | Linux | Supported | Pure standard-library Python with POSIX paths; CI runs on `ubuntu-latest`. |
-| Windows | Experimental | Exercised by a non-blocking `windows-latest` CI job, green as of 2026-11-04 (synthetic fixtures only). No harness store has been verified against a real Windows install and failures are not release blockers. |
+| Windows | Experimental | Exercised by a non-blocking `windows-latest` CI job, green as of 2026-11-04 (synthetic fixtures only). No harness store has been verified against a real Windows install and failures are not release blockers; the verification path for volunteers is [references/windows-verification.md](../skills/find-my-session/references/windows-verification.md). |
 
 ## Ready harnesses
 

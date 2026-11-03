@@ -27,7 +27,7 @@ Public direction for find-my-session. No dates are promised; order is roughly pr
 ## Windows policy
 
 - Windows runs in an **experimental, non-blocking** CI job with synthetic fixtures, which is green as of 2026-11-04 (path fidelity, CRLF parsing, and platform-aware launcher tests fixed). Nothing is promised yet: there is no committed timeline for first-class Windows support.
-- Community fixes and verification reports are welcome. First-class support needs a maintainer with a Windows environment verifying real harness stores and a documented verification path.
+- Community fixes and verification reports are welcome. First-class support needs a maintainer with a Windows environment running the documented verification path: [references/windows-verification.md](skills/find-my-session/references/windows-verification.md).
 
 ## Community maintenance
 
