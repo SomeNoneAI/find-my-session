@@ -11,7 +11,7 @@ When a harness runs out of quota, you usually remember *what* you were doing but
 
 ## Supported harnesses
 
-Fourteen adapters are ready; two more are planned. Verified versions, surfaces, and caveats live in the [compatibility matrix](docs/compatibility.md); per-harness store details live in [references/](skills/find-my-session/references/).
+Fifteen adapters are ready; two more are planned. Verified versions, surfaces, and caveats live in the [compatibility matrix](docs/compatibility.md); per-harness store details live in [references/](skills/find-my-session/references/).
 
 | Harness | Ref prefix | Store |
 | --- | --- | --- |
@@ -29,6 +29,7 @@ Fourteen adapters are ready; two more are planned. Verified versions, surfaces, 
 | WorkBuddy (domestic) | `workbuddy-cn` | `~/.workbuddy` |
 | Antigravity | `antigravity` | `~/.gemini/antigravity` |
 | Antigravity CLI | `antigravity-cli` | `~/.gemini/antigravity-cli` |
+| MiniMax Code | `minimax-code` | `~/.minimax/v2` |
 | CodeBuddy | `codebuddy` (planned) | `~/.codebuddy` |
 | Cline (VS Code extension) | `cline-vscode` (planned) | VS Code globalStorage |
 

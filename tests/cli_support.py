@@ -232,6 +232,7 @@ from antigravity_fixture import (  # noqa: E402
     build_antigravity_home,
     build_antigravity_ide_home,
 )
+from minimax_code_fixture import build_minimax_code_home  # noqa: E402
 from deepseek_fixture import (  # noqa: E402
     COMPACT_SUMMARY as DEEPSEEK_COMPACT_SUMMARY,
     HAS_ZSTD as DEEPSEEK_HAS_ZSTD,
@@ -330,6 +331,15 @@ class FixtureTestCase(unittest.TestCase):
         cls.zcode_app_db = cls.zcode_home / "v2" / "tasks-index.sqlite"
         cls.empty_zcode_home = root / "empty-zcode-home"
         cls.empty_zcode_home.mkdir()
+        cls.minimax_code_home = build_minimax_code_home(
+            root / "minimax-code-home"
+        )
+        cls.minimax_code_db = (
+            cls.minimax_code_home / "sqlite" / "runtime-state.sqlite"
+        )
+        cls.empty_minimax_code_home = root / "empty-minimax-code-home"
+        cls.empty_minimax_code_home.mkdir()
+        cls.no_minimax_code_db = root / "missing-minimax-code.sqlite"
         cls.codearts_home = build_codearts_home(root / "codearts-home")
         cls.empty_codearts_home = root / "empty-codearts-home"
         cls.empty_codearts_home.mkdir()
@@ -401,11 +411,13 @@ class FixtureTestCase(unittest.TestCase):
         antigravity_ide_home: Path = None,
         antigravity_cli_home: Path = None,
         deepseek_home: Path = None,
+        minimax_code_home: Path = None,
         cn_db: Path = None,
         qoder_db: Path = None,
         zcode_app_db: Path = None,
         workbuddy_db: Path = None,
         workbuddy_cn_db: Path = None,
+        minimax_code_app_db: Path = None,
     ):
         out = io.StringIO()
         err = io.StringIO()
@@ -433,12 +445,18 @@ class FixtureTestCase(unittest.TestCase):
                 antigravity_cli_home or self.antigravity_cli_home
             ),
             "FMS_DEEPSEEK_HOME": str(deepseek_home or self.deepseek_home),
+            "FMS_MINIMAX_CODE_HOME": str(
+                minimax_code_home or self.minimax_code_home
+            ),
             "FMS_QODER_CN_APP_DB": str(cn_db or self.no_app_db),
             "FMS_QODER_APP_DB": str(qoder_db or self.no_app_db),
             "FMS_ZCODE_APP_DB": str(zcode_app_db or self.zcode_app_db),
             "FMS_WORKBUDDY_APP_DB": str(workbuddy_db or self.workbuddy_db),
             "FMS_WORKBUDDY_CN_APP_DB": str(
                 workbuddy_cn_db or self.workbuddy_cn_db
+            ),
+            "FMS_MINIMAX_CODE_APP_DB": str(
+                minimax_code_app_db or self.minimax_code_db
             ),
         }
         with mock.patch.dict(os.environ, env):
@@ -464,11 +482,13 @@ class FixtureTestCase(unittest.TestCase):
         antigravity_ide_home: Path = None,
         antigravity_cli_home: Path = None,
         deepseek_home: Path = None,
+        minimax_code_home: Path = None,
         cn_db: Path = None,
         qoder_db: Path = None,
         zcode_app_db: Path = None,
         workbuddy_db: Path = None,
         workbuddy_cn_db: Path = None,
+        minimax_code_app_db: Path = None,
     ):
         code, out, err = self.run_cli(
             *args,
@@ -493,6 +513,8 @@ class FixtureTestCase(unittest.TestCase):
             antigravity_ide_home=antigravity_ide_home,
             antigravity_cli_home=antigravity_cli_home,
             deepseek_home=deepseek_home,
+            minimax_code_home=minimax_code_home,
+            minimax_code_app_db=minimax_code_app_db,
         )
         self.assertEqual(code, 0, err)
         return json.loads(out)

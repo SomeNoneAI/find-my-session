@@ -46,11 +46,13 @@ def synthetic_environment(root: Path) -> dict:
         "FMS_ANTIGRAVITY_IDE_HOME": str(empty),
         "FMS_ANTIGRAVITY_CLI_HOME": str(empty),
         "FMS_DEEPSEEK_HOME": str(empty),
+        "FMS_MINIMAX_CODE_HOME": str(empty),
         "FMS_QODER_CN_APP_DB": str(missing_db),
         "FMS_QODER_APP_DB": str(missing_db),
         "FMS_ZCODE_APP_DB": str(missing_db),
         "FMS_WORKBUDDY_APP_DB": str(missing_db),
         "FMS_WORKBUDDY_CN_APP_DB": str(missing_db),
+        "FMS_MINIMAX_CODE_APP_DB": str(missing_db),
     }
 
 
