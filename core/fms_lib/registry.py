@@ -13,6 +13,7 @@ from .harnesses.claude_code import ClaudeCodeAdapter
 from .harnesses.cline import ClineAdapter
 from .harnesses.codearts_agent import CodeArtsAgentAdapter
 from .harnesses.codex import CodexAdapter
+from .harnesses.cursor import CursorAdapter
 from .harnesses.deepseek import DeepSeekAdapter
 from .harnesses.grok_build import GrokBuildAdapter
 from .harnesses.kimi_code import KimiCodeAdapter
@@ -48,6 +49,7 @@ READY: Tuple[HarnessAdapter, ...] = (
     AntigravityAdapter(),
     AntigravityCLIAdapter(),
     MiniMaxCodeAdapter(),
+    CursorAdapter(),
 )
 
 PLANNED: Tuple[PlannedHarness, ...] = (
