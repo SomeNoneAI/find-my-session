@@ -186,6 +186,15 @@ adapter raises a decode error for compressed files and they are skipped. No
 pure-Python decompressor is bundled, so Python 3.9–3.13 need the `zstd` binary
 for compressed stores.
 
+## Performance
+
+Profiled against a large real store on 2026-11-04 (macOS arm64, 1,230
+rollout files, 352 MB of session directories, including compressed
+`.jsonl.zst` segments): full listing 6.4 s, `latest` 6.8 s, `doctor`
+6.9 s, `--deep` keyword search 26.8 s (byte-capped streaming per
+segment). Listing stays metadata-only with bounded head/tail reads, so
+cost scales with file count, not transcript size.
+
 ## Known gaps
 
 - No todo extraction; Codex sessions have no todo files.
