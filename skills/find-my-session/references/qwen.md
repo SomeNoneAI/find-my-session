@@ -9,7 +9,7 @@
 
 ## Verified against
 
-- macOS arm64, Qwen Code (records carry version `0.14.0`-era envelopes),
+- macOS arm64, Qwen Code (records carry version `0.8.2` envelopes),
   2026-11-04. Nine session logs across four project directories listed,
   all readable, 0 skipped; `search`, `latest`, `show`, prompt count, and
   `doctor` verified; files unchanged afterwards. The live store holds a

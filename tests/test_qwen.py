@@ -71,7 +71,7 @@ class QwenTests(FixtureTestCase):
         by_ref = {session["ref"]: session for session in payload}
         self.assertEqual(by_ref[REF_BETA]["branch"], "feature/migration")
         self.assertEqual(by_ref[REF_MAIN]["branch"], "main")
-        self.assertEqual(by_ref[REF_MAIN]["version"], "0.14.0")
+        self.assertEqual(by_ref[REF_MAIN]["version"], "0.8.2")
         self.assertEqual(by_ref[REF_MAIN]["model"], MODEL_MAIN)
         self.assertGreater(by_ref[REF_MAIN]["size_bytes"], 0)
 
