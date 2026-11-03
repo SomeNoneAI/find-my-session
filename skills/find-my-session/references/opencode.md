@@ -104,6 +104,10 @@ inside tool output — which the head/tail prompt metadata never sees — is a
 deep-search hit. The largest observed top-level session carried ~12 MB of
 part data; the scan is a bounded per-session pass.
 
+Live-store baseline (2026-11-04, 81 MB database, 48 top-level sessions):
+`doctor` 0.2 s, full listing 0.2 s, `--deep` keyword search 0.4 s,
+`doctor --fingerprint` 0.2 s.
+
 ## Digest
 
 `fms show` extracts cwd, started/updated, model, version, the compaction
