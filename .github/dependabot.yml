@@ -18,6 +18,11 @@ updates:
       python-dev:
         patterns:
           - "*"
+    ignore:
+      # mypy 2.x drops Python 3.9; lift this together with the 0.2 baseline.
+      - dependency-name: "mypy"
+        versions:
+          - ">=2"
 
   - package-ecosystem: "npm"
     directory: "/fms_ui/frontend"
