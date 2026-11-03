@@ -17,7 +17,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
+          # Python 3.9 is not available on the Ubuntu 26.04 runner image.
+          - os: ubuntu-24.04
             python-version: "3.9"
           - os: ubuntu-latest
             python-version: "3.13"

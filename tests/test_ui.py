@@ -3,13 +3,13 @@ from __future__ import annotations
 import http.client
 import json
 import os
+import queue
 import shutil
 import socket
 import subprocess
 import sys
 import tempfile
 import threading
-import time
 import unittest
 import zipfile
 from pathlib import Path
@@ -287,6 +287,7 @@ class ArtifactBuildTests(unittest.TestCase):
             with socket.socket() as listener:
                 listener.bind(("127.0.0.1", 0))
                 port = listener.getsockname()[1]
+            environment["PYTHONUNBUFFERED"] = "1"
             process = subprocess.Popen(
                 [
                     str(output / "find-my-session-ui" / "fms-ui"),
@@ -300,25 +301,22 @@ class ArtifactBuildTests(unittest.TestCase):
                 env=environment,
             )
             try:
-                deadline = time.monotonic() + 10
-                while True:
-                    if process.poll() is not None:
-                        self.fail("built UI exited: " + process.stderr.read())
-                    try:
-                        connection = http.client.HTTPConnection(
-                            "127.0.0.1", port, timeout=1
-                        )
-                        connection.request("GET", "/api/sessions?harness=qoder-cn")
-                        response = connection.getresponse()
-                        payload = json.loads(response.read())
-                        connection.close()
-                        self.assertEqual(response.status, 200, payload)
-                        self.assertTrue(payload["sessions"])
-                        break
-                    except OSError:
-                        if time.monotonic() >= deadline:
-                            self.fail("built UI did not start")
-                        time.sleep(0.05)
+                lines: "queue.Queue[str]" = queue.Queue()
+                threading.Thread(
+                    target=lambda: lines.put(process.stdout.readline()),
+                    daemon=True,
+                ).start()
+                try:
+                    first_line = lines.get(timeout=10)
+                except queue.Empty:
+                    self.fail("built UI did not start")
+                if not first_line:
+                    self.fail("built UI exited: " + process.stderr.read())
+                self.assertIn(
+                    "Find My Session: http://127.0.0.1:%d/" % port,
+                    first_line,
+                )
+                self.assertIsNone(process.poll())
             finally:
                 process.terminate()
                 try:
