@@ -27,7 +27,8 @@ secret is stored.
    existing PyPI project uses the name.
 
 The pending publisher becomes a normal trusted publisher after the first
-successful upload. If the workflow filename, repository, or environment name
+successful upload. (Completed for this project on 2026-11-04 with the 0.1.1
+release; the `pypi` environment already exists in the repository.) If the workflow filename, repository, or environment name
 changes later, update the publisher on PyPI before tagging.
 
 ## Version bump
