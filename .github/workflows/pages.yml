@@ -29,7 +29,8 @@ jobs:
           python3 - <<'EOF'
           from pathlib import Path
           page = Path("site/index.html").read_text(encoding="utf-8")
-          for probe in ("docs/assets", "../docs", "lorem", "TODO"):
+          # Only relative links break on Pages; absolute raw.githubusercontent URLs are fine.
+          for probe in ("../docs", 'href="docs', 'src="docs', "lorem", "TODO"):
               assert probe not in page, probe
           print("site link check ok")
           EOF
