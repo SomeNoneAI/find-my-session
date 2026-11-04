@@ -830,6 +830,9 @@ class CursorAdapter(HarnessAdapter):
             turn_count=turn_count,
         )
 
+    def resume_argv(self, summary: SessionSummary) -> Optional[List[str]]:
+        return ["cursor-agent", "--resume", summary.session_id]
+
 
 def _uri_to_path(raw: str) -> str:
     text = raw.strip()

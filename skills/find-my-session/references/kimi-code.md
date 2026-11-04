@@ -168,6 +168,10 @@ Desktop prompts carry:
 
 A prompt with that object is marked `desktop`; otherwise it is marked `cli`. The field is observed on desktop-originated prompts and absent on older CLI records, but it is not documented as an API contract. A session can therefore show the wrong surface if Kimi changes the metadata shape. Do not use `entrypoint` for filtering; both surfaces share the store.
 
+## Resume
+
+Verified: kimi --session [id] reopens a session (kimi --continue reopens the most recent; -r/--resume is a hidden alias). fms resume prints kimi --session <id>.
+
 ## Caveats
 
 - Desktop and CLI share one namespace. There is no separate desktop database and no separate archive store.

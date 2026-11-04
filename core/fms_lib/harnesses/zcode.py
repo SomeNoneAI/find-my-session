@@ -628,6 +628,9 @@ class ZCodeAdapter(HarnessAdapter):
                     texts.append(text)
         return "\n".join(texts)
 
+    def resume_argv(self, summary: SessionSummary) -> Optional[List[str]]:
+        return ["zcode", "--resume", self._raw_id(summary.path)]
+
     def load(self, summary: SessionSummary) -> SessionDetail:
         raw_id = self._raw_id(summary.path)
         db = self._db_for_path(summary.path)

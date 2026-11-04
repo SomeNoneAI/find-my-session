@@ -731,3 +731,6 @@ class ClineAdapter(HarnessAdapter):
             recent_tools=list(recent_tools),
             turn_count=turn_count,
         )
+
+    def resume_argv(self, summary: SessionSummary) -> Optional[List[str]]:
+        return ["cline", "--id", summary.session_id]

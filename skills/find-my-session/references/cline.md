@@ -150,6 +150,10 @@ and `data/db/sessions.db` has no archive or deleted columns either. Every
 session is reported as active (`archived: false`). `--include-archived` changes
 nothing, and a removed session directory disappears from listings.
 
+## Resume
+
+Verified against cline --help: cline --id <session-id> reopens a session. fms resume prints cline --id <id>.
+
 ## Digest
 
 `load()` streams the messages file once and retains bounded state:

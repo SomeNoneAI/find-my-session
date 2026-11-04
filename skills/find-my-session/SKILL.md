@@ -152,7 +152,7 @@ fms stats [--harness NAME] [--cwd PATH] [--since WHEN] [--include-archived] [--j
 fms resume REF [--harness NAME] [--exec] [--json]
 ```
 
-- Prints the harness command that reopens the session (Claude Code: `claude --resume <id>`; Codex: `codex resume <id>`); `--exec` runs it in the foreground.
+- Prints the harness command that reopens the session; `--exec` runs it in the foreground. Verified today: `claude --resume <id>`, `codex resume <id>`, `pi --session <id>`, `omp --resume <id>`, `cursor-agent --resume <id>`, `cline --id <id>`, `opencode --session <id>`, `qwen --resume <id>`, `kimi --session <id>`, `zcode --resume <id>`.
 - Harnesses without a verified resume command print a handoff hint pointing at `fms show`; never guess a resume command.
 - Prefer `--exec` only when the user asked to reopen the session; printing is the safe default.
 
@@ -305,25 +305,25 @@ Report observed facts only: harness, edition, version, exact command, and docume
 
 - `references/qoder-cn.md`: Qoder CN store layout, JSONL schema, compaction and todo handling, variants, caveats.
 - `references/qoder.md`: international Qoder store, differences from Qoder CN, excluded task transcripts, caveats.
-- `references/kimi-code.md`: Kimi Code shared desktop/CLI store, event journal versus wire transcript, `state.json` archive flag, surface inference, caveats.
-- `references/zcode.md`: ZCode shared desktop/CLI SQLite store, message semantics, virtual source paths, task-index archive flags, deep search, caveats.
+- `references/kimi-code.md`: Kimi Code shared desktop/CLI store, event journal versus wire transcript, `state.json` archive flag, surface inference, resume, caveats.
+- `references/zcode.md`: ZCode shared desktop/CLI SQLite store, message semantics, virtual source paths, task-index archive flags, deep search, resume, caveats.
 - `references/codearts-agent.md`: CodeArts Agent opencode-schema SQLite store, synthetic-part prompt filtering, compaction marker, virtual source paths, archive flag, caveats.
-- `references/codex.md`: ChatGPT Codex rollout layout, resumed-thread `history_base` stitching, prompt wrappers, compaction, compressed rollouts, archive by directory, caveats.
+- `references/codex.md`: ChatGPT Codex rollout layout, resumed-thread `history_base` stitching, prompt wrappers, compaction, compressed rollouts, resume, archive by directory, caveats.
 - `references/deepseek.md`: DeepSeek Harness compressed session logs, schema-version selection, event record types, injected-context and inbox filtering, workspace archive ids, zstd requirement, caveats.
-- `references/claude-code.md`: Claude Code project transcript layout, prompt wrappers, compaction and todos, subagent exclusion, lack of archive state, caveats.
-- `references/cline.md`: Cline desktop/CLI session directories, `<user_input>` prompts, injected-context filtering, compaction snapshots, subagent/team exclusion, suffix-based refs, lack of archive state, caveats.
+- `references/claude-code.md`: Claude Code project transcript layout, prompt wrappers, compaction and todos, subagent exclusion, resume, lack of archive state, caveats.
+- `references/cline.md`: Cline desktop/CLI session directories, `<user_input>` prompts, injected-context filtering, compaction snapshots, subagent/team exclusion, suffix-based refs, resume, lack of archive state, caveats.
 - `references/grok-build.md`: Grok Build cwd-grouped session layout, `updates.jsonl` ACP records, prompt filtering, subagent and empty-session exclusion, compaction checkpoints, todos, lack of archive state, caveats.
 - `references/antigravity.md`: Antigravity per-conversation SQLite databases, summaries database and FTS archive state, brain JSONL transcripts, migrated IDE root, checkpoint todos, prompt filtering, deep search, caveats.
 - `references/antigravity-cli.md`: Antigravity CLI store, shared parser, missing archive index, differences from the desktop harness, caveats.
 - `references/workbuddy.md`: WorkBuddy AI international store, JSONL record types, `user_query` prompt extraction, application-database title and archive state, caveats.
 - `references/workbuddy-cn.md`: domestic WorkBuddy store, shared parser, `<cb_summary>` compaction, `summary` initial-prompt fallback, archive state, caveats.
-- `references/opencode.md`: OpenCode single-database store, session versions, prompt filtering, archive flag, caveats.
+- `references/opencode.md`: OpenCode single-database store, session versions, prompt filtering, resume, archive flag, caveats.
 - `references/gemini-cli.md`: Gemini CLI replayable chat logs, snapshots, prompt filtering, caveats.
-- `references/qwen.md`: Qwen Code chat logs, envelope records, todos, caveats.
+- `references/qwen.md`: Qwen Code chat logs, envelope records, todos, usage, resume, caveats.
 - `references/pi.md`: Pi session tree, prompt filtering, compaction, usage, resume, caveats.
 - `references/omp.md`: Oh My Pi fork store, title changes, attribution filtering, resume, caveats.
 - `references/minimax-code.md`: MiniMax Code dated transcripts plus `runtime-state.sqlite`, database-authoritative listing and prompts, todo events, archive flag, compaction fallback, internal-session filtering, caveats.
-- `references/cursor.md`: Cursor agent-transcript JSONL files, the desktop conversation index for titles and archive state, `workspaceStorage` cwd recovery, subagent filtering, `<user_query>` prompt extraction, caveats.
+- `references/cursor.md`: Cursor agent-transcript JSONL files, the desktop conversation index for titles and archive state, `workspaceStorage` cwd recovery, subagent filtering, `<user_query>` prompt extraction, resume, caveats.
 - `references/diagnostics.md`: doctor and verbose search output, error categories, privacy, and performance boundaries.
 - `references/extending.md`: adapter contract and checklist for adding the next harness.
 - `references/contribution.md`: consent-first flow for reporting unsupported harnesses, version drift, and documentation mismatches: privacy gate, evidence to collect, issue types, and title and body templates.

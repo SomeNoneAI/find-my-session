@@ -40,7 +40,9 @@ All notable changes to this project are documented here. The format follows
   (acknowledge in 3 business days, fix critical exposure in 14).
 - `search`/`latest --explain`: per-token scoring breakdowns on stderr.
 - `search`/`latest --deep --timeout SECONDS`: stop deep scanning after N
-  seconds with a stderr warning and partial results (`0` = no limit).
+- `fms resume` now covers Cursor (`cursor-agent --resume`), Cline
+  (`cline --id`), OpenCode (`opencode --session`), Qwen (`qwen --resume`),
+  Kimi (`kimi --session`), and ZCode (`zcode --resume`).
 
 ### Fixed
 

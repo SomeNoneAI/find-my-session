@@ -874,6 +874,9 @@ class KimiCodeAdapter(HarnessAdapter):
             turn_count=turn_count,
         )
 
+    def resume_argv(self, summary: SessionSummary) -> Optional[List[str]]:
+        return ["kimi", "--session", summary.session_id]
+
     def load(self, summary: SessionSummary) -> SessionDetail:
         session_dir = self._session_dir_for(summary.path)
         if session_dir is not None:

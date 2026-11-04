@@ -215,6 +215,10 @@ archived sessions first, an archived session is not scanned unless
 `--include-archived` is passed. A live deep search over 41 sessions takes under
 one second.
 
+## Resume
+
+Verified: zcode --resume <sessionId> reopens a session (zcode --continue reopens the most recent). fms resume prints zcode --resume <raw id>.
+
 ## Known gaps
 
 - `size_bytes` is `0`.

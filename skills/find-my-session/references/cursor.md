@@ -220,6 +220,10 @@ open an archived session by explicit ref or path and print `- archived: yes`.
 
 Cursor has no separate deleted flag: a deleted conversation leaves the index.
 
+## Resume
+
+Verified: cursor-agent --resume [chatId] reopens a session (--continue resumes the most recent). fms resume prints cursor-agent --resume <id>.
+
 ## Deep search
 
 `--deep` scans the session's own transcript file. Because the scan is keyed by

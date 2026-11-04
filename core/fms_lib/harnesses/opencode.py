@@ -743,6 +743,9 @@ class OpenCodeAdapter(HarnessAdapter):
             turn_count=turn_count,
         )
 
+    def resume_argv(self, summary: SessionSummary) -> Optional[List[str]]:
+        return ["opencode", "--session", self._raw_id(summary.path)]
+
     def usage_summary(self, summary: SessionSummary) -> Optional[Dict[str, Any]]:
         raw_id = self._raw_id(summary.path)
         db = self._db_for_path(summary.path)

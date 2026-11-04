@@ -243,6 +243,9 @@ class QwenAdapter(HarnessAdapter):
             archived=False,
         )
 
+    def resume_argv(self, summary: SessionSummary) -> Optional[List[str]]:
+        return ["qwen", "--resume", summary.session_id]
+
     def usage_summary(self, summary: SessionSummary) -> Optional[Dict[str, Any]]:
         """Sum the per-record usageMetadata the log itself records."""
         totals: Dict[str, Any] = {}

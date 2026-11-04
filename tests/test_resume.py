@@ -1,11 +1,12 @@
 """Tests for ``fms resume``.
 
 The resume command prints (or with --exec, runs) the harness command
-that reopens a session. Verified mappings exist for Claude Code and
-Codex; harnesses without a verified command fall back to the handoff
-hint. The --exec path is exercised against a stubbed subprocess so no
-test ever launches a real harness, and every ref is resolved from the
-synthetic fixtures — never from a live store.
+that reopens a session. Verified mappings exist for Claude Code, Codex,
+Pi, OMP, Cursor, Cline, OpenCode, Qwen, Kimi, and ZCode; harnesses
+without a verified command fall back to the handoff hint. The --exec
+path is exercised against a stubbed subprocess so no test ever launches
+a real harness, and every ref is resolved from the synthetic fixtures —
+never from a live store.
 """
 
 from __future__ import annotations
@@ -34,6 +35,37 @@ class ResumeTests(FixtureTestCase):
         self.assertEqual(code, 0, err)
         self.assertEqual(out.strip(), "codex resume %s" % session["session_id"])
 
+    def test_new_resume_commands(self) -> None:
+        expected = {
+            "cursor": ["cursor-agent", "--resume"],
+            "cline": ["cline", "--id"],
+            "qwen": ["qwen", "--resume"],
+            "kimi-code": ["kimi", "--session"],
+        }
+        for harness, prefix in expected.items():
+            with self.subTest(harness=harness):
+                session = self._newest_session(harness)
+                code, out, err = self.run_cli("resume", session["ref"])
+                self.assertEqual(code, 0, err)
+                self.assertEqual(
+                    out.strip(),
+                    "%s %s" % (" ".join(prefix), session["session_id"]),
+                )
+
+    def test_opencode_resume_uses_raw_session_id(self) -> None:
+        session = self._newest_session("opencode")
+        code, out, err = self.run_cli("resume", session["ref"])
+        self.assertEqual(code, 0, err)
+        raw_id = session["path"].split("#", 1)[1]
+        self.assertEqual(out.strip(), "opencode --session %s" % raw_id)
+
+    def test_zcode_resume_uses_raw_session_id(self) -> None:
+        session = self._newest_session("zcode")
+        code, out, err = self.run_cli("resume", session["ref"])
+        self.assertEqual(code, 0, err)
+        raw_id = session["path"].split("#", 1)[1]
+        self.assertEqual(out.strip(), "zcode --resume %s" % raw_id)
+
     def test_json_output(self) -> None:
         session = self._newest_session("claude-code")
         code, out, err = self.run_cli("resume", session["ref"], "--json")
@@ -48,11 +80,11 @@ class ResumeTests(FixtureTestCase):
         self.assertFalse(payload["executed"])
 
     def test_harness_without_known_resume_command(self) -> None:
-        session = self._newest_session("kimi-code")
+        session = self._newest_session("workbuddy")
         code, out, err = self.run_cli("resume", session["ref"])
         self.assertEqual(code, 0, err)
         self.assertIn(
-            "no verified resume command for harness 'kimi-code'", out
+            "no verified resume command for harness 'workbuddy'", out
         )
         self.assertIn("fms show %s" % session["ref"], out)
 

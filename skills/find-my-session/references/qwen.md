@@ -75,6 +75,10 @@ never sees it.
 (`promptTokenCount` → input, `candidatesTokenCount` → output,
 `cachedContentTokenCount` → cache read). Cost is not recorded.
 
+## Resume
+
+Verified: qwen --resume <sessionId> reopens a session (qwen --continue reopens the most recent in this directory). fms resume prints qwen --resume <id>.
+
 ## Known gaps and risks
 
 - No API-error record type was observed live; error text is not surfaced.

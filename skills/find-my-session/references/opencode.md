@@ -116,6 +116,10 @@ edited files from `patch` parts and `edit`/`write` tool inputs, tool names
 with short details, the last 20 tool calls, and assistant API error text
 (quota/auth failures survive). Attachments and reasoning are ignored.
 
+## Resume
+
+Verified against opencode --help: opencode --session <id> reopens a session (--continue reopens the most recent). fms resume prints opencode --session <raw id>.
+
 ## Known gaps and risks
 
 - The legacy `storage/` JSON store is not read.
