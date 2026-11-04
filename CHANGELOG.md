@@ -33,6 +33,11 @@ All notable changes to this project are documented here. The format follows
   search/resume/archive questions, linked from both READMEs.
 - Session-scale regression budgets: 1k sessions under 5s and 10k under
   30s end-to-end for keyword search (measured ~0.2s/~2s locally).
+- `tests/test_json_contract.py`: frozen required-key assertions for
+  `harnesses`/`search`/`latest`/`show`/`prompts`/`stats`, matching
+  `docs/json-output.md` (additive changes pass, removals fail).
+- `SECURITY.md`: read-only/telemetry statement, response-time expectations
+  (acknowledge in 3 business days, fix critical exposure in 14).
 
 ### Fixed
 
