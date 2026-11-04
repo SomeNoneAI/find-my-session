@@ -1,7 +1,11 @@
 # Publishing to the MCP Registry
 
-The registry hosts metadata only; the artifact stays on PyPI.
-`server.json` at the repo root is the single source of that metadata.
+Releases publish automatically: the `publish-mcp` job in
+`.github/workflows/release.yml` runs after PyPI, logs in via OIDC, and
+pushes `server.json`. Tagging `vX.Y.Z` is the only manual step (see
+`RELEASING.md`); keep `server.json`'s version equal to the tag.
+
+Manual publishing (for retries) is below.
 
 ## Prerequisites
 
