@@ -18,10 +18,13 @@ from fms_lib.models import SessionSummary
 from fms_lib.registry import get_adapters, harness_rows
 from fms_lib.service import (
     list_prompts,
-    load_session,
     project_paths_from,
     query_summaries,
+    resolve_session,
     search_sessions,
+)
+from fms_lib.service import (
+    stats as stats_service,
 )
 
 try:
@@ -134,9 +137,23 @@ def api_response(path: str, params: Dict[str, List[str]]) -> object:
             "revision": revision,
             "refreshing": refreshing,
         }
+    if path == "/api/stats":
+        return {
+            "stats": stats_service(
+                harness=params.get("harness"),
+                cwd=_parameter(params, "cwd") or None,
+                since=_parameter(params, "since") or None,
+                include_archived=_boolean(params, "archived"),
+            )
+        }
     if path == "/api/session":
-        detail = load_session(_required_ref(params))
-        return detail.to_dict(max_exchanges=_integer(params, "messages", 20, 100))
+        adapter, summary = resolve_session(
+            _required_ref(params), get_adapters(None)
+        )
+        detail = adapter.load(summary)
+        payload = detail.to_dict(max_exchanges=_integer(params, "messages", 20, 100))
+        payload["resume_argv"] = adapter.resume_argv(summary)
+        return payload
     if path == "/api/prompts":
         order = _parameter(params, "order", "oldest")
         if order not in ("oldest", "newest"):

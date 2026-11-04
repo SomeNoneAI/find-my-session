@@ -23,6 +23,10 @@ CORE_DIR = REPO_ROOT / "core"
 UI_ENTRYPOINT = REPO_ROOT / "fms_ui" / "fms-ui"
 sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(CORE_DIR))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from claude_code_fixture import build_claude_code_home  # noqa: E402
+from opencode_fixture import build_opencode_home  # noqa: E402
 
 from fms_lib import __version__  # noqa: E402
 from fms_ui import server as server_module  # noqa: E402
@@ -69,11 +73,15 @@ class UITestCase(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls._temp = tempfile.TemporaryDirectory(prefix="fms-ui-tests-")
         cls.root = Path(cls._temp.name)
+        cls.opencode_home = build_opencode_home(cls.root / "opencode-home")
+        cls.claude_home = build_claude_code_home(cls.root / "claude-home")
         cls.home = shutil.copytree(
             REPO_ROOT / "tests" / "fixtures" / "qoder-cn-home",
             cls.root / "qoder-cn-home",
         )
         cls.environment = synthetic_environment(cls.root)
+        cls.environment["FMS_OPENCODE_HOME"] = str(cls.opencode_home)
+        cls.environment["FMS_CLAUDE_HOME"] = str(cls.claude_home)
         cls._environment_patch = mock.patch.dict(os.environ, cls.environment)
         cls._environment_patch.start()
         cls.server = create_server(0)
@@ -110,6 +118,45 @@ class UITestCase(unittest.TestCase):
         status, _, data = self.request_json("/api/sessions?" + urlencode(values))
         self.assertEqual(status, 200, data)
         return data["sessions"]
+
+
+class UIStatsTests(UITestCase):
+    def test_stats_endpoint_aggregates_recorded_usage(self) -> None:
+        status, _, data = self.request_json("/api/stats?" + urlencode({"harness": "opencode"}))
+        self.assertEqual(status, 200, data)
+        rows = data["stats"]
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["harness"], "opencode")
+        self.assertEqual(rows[0]["sessions"], 4)
+        self.assertEqual(rows[0]["sessions_with_usage"], 2)
+        self.assertEqual(rows[0]["tokens_input"], 1800)
+        self.assertAlmostEqual(rows[0]["cost_usd"], 0.5)
+        self.assertNotIn("resume_argv", rows[0])
+
+    def test_stats_endpoint_marks_unrecorded_harnesses(self) -> None:
+        status, _, data = self.request_json("/api/stats?" + urlencode({"harness": "qoder-cn"}))
+        self.assertEqual(status, 200, data)
+        rows = data["stats"]
+        self.assertEqual(rows[0]["harness"], "qoder-cn")
+        self.assertGreater(rows[0]["sessions"], 0)
+        self.assertEqual(rows[0]["sessions_with_usage"], 0)
+        self.assertIsNone(rows[0]["tokens_input"])
+        self.assertIsNone(rows[0]["cost_usd"])
+
+    def test_session_detail_includes_resume_argv(self) -> None:
+        session = self.search(harness="claude-code", limit=1)[0]
+        status, _, data = self.request_json("/api/session?" + urlencode({"ref": session["ref"]}))
+        self.assertEqual(status, 200, data)
+        self.assertEqual(
+            data["resume_argv"],
+            ["claude", "--resume", session["session_id"]],
+        )
+
+    def test_session_detail_resume_argv_null_without_mapping(self) -> None:
+        session = self.search(harness="qoder-cn", limit=1)[0]
+        status, _, data = self.request_json("/api/session?" + urlencode({"ref": session["ref"]}))
+        self.assertEqual(status, 200, data)
+        self.assertIsNone(data["resume_argv"])
 
 
 class UIApiTests(UITestCase):

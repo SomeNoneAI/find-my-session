@@ -1,11 +1,5 @@
 import { t } from "@/i18n";
-import type {
-  HarnessListResponse,
-  ProjectListResponse,
-  PromptListingDTO,
-  SessionDetailDTO,
-  SessionListResponse,
-} from "@/types";
+import type { HarnessListResponse, ProjectListResponse, PromptListingDTO, SessionDetailDTO, SessionListResponse, StatsResponseDTO } from "@/types";
 import { isAbortError } from "@/utils";
 
 export class ApiError extends Error {}
@@ -67,6 +61,10 @@ export function fetchPrompts(params: {
     order: params.order,
   });
   return fetchJSON<PromptListingDTO>(`/api/prompts?${search.toString()}`, params.signal);
+}
+
+export function fetchStats(signal?: AbortSignal): Promise<StatsResponseDTO> {
+  return fetchJSON<StatsResponseDTO>("/api/stats", signal);
 }
 
 export function fetchProjects(

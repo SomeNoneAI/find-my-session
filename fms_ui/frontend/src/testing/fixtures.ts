@@ -33,6 +33,7 @@ export function detailFor(ref: string): SessionDetailDTO {
     exchanges: [],
     edited_files: [],
     tool_counts: {},
+    resume_argv: null,
     recent_tools: [],
   };
 }

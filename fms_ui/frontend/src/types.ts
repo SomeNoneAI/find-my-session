@@ -75,6 +75,21 @@ export interface SessionDetailDTO extends SessionSummaryDTO {
   edited_files: EditedFileDTO[];
   tool_counts: Record<string, number>;
   recent_tools: ToolCallDTO[];
+  resume_argv: string[] | null;
+}
+
+export interface StatsRowDTO {
+  harness: string;
+  sessions: number;
+  sessions_with_usage: number;
+  tokens_input: number | null;
+  tokens_output: number | null;
+  tokens_cache_read: number | null;
+  cost_usd: number | null;
+}
+
+export interface StatsResponseDTO {
+  stats: StatsRowDTO[];
 }
 
 export interface UserPromptDTO {

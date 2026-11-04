@@ -115,6 +115,17 @@ async function copyPath(): Promise<void> {
   }
 }
 
+async function copyResumeCommand(): Promise<void> {
+  const argv = props.detail?.resume_argv;
+  if (!argv) return;
+  try {
+    await copyText(argv.join(" "));
+    showToast(t("copiedResumeCommand"));
+  } catch (error) {
+    showToast(t("copyFailed"), { sticky: true });
+  }
+}
+
 watch(
   () => props.view,
   (view) => {
@@ -167,6 +178,15 @@ watch(
         <div class="detail-actions">
           <button class="text-button" type="button" @click="copyRef">{{ t("copyRef") }}</button>
           <button class="text-button" type="button" @click="copyPath">{{ t("copyPath") }}</button>
+          <button
+            v-if="detail?.resume_argv"
+            class="text-button"
+            type="button"
+            :title="(detail.resume_argv || []).join(' ')"
+            @click="copyResumeCommand"
+          >
+            {{ t("resumeCommand") }}
+          </button>
         </div>
       </header>
 

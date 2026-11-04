@@ -9,12 +9,14 @@ import { readStoredFlag, writeStoredFlag } from "@/utils";
 import SearchFilters from "@/components/SearchFilters.vue";
 import SessionDetail from "@/components/SessionDetail.vue";
 import SessionList from "@/components/SessionList.vue";
+import StatsPanel from "@/components/StatsPanel.vue";
 import Toast from "@/components/Toast.vue";
 
 const store = useWorkspace();
 const { theme, themeToggleLabel, toggleTheme } = useTheme();
 
 const compact = ref(readStoredFlag("fms-ui-compact"));
+const statsVisible = ref(false);
 const language = ref(getLocale());
 const searchFilters = ref<{ closeAutocomplete: () => void; refreshAutocomplete: () => void } | null>(
   null,
@@ -68,6 +70,15 @@ onMounted(() => {
         <span class="brand-name">Find My Session</span>
       </a>
       <div class="masthead-meta">
+        <button
+          id="stats-toggle"
+          class="mode-toggle"
+          type="button"
+          :aria-expanded="statsVisible ? 'true' : 'false'"
+          @click="statsVisible = !statsVisible"
+        >
+          {{ t("statsToggle") }}
+        </button>
         <button
           id="compact-toggle"
           class="mode-toggle"
@@ -135,5 +146,6 @@ onMounted(() => {
       />
     </main>
   </div>
+  <StatsPanel v-if="statsVisible" @close="statsVisible = false" />
   <Toast />
 </template>
