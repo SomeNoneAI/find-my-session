@@ -11,7 +11,7 @@ from .fingerprint import fingerprint_store
 from .harnesses.base import HarnessAdapter
 from .models import PromptListing, SessionDetail, SessionSummary, UserPrompt
 from .registry import adapter_for_path, get_adapters, lookup_harness
-from .search import search_summaries, tokenize_query
+from .search import DeepTimeout, search_summaries, tokenize_query
 from .util import cwd_matches, parse_since
 
 
@@ -133,14 +133,28 @@ def search_sessions(
     include_archived: bool = False,
     latest: bool = False,
     report: Optional[ScanReport] = None,
+    timeout: float = 0,
 ) -> List[SessionSummary]:
+    import time as _time
+
     adapters = get_adapters(harness)
     summaries = _filter_summaries(
         _gather_summaries(adapters, report), cwd, since, include_archived
     )
     tokens = tokenize_query(query)
     deep_match = _deep_matcher(adapters) if deep else None
-    results = search_summaries(summaries, tokens, deep, deep_match)
+    deadline = (_time.perf_counter() + timeout) if timeout > 0 else None
+    try:
+        results = search_summaries(summaries, tokens, deep, deep_match, deadline)
+    except DeepTimeout as exc:
+        import sys as _sys
+
+        _sys.stderr.write(
+            "fms: warning: deep search timed out after %.1fs; "
+            "showing %d of %d scanned sessions\n"
+            % (timeout, len(exc.partial), exc.scanned)
+        )
+        results = exc.partial
     if latest:
         results.sort(key=lambda summary: summary.updated, reverse=True)
     return _limit(results, limit)

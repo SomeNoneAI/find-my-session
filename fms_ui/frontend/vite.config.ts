@@ -24,7 +24,9 @@ export default defineConfig({
     rollupOptions: {
       output: {
         entryFileNames: "app.js",
-        chunkFileNames: "assets/[name]-[hash].js",
+        // Single bundle: the Python server only serves the fixed names in
+        // STATIC_FILES, so any code-splitting chunk would 404.
+        inlineDynamicImports: true,
         assetFileNames: (assetInfo) =>
           assetInfo.name && assetInfo.name.endsWith(".css")
             ? "styles.css"

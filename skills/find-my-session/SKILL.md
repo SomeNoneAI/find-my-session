@@ -116,9 +116,11 @@ scripts/fms prompts qoder-cn:3f2a9c1d --limit 20 --offset 40
 
 ```text
 fms search [query ...] [--harness NAME] [--cwd PATH] [--since WHEN]
-           [--limit N] [--deep] [--include-archived] [--verbose] [--json]
+           [--limit N] [--deep] [--timeout SECONDS] [--explain]
+           [--include-archived] [--verbose] [--json]
 fms latest [query ...] [--harness NAME] [--cwd PATH] [--since WHEN]
-           [--limit N] [--deep] [--include-archived] [--verbose] [--json]
+           [--limit N] [--deep] [--timeout SECONDS] [--explain]
+           [--include-archived] [--verbose] [--json]
 ```
 
 - `--harness` accepts a name or alias, repeats, or takes a comma-separated list. Prefer it.
@@ -126,6 +128,8 @@ fms latest [query ...] [--harness NAME] [--cwd PATH] [--since WHEN]
 - `--since` accepts `30m`, `24h`, `7d`, `2w`, or an ISO date/datetime such as `2026-10-01`.
 - `--limit` defaults to 10 for `search` and 1 for `latest`; `0` means no limit.
 - `--deep` scans full stored content only when metadata misses. File harnesses read transcripts; Antigravity reads the brain transcript and falls back to that session's conversation database when no transcript exists; ZCode and CodeArts Agent query that session's database rows; MiniMax Code scans its message rows and then the transcript; Cursor scans the session's own transcript file. It is much slower and should be a last resort.
+- `--timeout` stops deep scanning after N seconds and shows partial results with a stderr warning; `0` (default) means no limit.
+- `--explain` prints per-token scoring breakdowns (`token=field+points`) to stderr without changing stdout; deep-only matches report `deep-only match`.
 - `--include-archived` also searches sessions archived in the harness UI. Off by default; see [Archived sessions](#archived-sessions).
 - `--verbose` warns on stderr when sessions are skipped and lists their paths; stdout and exit codes stay unchanged. It does not report deep-search mismatches.
 - `--json` emits an array of session objects with `ref`, `path`, `session_id`, `cwd`, `title`, timestamps, branch, model, size, and `archived`.
@@ -222,7 +226,7 @@ The Markdown digest uses these sections when data exists:
 - Keep archived sessions out unless the user asks or the normal search misses; including them can bury the active session the user actually wants.
 - Search reads bounded metadata per session; compressed stores such as Codex and DeepSeek decompress each candidate in one bounded-state pass. `show` streams one session once.
 - Run `prompts --count` before listing prompts. Page with `--limit`/`--offset` and cap with `--chars` instead of dumping every prompt.
-- Use `--deep` only after a normal search misses and the user confirms the topic exists.
+- Use `--deep` only after a normal search misses and the user confirms the topic exists. Add `--timeout` for large stores and `--explain` when the ranking needs justification.
 - Never `cat` a session file. If exact evidence is required, use `rg` with a narrow pattern and read a small window around the hit.
 - Prefer `--format json --messages 0` when only metadata and todos matter.
 

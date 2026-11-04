@@ -69,7 +69,9 @@ All values are strings, including display-oriented lists.
 objects. `search` returns up to 10 by default; `latest` returns at most 1,
 sorted by `updated` descending. `--limit 0` removes the limit. Filters
 (`--cwd`, `--since`, `--include-archived`, `--deep`) change which objects are
-present, not their shape.
+present, not their shape. `--explain` and `--timeout` write diagnostics to
+stderr only and never change the JSON document; a timed-out deep search
+returns the partial result set.
 
 ```json
 [

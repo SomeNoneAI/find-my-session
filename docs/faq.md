@@ -1,11 +1,9 @@
-# FAQ and 5-minute tutorial
+---
 
-New here? This page gets you from zero to a resumed session in five
-minutes. For per-harness store details, see the
-[compatibility matrix](compatibility.md) and
-[references/](../skills/find-my-session/references/).
-
-## 5-minute tutorial
+> **New in this release:** `search`/`latest` accept `--explain` (per-token
+> scoring breakdowns on stderr) and `--timeout SECONDS` (stop deep scanning
+> after N seconds, show partial results). See "Why is this result ranked
+> first?" and "Deep search is too slow" below.
 
 ```bash
 fms doctor                                  # are my stores readable?
@@ -49,6 +47,23 @@ Refs are the first 8 characters of the session id. When two sessions
 share a prefix, the CLI errors with an `ambiguous` message listing
 candidates — use a longer prefix or the full `harness:id` ref shown
 in the error.
+
+### Why is this result ranked first?
+
+Add `--explain`: each hit prints `token=field+points` to stderr, for
+example `dark=title/last_prompt+60`. Prefix id matches score highest
+(200/100), then cwd (80), title or latest prompt (60), first prompt
+(50), and other metadata (10). Every query word must match somewhere
+(AND-only). Deep-only matches report `deep-only match` and score 1, so
+they rank below any metadata hit.
+
+### Deep search is too slow. Can I stop it early?
+
+Pass `--timeout SECONDS` with `--deep`: scanning stops after N seconds
+and the CLI shows the partial results with a stderr warning telling
+you how many sessions were scanned. `--timeout 0` (default) means no
+limit. Narrow with `--harness` first — that is usually a bigger win
+than any timeout.
 
 ### `prompts` says "no prompts in this range" — is that an error?
 

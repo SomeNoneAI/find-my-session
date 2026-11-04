@@ -21,6 +21,7 @@ from .render import (
     render_show_markdown,
     render_stats_text,
 )
+from .search import explain_score, tokenize_query
 from .service import (
     doctor,
     list_prompts,
@@ -33,6 +34,29 @@ from .service import (
 )
 
 PROGRAM = "fms"
+
+
+def _print_explain(query, results) -> None:
+    """Print per-token scoring breakdowns to stderr (never stdout)."""
+    tokens = tokenize_query(query)
+    if not tokens:
+        return
+    for summary in results:
+        breakdown = explain_score(summary, tokens)
+        if breakdown is None:
+            sys.stderr.write(
+                "%s: %s: deep-only match (no metadata score)\n"
+                % (PROGRAM, summary.ref)
+            )
+            continue
+        parts = ", ".join(
+            "%s=%s+%d" % (token, field, points)
+            for token, field, points in breakdown
+        )
+        total = sum(points for _, _, points in breakdown)
+        sys.stderr.write(
+            "%s: %s: score %d (%s)\n" % (PROGRAM, summary.ref, total, parts)
+        )
 
 
 def _positive_or_zero(value: str) -> int:
@@ -69,11 +93,14 @@ def cmd_search(args: argparse.Namespace) -> int:
         deep=args.deep,
         include_archived=args.include_archived,
         report=report,
+        timeout=args.timeout,
     )
     if args.json:
         print(json_dump([summary.to_dict() for summary in results]))
     else:
         sys.stdout.write(render_search_tsv(results, args.include_archived))
+    if args.explain:
+        _print_explain(args.query, results)
     _warn_skipped(report, args.verbose)
     return 0
 
@@ -90,11 +117,14 @@ def cmd_latest(args: argparse.Namespace) -> int:
         include_archived=args.include_archived,
         latest=True,
         report=report,
+        timeout=args.timeout,
     )
     if args.json:
         print(json_dump([summary.to_dict() for summary in results]))
     else:
         sys.stdout.write(render_search_tsv(results, args.include_archived))
+    if args.explain:
+        _print_explain(args.query, results)
     _warn_skipped(report, args.verbose)
     return 0
 
@@ -302,7 +332,19 @@ def build_parser() -> argparse.ArgumentParser:
             help="warn on stderr about sessions skipped as unreadable",
         )
         sub.add_argument(
+            "--explain",
+            action="store_true",
+            help="print per-token scoring breakdowns to stderr",
+        )
+        sub.add_argument(
             "--json", action="store_true", help="emit JSON instead of TSV"
+        )
+        sub.add_argument(
+            "--timeout",
+            type=float,
+            default=0,
+            metavar="SECONDS",
+            help="stop deep scanning after N seconds and show partial results (0 = no limit)",
         )
 
     search = subparsers.add_parser(

@@ -38,6 +38,9 @@ All notable changes to this project are documented here. The format follows
   `docs/json-output.md` (additive changes pass, removals fail).
 - `SECURITY.md`: read-only/telemetry statement, response-time expectations
   (acknowledge in 3 business days, fix critical exposure in 14).
+- `search`/`latest --explain`: per-token scoring breakdowns on stderr.
+- `search`/`latest --deep --timeout SECONDS`: stop deep scanning after N
+  seconds with a stderr warning and partial results (`0` = no limit).
 
 ### Fixed
 
