@@ -17,6 +17,33 @@ def _cell(value: Any, limit: int = 0) -> str:
     return text if text else "-"
 
 
+def render_stats_text(rows: List[Dict[str, Any]]) -> str:
+    header = (
+        "harness\tsessions\tusage sessions\tinput tokens"
+        "\toutput tokens\tcost (USD)"
+    )
+    lines = [header]
+    for row in rows:
+        if row["sessions_with_usage"] == 0:
+            tokens_in = tokens_out = cost = "-"
+        else:
+            tokens_in = str(row["tokens_input"])
+            tokens_out = str(row["tokens_output"])
+            cost = "%.4f" % row["cost_usd"] if row["cost_usd"] is not None else "-"
+        lines.append(
+            "%s\t%d\t%d\t%s\t%s\t%s"
+            % (
+                row["harness"],
+                row["sessions"],
+                row["sessions_with_usage"],
+                tokens_in,
+                tokens_out,
+                cost,
+            )
+        )
+    return "\n".join(lines) + "\n"
+
+
 def render_harness_tsv(rows: List[Dict[str, object]]) -> str:
     lines = ["harness\tstatus\tvariants\tstore\taliases"]
     for row in rows:

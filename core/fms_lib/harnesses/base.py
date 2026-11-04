@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Iterator, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ..models import SessionDetail, SessionSummary, UserPrompt
 from ..util import file_contains_all
@@ -51,6 +51,16 @@ class HarnessAdapter(ABC):
 
     def contains(self, summary: SessionSummary, tokens: Sequence[str]) -> bool:
         return file_contains_all(summary.path, tokens)
+
+    def usage_summary(
+        self, summary: SessionSummary
+    ) -> Optional[Dict[str, Any]]:
+        """Recorded token/cost totals for one session, if the store has them.
+
+        Returns None when the harness does not record usage. Only return
+        numbers the store itself carries — never estimate.
+        """
+        return None
 
     def resume_argv(self, summary: SessionSummary) -> Optional[List[str]]:
         """Command that reopens this session in its own harness, if known.

@@ -86,7 +86,13 @@ CREATE TABLE session_v2 (
     time_created INTEGER NOT NULL,
     time_updated INTEGER NOT NULL,
     time_compacting INTEGER,
-    time_archived INTEGER
+    time_archived INTEGER,
+    cost REAL,
+    tokens_input INTEGER,
+    tokens_output INTEGER,
+    tokens_reasoning INTEGER,
+    tokens_cache_read INTEGER,
+    tokens_cache_write INTEGER
 );
 CREATE TABLE session (
     id TEXT PRIMARY KEY,
@@ -232,13 +238,17 @@ class _Writer:
         model: Optional[str] = None,
         archived: Optional[int] = None,
         in_v1: bool = True,
+        usage: Optional[Dict[str, float]] = None,
     ) -> None:
         slug = "synthetic-%s" % raw_id[-6:]
+        usage = usage or {}
         self._connection.execute(
             "INSERT INTO session_v2 (id, project_id, workspace_id, parent_id, "
             "fork_session_id, slug, directory, path, title, version, metadata, "
             "agent, model, time_created, time_updated, time_compacting, "
-            "time_archived) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "time_archived, cost, tokens_input, tokens_output, "
+            "tokens_reasoning, tokens_cache_read, tokens_cache_write) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (
                 raw_id,
                 "proj_synthetic",
@@ -257,6 +267,12 @@ class _Writer:
                 updated,
                 None,
                 archived,
+                usage.get("cost"),
+                usage.get("tokens_input"),
+                usage.get("tokens_output"),
+                usage.get("tokens_reasoning"),
+                usage.get("tokens_cache_read"),
+                usage.get("tokens_cache_write"),
             ),
         )
         if in_v1:
@@ -347,6 +363,14 @@ def build_opencode_home(home: Path) -> Path:
             stamp,
             _ms(2026, 10, 20, 10, 40),
             model=json.dumps({"id": MODEL_MAIN, "providerID": "synthetic"}),
+            usage={
+                "cost": 0.42,
+                "tokens_input": 1500,
+                "tokens_output": 800,
+                "tokens_reasoning": 120,
+                "tokens_cache_read": 200,
+                "tokens_cache_write": 50,
+            },
         )
         writer.message(
             SESSION_MAIN,
@@ -502,6 +526,7 @@ def build_opencode_home(home: Path) -> Path:
             _ms(2026, 10, 27, 18, 5),
             model=json.dumps({"id": MODEL_MAIN, "providerID": "synthetic"}),
             in_v1=False,
+            usage={"cost": 0.08, "tokens_input": 300, "tokens_output": 150},
         )
         writer.message(
             SESSION_V2ONLY,

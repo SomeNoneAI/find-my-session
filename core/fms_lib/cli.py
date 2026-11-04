@@ -18,8 +18,18 @@ from .render import (
     render_search_tsv,
     render_show_json,
     render_show_markdown,
+    render_stats_text,
 )
-from .service import doctor, list_prompts, load_session, resolve_session, search_sessions
+from .service import (
+    doctor,
+    list_prompts,
+    load_session,
+    resolve_session,
+    search_sessions,
+)
+from .service import (
+    stats as stats_service,
+)
 
 PROGRAM = "fms"
 
@@ -165,6 +175,20 @@ def cmd_resume(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_stats(args: argparse.Namespace) -> int:
+    rows = stats_service(
+        harness=args.harness,
+        cwd=args.cwd,
+        since=args.since,
+        include_archived=args.include_archived,
+    )
+    if args.json:
+        print(json_dump(rows))
+    else:
+        sys.stdout.write(render_stats_text(rows))
+    return 0
+
+
 def cmd_show(args: argparse.Namespace) -> int:
     detail = load_session(args.ref, harness=args.harness)
     if args.format == "json":
@@ -209,6 +233,7 @@ def build_parser() -> argparse.ArgumentParser:
             "  fms prompts qoder-cn:3f2a9c1d --count\n"
             "  fms prompts qoder-cn:3f2a9c1d --limit 20 --offset 40\n"
             "  fms resume claude-code:c1a0de03 --exec\n"
+            "  fms stats --since 7d\n"
             "  fms doctor --harness deepseek\n"
             "\nPrefer --harness to avoid scanning every store."
         ),
@@ -309,6 +334,36 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     doctor_parser.set_defaults(func=cmd_doctor)
+
+    stats_parser = subparsers.add_parser(
+        "stats",
+        help="aggregate recorded token/cost usage per harness",
+    )
+    stats_parser.add_argument(
+        "--harness",
+        action="append",
+        metavar="NAME",
+        help="restrict to a harness (alias allowed); repeat or comma-separate",
+    )
+    stats_parser.add_argument(
+        "--cwd",
+        metavar="PATH",
+        help="only sessions from this working directory or its descendants",
+    )
+    stats_parser.add_argument(
+        "--since",
+        metavar="WHEN",
+        help="only sessions updated since this time (7d, 24h, 2026-10-01)",
+    )
+    stats_parser.add_argument(
+        "--include-archived",
+        action="store_true",
+        help="include archived sessions (excluded by default)",
+    )
+    stats_parser.add_argument(
+        "--json", action="store_true", help="emit JSON instead of TSV"
+    )
+    stats_parser.set_defaults(func=cmd_stats)
 
     resume = subparsers.add_parser(
         "resume",

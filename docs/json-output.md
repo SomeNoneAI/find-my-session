@@ -282,6 +282,33 @@ With `--count`, the object stops after `total`:
 }
 ```
 
+## `fms stats --json`
+
+```json
+[
+  {
+    "harness": "opencode",
+    "sessions": 48,
+    "sessions_with_usage": 48,
+    "tokens_input": 13810605,
+    "tokens_output": 560819,
+    "tokens_cache_read": 134351324,
+    "cost_usd": 34.777460454
+  }
+]
+```
+
+| field | type | meaning |
+| --- | --- | --- |
+| `harness` | string | Harness name. |
+| `sessions` | number | Sessions considered (after filters). |
+| `sessions_with_usage` | number | Sessions whose store recorded usage. |
+| `tokens_input` / `tokens_output` / `tokens_cache_read` | number or null | Summed recorded totals; `null` when the harness records none. |
+| `cost_usd` | number or null | Summed recorded cost; `null` when unrecorded. |
+
+One entry per harness with sessions. Numbers come only from what the
+harness app itself recorded — fms never estimates.
+
 ## `fms resume --json`
 
 ```json

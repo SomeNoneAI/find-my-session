@@ -204,6 +204,57 @@ def doctor(
     return payload
 
 
+def stats(
+    harness: Optional[Sequence[str]] = None,
+    cwd: Optional[str] = None,
+    since: Optional[str] = None,
+    include_archived: bool = False,
+) -> List[Dict[str, Any]]:
+    """Aggregate recorded token/cost usage per harness.
+
+    Only what stores themselves record is reported; harnesses whose
+    adapter has no verified usage source appear with null totals.
+    """
+    adapters = get_adapters(harness)
+    summaries = _filter_summaries(
+        _gather_summaries(adapters), cwd, since, include_archived
+    )
+    by_name = {adapter.name: adapter for adapter in adapters}
+    rows: Dict[str, Dict[str, Any]] = {}
+    for summary in summaries:
+        entry = rows.setdefault(
+            summary.harness,
+            {
+                "harness": summary.harness,
+                "sessions": 0,
+                "sessions_with_usage": 0,
+                "tokens_input": None,
+                "tokens_output": None,
+                "tokens_cache_read": None,
+                "cost_usd": None,
+            },
+        )
+        entry["sessions"] += 1
+        adapter = by_name.get(summary.harness)
+        if adapter is None:
+            continue
+        try:
+            usage = adapter.usage_summary(summary)
+        except (OSError, ValueError):
+            usage = None
+        if not usage:
+            continue
+        entry["sessions_with_usage"] += 1
+        for key in ("tokens_input", "tokens_output", "tokens_cache_read"):
+            value = usage.get(key)
+            if isinstance(value, (int, float)):
+                entry[key] = (entry[key] or 0) + value
+        cost = usage.get("cost")
+        if isinstance(cost, (int, float)):
+            entry["cost_usd"] = (entry["cost_usd"] or 0.0) + cost
+    return [rows[key] for key in sorted(rows)]
+
+
 def project_paths_from(
     summaries: Sequence[SessionSummary],
     include_archived: bool = False,

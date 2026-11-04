@@ -743,6 +743,43 @@ class OpenCodeAdapter(HarnessAdapter):
             turn_count=turn_count,
         )
 
+    def usage_summary(self, summary: SessionSummary) -> Optional[Dict[str, Any]]:
+        raw_id = self._raw_id(summary.path)
+        db = self._db_for_path(summary.path)
+        if not db.is_file():
+            return None
+        try:
+            connection = self._connect(db)
+        except (OSError, sqlite3.Error, ValueError):
+            return None
+        try:
+            table = self._session_table(connection)
+            if not table:
+                return None
+            columns = _table_columns(connection, table)
+            wanted = ["cost", "tokens_input", "tokens_output", "tokens_cache_read"]
+            if not any(column in columns for column in wanted[1:]):
+                return None
+            selected = [column for column in wanted if column in columns]
+            row = connection.execute(
+                "SELECT %s FROM %s WHERE id = ?" % (", ".join(selected), table),
+                (raw_id,),
+            ).fetchone()
+        except sqlite3.Error:
+            return None
+        finally:
+            connection.close()
+        if row is None:
+            return None
+        values = dict(zip(selected, row))
+        if all(value is None for value in values.values()):
+            return None
+        usage: Dict[str, Any] = {}
+        for column in wanted:
+            if column in values and values[column] is not None:
+                usage[column] = values[column]
+        return usage or None
+
     def contains(self, summary: SessionSummary, tokens: Sequence[str]) -> bool:
         remaining = {normalize_text(token) for token in tokens if token}
         remaining.discard("")

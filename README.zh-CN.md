@@ -94,6 +94,7 @@ fms latest --harness kimi-code --cwd .          # 当前仓库最近一次的会
 fms show kimi-code:e5f6a7b8                     # 低 token 接力摘要
 fms prompts kimi-code:e5f6a7b8 --count          # 先统计用户输入，再用 --limit/--offset 分页
 fms resume claude-code:e1a2b3c4 --exec          # 直接跳回某个会话
+fms stats --since 7d                            # 跨 harness 的 token/费用汇总
 ```
 
 搜索建议显式指定 `--harness`；省略 query 即列出最近会话。归档会话默认不参与 `search`/`latest`，除非传入 `--include-archived`。`show` 全程只读，并会输出原始文件路径；摘要不够时，agent 可以再去 grep 原文件。
@@ -107,6 +108,7 @@ fms resume claude-code:e1a2b3c4 --exec          # 直接跳回某个会话
 | `fms latest` | 返回最近一个匹配会话。 |
 | `fms show <ref>` | 输出单个会话的接力摘要。 |
 | `fms prompts <ref>` | 列出单个会话的全部用户输入，支持计数、分页与排序。 |
+| `fms stats [--harness] [--since] [--json]` | 汇总各 harness 自身记录的 token/费用；未记录 usage 的显示 `-`。 |
 | `fms resume <ref> [--exec]` | 输出（用 `--exec` 则直接运行）在该 harness 中重新打开此会话的命令；未验证续接命令时回退为接力摘要。 |
 | `fms doctor [--harness] [--json] [--fingerprint]` | 检查本地环境与存储（解码器可用性、目录可读性、各 harness 健康状况）；`--fingerprint` 额外输出不含内容的存储形态摘要，便于上报格式漂移。 |
 
@@ -127,7 +129,18 @@ fms resume claude-code:e1a2b3c4 --exec          # 直接跳回某个会话
 | `--messages N` / `--chars N` / `--summary-chars N` | show | 限制对话轮数、单条字符数与摘要字符数。 |
 | `--json` | harnesses, search, latest, prompts, doctor | 结构化输出；`show` 使用 `--format json`。字段约定见 [docs/json-output.md](docs/json-output.md)。 |
 
-会话引用格式为 `harness:session-prefix`（例如 `kimi-code:e5f6a7b8`）；也接受受支持 harness 下的原始 transcript 路径。共用同一存储的桌面端与 CLI 属于同一个引用空间，哪些端已实测见[兼容矩阵](docs/compatibility.md)。
+会话引用格式为 `harness:session-prefix`（例如 `kimi-code:e5f6a7b8`）；也接受受支持 harness 下的原始 transcript 路径。
+
+### 用 fzf 交互选择
+
+所有列表都是纯 TSV，接一条管道即可交互操作：
+
+```bash
+fms search --limit 0 | fzf | cut -f1 | xargs -I{} fms show {}
+fms search --limit 0 --include-archived | fzf --with-nth=2,4 | cut -f1 | xargs -I{} fms resume {}
+```
+
+第二条命令会把选中的会话直接在其原 harness 中续接（需该 harness 有已验证的续接命令，见 `fms resume --help`）。共用同一存储的桌面端与 CLI 属于同一个引用空间，哪些端已实测见[兼容矩阵](docs/compatibility.md)。
 
 ## 隐私与安全
 

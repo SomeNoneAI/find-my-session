@@ -94,6 +94,7 @@ fms latest --harness kimi-code --cwd .          # most recent session in this re
 fms show kimi-code:e5f6a7b8                     # low-token handoff digest
 fms prompts kimi-code:e5f6a7b8 --count          # count human prompts, then page with --limit/--offset
 fms resume claude-code:e1a2b3c4 --exec          # jump straight back into a session
+fms stats --since 7d                            # token/cost totals across harnesses
 ```
 
 Search prefers an explicit `--harness`; omit the query to list recent sessions. Archived sessions are excluded from `search`/`latest` unless `--include-archived` is passed. `show` stays read-only and prints the raw source path so an agent can grep the original file when the digest is not enough.
@@ -107,6 +108,7 @@ Search prefers an explicit `--harness`; omit the query to list recent sessions. 
 | `fms latest` | Return the most recent matching session. |
 | `fms show <ref>` | Print a handoff digest for one session. |
 | `fms prompts <ref>` | List every human prompt in one session; count, page, and order them. |
+| `fms stats [--harness] [--since] [--json]` | Aggregate the token/cost usage that harnesses themselves record; harnesses without recorded usage show `-`. |
 | `fms resume <ref> [--exec]` | Print (or run) the harness command that reopens the session; falls back to the handoff digest when no resume command is verified. |
 | `fms doctor [--harness] [--json] [--fingerprint]` | Check the local environment and stores (decoder availability, readable roots, per-harness health); `--fingerprint` adds a content-free shape summary for drift reports. |
 
@@ -127,7 +129,19 @@ Search prefers an explicit `--harness`; omit the query to list recent sessions. 
 | `--messages N` / `--chars N` / `--summary-chars N` | show | Cap turns, per-message characters, and summary characters. |
 | `--json` | harnesses, search, latest, prompts, doctor | Machine-readable output; use `--format json` for `show`. See [docs/json-output.md](docs/json-output.md) for the field contract. |
 
-Session references use `harness:session-prefix` (for example `kimi-code:e5f6a7b8`); a raw transcript path from a supported store works too. Desktop/CLI surfaces that share one store share one ref space — see the [compatibility matrix](docs/compatibility.md) for which surfaces are verified.
+Session references use `harness:session-prefix` (for example `kimi-code:e5f6a7b8`); a raw transcript path from a supported store works too.
+
+### Picking with fzf
+
+Every listing is plain TSV, so interactive picking is a pipe away:
+
+```bash
+fms search --limit 0 | fzf | cut -f1 | xargs -I{} fms show {}
+fms search --limit 0 --include-archived | fzf --with-nth=2,4 | cut -f1 | xargs -I{} fms resume {}
+```
+
+The second recipe resumes the picked session in its own harness when the
+harness has a verified resume command (see `fms resume --help`). Desktop/CLI surfaces that share one store share one ref space — see the [compatibility matrix](docs/compatibility.md) for which surfaces are verified.
 
 ## Privacy and safety
 

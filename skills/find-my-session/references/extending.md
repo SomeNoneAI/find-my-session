@@ -150,6 +150,7 @@ Add tests to `tests/test_cli.py` or a new `tests/test_<harness>.py`:
 - Missing and ambiguous refs.
 - `doctor --harness <name>` candidate/readable/skipped counts and sanitized failure categories; `search --verbose` warns without polluting stdout.
 - `doctor --fingerprint` works over the same candidates with no adapter work: fixture transcripts keep producing content-free shape summaries (no values, ids, or paths in the fingerprint).
+- Optional `usage_summary(summary)`: return the recorded token/cost totals for one session as a flat dict (`tokens_input`, `tokens_output`, `tokens_cache_read`, `cost`), or inherit the `None` default so `fms stats` reports the harness as unrecorded. Only return numbers the store itself carries.
 - Optional `resume_argv(summary)`: return the verified argv that reopens a session in the harness's own CLI (Claude Code and Codex today), or inherit the `None` default so `fms resume` falls back to the handoff digest. Only implement it for commands verified against the real app.
 - Read-only snapshot: file bytes and mtimes are unchanged after commands.
 - Fixture validity and privacy markers.
