@@ -41,6 +41,25 @@ STATIC_FILES = {
     "/styles.css": "styles.css",
     "/favicon.svg": "favicon.svg",
 }
+STATIC_ASSET_DIRS = ("harness-logos",)
+
+
+def _static_asset(path: str) -> Optional[str]:
+    """Map /harness-logos/<file>.png to a build artifact without path traversal."""
+    for dirname in STATIC_ASSET_DIRS:
+        prefix = "/%s/" % dirname
+        if not path.startswith(prefix):
+            continue
+        name = path[len(prefix):]
+        if (
+            not name.endswith(".png")
+            or "/" in name
+            or "\\" in name
+            or not all(ch.isalnum() or ch in "-_.@" for ch in name)
+        ):
+            return None
+        return "%s/%s" % (dirname, name)
+    return None
 
 
 def _parameter(params: Dict[str, List[str]], name: str, default: str = "") -> str:
@@ -223,7 +242,7 @@ class UIRequestHandler(BaseHTTPRequestHandler):
             else:
                 self._send_json(200, data)
             return
-        filename = STATIC_FILES.get(parsed.path)
+        filename = STATIC_FILES.get(parsed.path) or _static_asset(parsed.path)
         if filename is None:
             self._send_json(404, {"error": "not found"})
             return

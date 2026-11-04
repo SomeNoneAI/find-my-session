@@ -177,10 +177,20 @@ class UIApiTests(UITestCase):
         self.assertEqual(headers["X-Frame-Options"], "DENY")
         self.assertEqual(headers["Cache-Control"], "no-store")
 
-        for asset in ("/app.js", "/styles.css", "/theme-init.js", "/favicon.svg"):
+        for asset in (
+            "/app.js",
+            "/styles.css",
+            "/theme-init.js",
+            "/favicon.svg",
+            "/harness-logos/pi.png",
+        ):
             status, headers, body = self.request(asset)
             self.assertEqual(status, 200, asset)
             self.assertTrue(body)
+
+        status, _, data = self.request_json("/harness-logos/no-such-harness.png")
+        self.assertEqual(status, 404)
+        self.assertEqual(data["error"], "not found")
 
         status, _, data = self.request_json("/api/not-found")
         self.assertEqual(status, 404)
