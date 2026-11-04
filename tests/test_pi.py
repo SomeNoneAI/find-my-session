@@ -19,7 +19,6 @@ from pi_fixture import (
     PROMPTS_MAIN,
     PROMPTS_PLAIN,
     SESSION_MAIN,
-    SESSION_PLAIN,
     TITLE_MAIN,
     TODO_SUBJECT,
     TOOL_OUTPUT_NEEDLE,
