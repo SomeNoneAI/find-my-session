@@ -9,6 +9,7 @@ This is the single detailed compatibility matrix for find-my-session. The README
 - **Partial** — implemented, but only some surfaces/versions were verified; the rest are listed as expected or unverified.
 - **Expected** — inferred from a sibling surface or shared store, **not** confirmed on a real install.
 - **Planned** — researched or reserved, no adapter yet.
+- **Not supported** — researched and found unreadable or otherwise impossible to support; the verdict and probe date are recorded below.
 
 Synthetic fixtures prove the parser logic, not ongoing compatibility: a harness app can change its schema in any release, and a fixture that passes today says nothing about next month's build. "Verified" is always a point-in-time statement about the recorded version and date.
 
@@ -52,10 +53,19 @@ Synthetic fixtures prove the parser logic, not ongoing compatibility: a harness 
 | --- | --- | --- | --- | --- |
 | CodeBuddy (`codebuddy`) | Planned | `~/.codebuddy` | Domestic CodeBuddy desktop/IDE is a different product with its own store; reserved, not researched or implemented | — |
 | Cline VS Code extension (`cline-vscode`) | Planned | VS Code `globalStorage/saoudrizwan.claude-dev` | Different transcript format from the Cline desktop/CLI store; not implemented | [cline.md](../skills/find-my-session/references/cline.md) |
-| Trae / Trae CN (`trae`, `trae-cn`) | Research | VS Code-fork app data + `~/.trae`, `~/.trae-cn` | Chat bodies not found locally (state.vscdb carries UI state only); [issue #27](https://github.com/SomeNoneAI/find-my-session/issues/27) | — |
 | Windsurf / Codeium | Research | `~/.windsurf`, `~/.codeium/windsurf` | IDE not installed on the research machine; store unknown; [issue #28](https://github.com/SomeNoneAI/find-my-session/issues/28) | — |
 | Continue | Research | `~/.continue` | Skills only at home level; sessions believed editor-side; [issue #29](https://github.com/SomeNoneAI/find-my-session/issues/29) | — |
 | Augment Code | Research | `~/.augment` | Rules/skills only at home level; store unknown; [issue #30](https://github.com/SomeNoneAI/find-my-session/issues/30) | — |
+
+## Not supported harnesses
+
+| Harness | Status | Store | Notes | Reference |
+| --- | --- | --- | --- | --- |
+| Trae (`trae`) | Not supported | `~/.trae` + `~/Library/Application Support/Trae/ModularData/ai-agent` | macOS arm64, Trae 3.6.13 (`com.trae.app`), probed 2026-11-04: `database.db` is encrypted (no `SQLite format 3` header; ~8.0 entropy over the first 64 KB), `~/.trae` contains no `.jsonl` transcript, and the app has no CLI. No adapter was written | — |
+| Trae CN (`trae-cn`) | Not supported | `~/.trae-cn` + `~/Library/Application Support/Trae CN/ModularData/ai-agent` | macOS arm64, Trae CN 3.4.14 (`cn.trae.app`), probed 2026-11-04: same encrypted `database.db`; `state.vscdb` exposes only session ids, working directories, titles, and `messageIds`; no `.jsonl` transcript exists; no CLI. No adapter was written | — |
+| Trae 宝 (`trae-bao`) | Not supported · not a separate harness | Shares the Trae CN store | Floating-assistant surface inside Trae CN (`trae.floatingChat.buttonIcon = traebao`, `iCubeFloatingChat` assets), not an independent app, store, or schema; it must not get its own adapter or ref namespace. If Trae CN later exposes a readable transcript, Trae 宝 should be an alias rather than a third harness. Probed 2026-11-04 | — |
+
+**Reproduce the verdict.** Check whether `ModularData/ai-agent/database.db` begins with `SQLite format 3` (it does not in either edition), and whether `~/.trae` or `~/.trae-cn` contains any `*.jsonl` transcript (they do not). A "Not supported" verdict is point-in-time: if a future build writes a readable local transcript, re-run these checks and update this matrix.
 
 ## Interpreting this matrix
 
