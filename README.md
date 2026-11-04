@@ -25,7 +25,7 @@ Screenshots use synthetic fixture data.
 
 ## Supported harnesses
 
-Nineteen adapters are ready; two more are planned. Verified versions, surfaces, and caveats live in the [compatibility matrix](docs/compatibility.md); per-harness store details live in [references/](skills/find-my-session/references/).
+Twenty-one adapters are ready; two more are planned. Verified versions, surfaces, and caveats live in the [compatibility matrix](docs/compatibility.md); per-harness store details live in [references/](skills/find-my-session/references/).
 
 | Harness | Ref prefix | Store |
 | --- | --- | --- |
@@ -48,6 +48,8 @@ Nineteen adapters are ready; two more are planned. Verified versions, surfaces, 
 | OpenCode | `opencode` | `~/.local/share/opencode` |
 | Gemini CLI | `gemini-cli` | `~/.gemini` |
 | Qwen Code | `qwen` | `~/.qwen` |
+| Pi | `pi` | `~/.pi/agent/sessions` |
+| Oh My Pi | `omp` | `~/.omp/agent/sessions` |
 | CodeBuddy | `codebuddy` (planned) | `~/.codebuddy` |
 | Cline (VS Code extension) | `cline-vscode` (planned) | VS Code globalStorage |
 

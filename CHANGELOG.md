@@ -8,6 +8,13 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- Pi (`pi`) and Oh My Pi (`omp`) adapters. Pi reads the JSONL session tree
+  under `~/.pi/agent/sessions`; OMP is a separate fork with its own store
+  at `~/.omp/agent/sessions`, `title`/`title_change` records, per-message
+  `attribution`, and subagent transcripts that are never listed. Neither
+  harness has archive state. Both support prompt listing, handoff digests,
+  usage totals, and a verified `resume` command (`pi --session`,
+  `omp --resume`).
 - `fms mcp`: a Model Context Protocol server on stdio (schema revisions
   2025-06-18 and 2024-11-05) exposing the read-only surface — session
   search, handoff digests, prompt listing, usage stats, and doctor — as
