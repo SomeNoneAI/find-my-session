@@ -62,6 +62,7 @@ printf '%s\n' \
   '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
   | fms mcp
 ```
-
-The second response lists the seven tools; see
 `tests/test_mcp.py` for the full in-process suite.
+
+To list this server in the MCP Registry, see
+[docs/mcp-publishing.md](mcp-publishing.md).

@@ -171,3 +171,5 @@ python3 tools/build_artifacts.py   # rebuild dist/find-my-session-skill(.zip) an
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+<!-- mcp-name: io.github.SomeNoneAI/find-my-session -->

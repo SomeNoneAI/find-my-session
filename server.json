@@ -1,0 +1,22 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.SomeNoneAI/find-my-session",
+  "title": "find-my-session",
+  "description": "Read-only, cross-harness agent-session finder and handoff tool: search sessions by keywords, page human prompts, and print low-token handoff digests.",
+  "repository": {
+    "url": "https://github.com/SomeNoneAI/find-my-session",
+    "source": "github"
+  },
+  "version": "0.1.2",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "find-my-session",
+      "version": "0.1.2",
+      "transport": {
+        "type": "stdio"
+      },
+      "runtimeHint": "uvx --from find-my-session fms mcp"
+    }
+  ]
+}

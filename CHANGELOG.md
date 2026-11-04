@@ -43,6 +43,8 @@ All notable changes to this project are documented here. The format follows
 - `fms resume` now covers Cursor (`cursor-agent --resume`), Cline
   (`cline --id`), OpenCode (`opencode --session`), Qwen (`qwen --resume`),
   Kimi (`kimi --session`), and ZCode (`zcode --resume`).
+- MCP Registry ready: `server.json` manifest plus `docs/mcp-publishing.md`
+  publish guide; `README.md` carries the registry ownership token.
 
 ### Fixed
 
