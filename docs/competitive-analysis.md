@@ -48,6 +48,8 @@ The gaps competitors expose:
    totals); the `usage_summary` hook grows the coverage one verified
    store at a time.
 3. fzf/rofi interop recipes in the README (zero code).
-4. MCP server — significant protocol work; revisit after 1–2.
+4. MCP server — **shipped** (`fms mcp`): seven read-only tools over the
+   MCP stdio transport, so MCP-native hosts get the same surface the
+   skill provides.
 5. UI: surface the resume command and stats in the panel once the CLI
    owns them.

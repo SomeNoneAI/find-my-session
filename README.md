@@ -108,6 +108,7 @@ Search prefers an explicit `--harness`; omit the query to list recent sessions. 
 | `fms latest` | Return the most recent matching session. |
 | `fms show <ref>` | Print a handoff digest for one session. |
 | `fms prompts <ref>` | List every human prompt in one session; count, page, and order them. |
+| `fms mcp` | Run the Model Context Protocol server on stdio: exposes search/show/prompts/stats/doctor as read-only MCP tools for MCP-native hosts. See [docs/mcp.md](docs/mcp.md). |
 | `fms stats [--harness] [--since] [--json]` | Aggregate the token/cost usage that harnesses themselves record; harnesses without recorded usage show `-`. |
 | `fms resume <ref> [--exec]` | Print (or run) the harness command that reopens the session; falls back to the handoff digest when no resume command is verified. |
 | `fms doctor [--harness] [--json] [--fingerprint]` | Check the local environment and stores (decoder availability, readable roots, per-harness health); `--fingerprint` adds a content-free shape summary for drift reports. |

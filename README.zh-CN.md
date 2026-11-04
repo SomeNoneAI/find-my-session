@@ -108,6 +108,7 @@ fms stats --since 7d                            # 跨 harness 的 token/费用�
 | `fms latest` | 返回最近一个匹配会话。 |
 | `fms show <ref>` | 输出单个会话的接力摘要。 |
 | `fms prompts <ref>` | 列出单个会话的全部用户输入，支持计数、分页与排序。 |
+| `fms mcp` | 在 stdio 上运行 Model Context Protocol 服务器：把 search/show/prompts/stats/doctor 暴露为只读 MCP 工具。见 [docs/mcp.md](docs/mcp.md)。 |
 | `fms stats [--harness] [--since] [--json]` | 汇总各 harness 自身记录的 token/费用；未记录 usage 的显示 `-`。 |
 | `fms resume <ref> [--exec]` | 输出（用 `--exec` 则直接运行）在该 harness 中重新打开此会话的命令；未验证续接命令时回退为接力摘要。 |
 | `fms doctor [--harness] [--json] [--fingerprint]` | 检查本地环境与存储（解码器可用性、目录可读性、各 harness 健康状况）；`--fingerprint` 额外输出不含内容的存储形态摘要，便于上报格式漂移。 |

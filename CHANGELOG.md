@@ -8,6 +8,10 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- `fms mcp`: a Model Context Protocol server on stdio (schema revisions
+  2025-06-18 and 2024-11-05) exposing the read-only surface — session
+  search, handoff digests, prompt listing, usage stats, and doctor — as
+  seven MCP tools for MCP-native hosts. Documented in `docs/mcp.md`.
 - `fms stats [--harness] [--cwd] [--since] [--include-archived] [--json]`:
   per-harness token/cost totals from the usage data harness apps
   themselves record (OpenCode's session columns today), with an optional

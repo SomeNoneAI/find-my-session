@@ -9,6 +9,7 @@ from typing import Optional, Sequence
 from . import __version__
 from .diagnostics import ScanReport, hint_for, render_doctor_text
 from .errors import UserError
+from .mcp import serve as mcp_serve
 from .registry import get_adapters, harness_rows
 from .render import (
     json_dump,
@@ -189,6 +190,10 @@ def cmd_stats(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_mcp(args: argparse.Namespace) -> int:
+    return mcp_serve()
+
+
 def cmd_show(args: argparse.Namespace) -> int:
     detail = load_session(args.ref, harness=args.harness)
     if args.format == "json":
@@ -334,6 +339,12 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     doctor_parser.set_defaults(func=cmd_doctor)
+
+    mcp_parser = subparsers.add_parser(
+        "mcp",
+        help="run the Model Context Protocol server on stdio (read-only tools)",
+    )
+    mcp_parser.set_defaults(func=cmd_mcp)
 
     stats_parser = subparsers.add_parser(
         "stats",
