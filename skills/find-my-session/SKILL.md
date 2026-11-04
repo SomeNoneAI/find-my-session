@@ -138,7 +138,7 @@ fms latest [query ...] [--harness NAME] [--cwd PATH] [--since WHEN]
 fms stats [--harness NAME] [--cwd PATH] [--since WHEN] [--include-archived] [--json]
 ```
 
-- Aggregates the token and cost totals that harnesses themselves record (OpenCode today), per harness: sessions, input/output/cache-read tokens, and cost.
+- Aggregates the token and cost totals that harnesses themselves record (Claude Code, Qwen Code, and OpenCode today), per harness: sessions, input/output/cache-read tokens, and cost.
 - Harnesses without a recorded usage source show `-` — never estimated. Use it to answer "how much did this week of agent work cost".
 - Reading usage re-reads session rows but not transcripts; prefer `--harness` on large installations.
 

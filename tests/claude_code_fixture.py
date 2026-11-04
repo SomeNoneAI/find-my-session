@@ -13,7 +13,7 @@ import json
 import os
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Iterable, List
+from typing import Optional, Any, Dict, Iterable, List
 
 SESSION_MAIN = "c1a0de01-1111-4a1b-8c1d-111111111111"
 SESSION_AUX = "c1a0de02-2222-4b2c-9d2e-222222222222"
@@ -151,6 +151,7 @@ def _assistant(
     uuid: str,
     model: str,
     entrypoint: str = "cli",
+    usage: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     return {
         "parentUuid": None,
@@ -170,6 +171,7 @@ def _assistant(
             "role": "assistant",
             "model": model,
             "content": content,
+            **({"usage": usage} if usage else {}),
         },
     }
 
@@ -296,6 +298,11 @@ def _main_records() -> List[Dict[str, Any]]:
             branch,
             "a-main-0002",
             MODEL_MAIN,
+            usage={
+                "input_tokens": 1200,
+                "output_tokens": 300,
+                "cache_read_input_tokens": 400,
+            },
         ),
         _user(
             SESSION_MAIN,
@@ -331,6 +338,11 @@ def _main_records() -> List[Dict[str, Any]]:
             branch,
             "a-main-0005",
             MODEL_MAIN,
+            usage={
+                "input_tokens": 900,
+                "output_tokens": 150,
+                "cache_read_input_tokens": 100,
+            },
         ),
         _user(
             SESSION_MAIN,

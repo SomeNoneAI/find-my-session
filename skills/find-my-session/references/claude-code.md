@@ -161,6 +161,13 @@ Tool results and request diagnostics are not rendered. `turn_count` counts
 human prompts only. `show` prints no archive line because the flag is never
 true.
 
+## Usage totals
+
+`fms stats` sums the `message.usage` block each assistant record carries
+(`input_tokens`, `output_tokens`, `cache_read_input_tokens`). The scan is
+a full pass over the transcript, and Claude Code does not record cost, so
+`cost_usd` stays `null`.
+
 ## Known gaps
 
 - No archive or deleted-session metadata; only missing files signal deletion.

@@ -14,9 +14,9 @@ All notable changes to this project are documented here. The format follows
   seven MCP tools for MCP-native hosts. Documented in `docs/mcp.md`.
 - `fms stats [--harness] [--cwd] [--since] [--include-archived] [--json]`:
   per-harness token/cost totals from the usage data harness apps
-  themselves record (OpenCode's session columns today), with an optional
-  `usage_summary` adapter hook so more harnesses join as their stores are
-  verified — never estimated.
+  themselves record (Claude Code and Qwen transcripts, OpenCode's session
+  columns), with an optional `usage_summary` adapter hook so more
+  harnesses join as their stores are verified — never estimated.
 - `fms resume <ref> [--exec] [--json]`: print (or run) the harness command
   that reopens a session — `claude --resume <id>` and `codex resume <id>`
   today, with a handoff-digest fallback for harnesses whose resume command

@@ -69,6 +69,12 @@ archive state; deleted sessions disappear from disk.
 `functionResponse` payloads counts even though head/tail prompt metadata
 never sees it.
 
+## Usage totals
+
+`fms stats` sums the `usageMetadata` block each assistant record carries
+(`promptTokenCount` → input, `candidatesTokenCount` → output,
+`cachedContentTokenCount` → cache read). Cost is not recorded.
+
 ## Known gaps and risks
 
 - No API-error record type was observed live; error text is not surfaced.

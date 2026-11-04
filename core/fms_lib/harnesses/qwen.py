@@ -243,6 +243,38 @@ class QwenAdapter(HarnessAdapter):
             archived=False,
         )
 
+    def usage_summary(self, summary: SessionSummary) -> Optional[Dict[str, Any]]:
+        """Sum the per-record usageMetadata the log itself records."""
+        totals: Dict[str, Any] = {}
+        wanted = {
+            "promptTokenCount": "tokens_input",
+            "candidatesTokenCount": "tokens_output",
+            "cachedContentTokenCount": "tokens_cache_read",
+        }
+        try:
+            handle = summary.path.open("r", encoding="utf-8", errors="replace")
+        except OSError:
+            return None
+        with handle:
+            for line in handle:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    record = json.loads(line)
+                except ValueError:
+                    continue
+                if not isinstance(record, dict) or record.get("type") != "assistant":
+                    continue
+                meta = record.get("usageMetadata")
+                if not isinstance(meta, dict):
+                    continue
+                for source, target in wanted.items():
+                    value = meta.get(source)
+                    if isinstance(value, (int, float)) and not isinstance(value, bool):
+                        totals[target] = totals.get(target, 0) + value
+        return totals or None
+
     def iter_prompts(self, summary: SessionSummary) -> Iterator[UserPrompt]:
         for record in self._stream(summary.path):
             if not _is_human_prompt(record):

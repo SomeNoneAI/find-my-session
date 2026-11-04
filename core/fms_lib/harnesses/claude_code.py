@@ -408,6 +408,43 @@ class ClaudeCodeAdapter(HarnessAdapter):
     def resume_argv(self, summary: SessionSummary) -> Optional[List[str]]:
         return ["claude", "--resume", summary.session_id]
 
+    def usage_summary(self, summary: SessionSummary) -> Optional[Dict[str, Any]]:
+        """Sum the per-message usage the transcript itself records.
+
+        Requires a full pass over the transcript — Claude Code stores
+        usage per assistant message, not per session.
+        """
+        totals: Dict[str, Any] = {}
+        wanted = {
+            "input_tokens": "tokens_input",
+            "output_tokens": "tokens_output",
+            "cache_read_input_tokens": "tokens_cache_read",
+        }
+        try:
+            handle = summary.path.open("r", encoding="utf-8", errors="replace")
+        except OSError:
+            return None
+        with handle:
+            for line in handle:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    record = json.loads(line)
+                except ValueError:
+                    continue
+                if not isinstance(record, dict) or record.get("type") != "assistant":
+                    continue
+                message = record.get("message")
+                usage = message.get("usage") if isinstance(message, dict) else None
+                if not isinstance(usage, dict):
+                    continue
+                for source, target in wanted.items():
+                    value = usage.get(source)
+                    if isinstance(value, (int, float)) and not isinstance(value, bool):
+                        totals[target] = totals.get(target, 0) + value
+        return totals or None
+
     def iter_prompts(self, summary: SessionSummary) -> Iterator[UserPrompt]:
         if _is_subagent_path(summary.path):
             return

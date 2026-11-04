@@ -44,9 +44,9 @@ The gaps competitors expose:
 1. `fms resume` (CLI) — **shipped** for Claude Code and Codex, with the
    digest fallback for harnesses whose resume command is not verified yet;
    the mapping grows one verified command at a time.
-2. `fms stats` — **shipped** for OpenCode (authoritative session-row
-   totals); the `usage_summary` hook grows the coverage one verified
-   store at a time.
+2. `fms stats` — **shipped** for Claude Code, Qwen Code, and OpenCode
+   (authoritative session columns and per-message usage); the
+   `usage_summary` hook grows the coverage one verified store at a time.
 3. fzf/rofi interop recipes in the README (zero code).
 4. MCP server — **shipped** (`fms mcp`): seven read-only tools over the
    MCP stdio transport, so MCP-native hosts get the same surface the

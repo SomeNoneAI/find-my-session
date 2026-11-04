@@ -32,6 +32,33 @@ class StatsTests(FixtureTestCase):
         self.assertEqual(row["tokens_cache_read"], 200)
         self.assertAlmostEqual(row["cost_usd"], 0.5)
 
+    def test_claude_aggregates_transcript_usage(self) -> None:
+        code, out, err = self.run_cli(
+            "stats", "--harness", "claude-code", "--json"
+        )
+        self.assertEqual(code, 0, err)
+        rows = json.loads(out)
+        row = rows[0]
+        self.assertEqual(row["harness"], "claude-code")
+        self.assertEqual(row["sessions_with_usage"], 1)
+        self.assertEqual(row["tokens_input"], 2100)
+        self.assertEqual(row["tokens_output"], 450)
+        self.assertEqual(row["tokens_cache_read"], 500)
+        # Claude Code does not record cost.
+        self.assertIsNone(row["cost_usd"])
+
+    def test_qwen_aggregates_transcript_usage(self) -> None:
+        code, out, err = self.run_cli("stats", "--harness", "qwen", "--json")
+        self.assertEqual(code, 0, err)
+        rows = json.loads(out)
+        row = rows[0]
+        self.assertEqual(row["harness"], "qwen")
+        self.assertEqual(row["sessions_with_usage"], 1)
+        self.assertEqual(row["tokens_input"], 1500)
+        self.assertEqual(row["tokens_output"], 800)
+        self.assertEqual(row["tokens_cache_read"], 200)
+        self.assertIsNone(row["cost_usd"])
+
     def test_text_render_marks_unrecorded_harnesses(self) -> None:
         code, out, err = self.run_cli(
             "stats", "--harness", "opencode", "--harness", "kimi-code"
