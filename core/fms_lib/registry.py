@@ -20,6 +20,7 @@ from .harnesses.grok_build import GrokBuildAdapter
 from .harnesses.kimi_code import KimiCodeAdapter
 from .harnesses.minimax_code import MiniMaxCodeAdapter
 from .harnesses.opencode import OpenCodeAdapter
+from .harnesses.pi import PiAdapter
 from .harnesses.qoder import QoderAdapter
 from .harnesses.qoder_cn import QoderCNAdapter
 from .harnesses.qwen import QwenAdapter
@@ -53,6 +54,7 @@ READY: Tuple[HarnessAdapter, ...] = (
     AntigravityCLIAdapter(),
     MiniMaxCodeAdapter(),
     CursorAdapter(),
+    PiAdapter(),
     OpenCodeAdapter(),
     GeminiCLIAdapter(),
     QwenAdapter(),

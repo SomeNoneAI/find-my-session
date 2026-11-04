@@ -235,6 +235,7 @@ from antigravity_fixture import (  # noqa: E402
 from minimax_code_fixture import build_minimax_code_home  # noqa: E402
 from cursor_fixture import build_cursor_home  # noqa: E402
 from opencode_fixture import build_opencode_home  # noqa: E402
+from pi_fixture import build_pi_home  # noqa: E402
 
 FIXTURE_GEMINI_HOME = Path(__file__).resolve().parent / "fixtures" / "gemini-cli-home"
 FIXTURE_QWEN_HOME = Path(__file__).resolve().parent / "fixtures" / "qwen-home"
@@ -392,6 +393,9 @@ class FixtureTestCase(unittest.TestCase):
         cls.gemini_home = _copy_fixture_home(FIXTURE_GEMINI_HOME, root / "gemini-home")
         cls.empty_gemini_home = root / "empty-gemini-home"
         cls.empty_gemini_home.mkdir()
+        cls.pi_home = build_pi_home(root / "pi-home")
+        cls.empty_pi_home = root / "empty-pi-home"
+        cls.empty_pi_home.mkdir()
         cls.qwen_home = _copy_fixture_home(FIXTURE_QWEN_HOME, root / "qwen-home")
         cls.empty_qwen_home = root / "empty-qwen-home"
         cls.empty_qwen_home.mkdir()
@@ -441,6 +445,7 @@ class FixtureTestCase(unittest.TestCase):
         opencode_home: Path = None,
         gemini_home: Path = None,
         qwen_home: Path = None,
+        pi_home: Path = None,
         cn_db: Path = None,
         qoder_db: Path = None,
         zcode_app_db: Path = None,
@@ -452,6 +457,8 @@ class FixtureTestCase(unittest.TestCase):
         out = io.StringIO()
         err = io.StringIO()
         env = {
+            "FMS_PI_HOME": str(pi_home or self.pi_home),
+            "PI_CODING_AGENT_SESSION_DIR": "",
             "FMS_QODER_CN_HOME": str(home or self.home),
             "FMS_QODER_HOME": str(qoder_home or self.qoder_home),
             "FMS_KIMI_CODE_HOME": str(kimi_home or self.kimi_home),
@@ -522,6 +529,7 @@ class FixtureTestCase(unittest.TestCase):
         opencode_home: Path = None,
         gemini_home: Path = None,
         qwen_home: Path = None,
+        pi_home: Path = None,
         cn_db: Path = None,
         qoder_db: Path = None,
         zcode_app_db: Path = None,
@@ -560,6 +568,7 @@ class FixtureTestCase(unittest.TestCase):
             opencode_home=opencode_home,
             gemini_home=gemini_home,
             qwen_home=qwen_home,
+            pi_home=pi_home,
         )
         self.assertEqual(code, 0, err)
         return json.loads(out)
