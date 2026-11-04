@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>find-my-session — 换工具不断档 / One command to find any agent session</title>
+<meta name="description" content="find-my-session 跨 21 个编码 Agent 检索本地会话，输出低 token 接力摘要。只读、本地、纯标准库。Search every coding agent's local sessions with one read-only CLI.">
+<link rel="canonical" href="https://somenoneai.github.io/find-my-session/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="find-my-session — 换工具不断档">
+<meta property="og:description" content="一条命令跨 21 个编码 Agent 找回本地会话：只读、本地、纯标准库，无遥测。">
+<meta property="og:url" content="https://somenoneai.github.io/find-my-session/">
+<meta property="og:image" content="https://raw.githubusercontent.com/SomeNoneAI/find-my-session/main/docs/assets/social-preview.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230e1116'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='monospace' font-size='16' font-weight='bold' fill='%237ee787'%3E%E2%8C%95%3C/text%3E%3C/svg%3E">
+<style>
+ :root{
+  --paper:#f5f1e6; --paper2:#efe9d8; --ink:#1b1d20; --muted:#5f6367; --line:#d8cfb6;
+  --console:#0e1116; --console2:#161b22; --green:#7ee787; --amber:#e3b341; --blue:#79c0ff;
+  --rust:#b3541e; --card:#fffdf6;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Songti SC",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  --mono:SFMono-Regular,Menlo,Consolas,"Liberation Mono","PingFang SC",monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.65;font-size:16px}
+body[data-lang="zh"] .l-en{display:none}
+body[data-lang="en"] .l-zh{display:none}
+.wrap{max-width:1060px;margin:0 auto;padding:0 22px}
+a{color:inherit}
+/* nav */
+.nav{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;gap:18px;height:58px}
+.brand{font-family:var(--mono);font-weight:700;text-decoration:none;font-size:15px;white-space:nowrap}
+.brand b{color:var(--rust)}
+.nav nav{display:flex;gap:16px;margin-left:auto;font-size:14px}
+.nav nav a{text-decoration:none;color:var(--muted)}
+.nav nav a:hover{color:var(--ink)}
+.langbtn{font-family:var(--mono);font-size:13px;border:1px solid var(--line);background:var(--card);border-radius:20px;padding:4px 12px;cursor:pointer}
+.langbtn:hover{border-color:var(--ink)}
+.ghbtn{font-family:var(--mono);font-size:13px;background:var(--ink);color:var(--paper);border-radius:8px;padding:6px 14px;text-decoration:none;white-space:nowrap}
+/* hero */
+.hero{padding:72px 0 40px}
+.eyebrow{font-family:var(--mono);font-size:13px;letter-spacing:.08em;color:var(--rust);margin-bottom:14px}
+.hero h1{font-family:var(--serif);font-size:clamp(34px,5.4vw,58px);line-height:1.18;margin:0 0 16px;letter-spacing:.01em}
+.hero h1 em{font-style:italic;color:var(--rust)}
+.lede{font-size:18px;color:#33363a;max-width:44em;margin:0 0 26px}
+.installbar{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap;margin-bottom:14px}
+.cmd{font-family:var(--mono);font-size:15px;background:var(--console);color:var(--green);border-radius:10px;padding:12px 16px;display:flex;gap:10px;align-items:center;min-width:min(420px,100%)}
+.cmd .p{color:#8b949e;user-select:none}
+.copybtn{font-family:var(--mono);font-size:13px;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;cursor:pointer}
+.copybtn:hover{border-color:var(--ink)}
+.cta-row{display:flex;gap:12px;flex-wrap:wrap;margin:6px 0 22px}
+.cta{font-size:15px;border-radius:10px;padding:10px 20px;text-decoration:none;border:1px solid var(--ink)}
+.cta.solid{background:var(--ink);color:var(--paper)}
+.cta.ghost{background:transparent}
+.meta-chips{display:flex;gap:8px;flex-wrap:wrap;font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.meta-chips span{border:1px solid var(--line);background:var(--card);border-radius:20px;padding:3px 12px}
+/* sections */
+section.block{padding:44px 0;border-top:1px solid var(--line)}
+.secnum{font-family:var(--mono);font-size:13px;color:var(--rust);letter-spacing:.08em}
+h2{font-family:var(--serif);font-size:clamp(24px,3.4vw,34px);margin:6px 0 10px;line-height:1.3}
+.sub{color:var(--muted);max-width:46em;margin:0 0 24px}
+/* terminals */
+.term{background:var(--console);border-radius:14px;overflow:hidden;margin:0 0 18px;box-shadow:0 18px 40px -22px rgba(0,0,0,.5)}
+.term .bar{display:flex;align-items:center;gap:7px;background:var(--console2);padding:11px 16px}
+.dot{width:11px;height:11px;border-radius:50%}
+.term .title{font-family:var(--mono);font-size:12.5px;color:#8b949e;margin-left:8px}
+.term pre{margin:0;padding:18px 20px;font-family:var(--mono);font-size:13.5px;line-height:1.7;color:#c9d1d9;overflow-x:auto;white-space:pre}
+.t-p{color:var(--green)} .t-dim{color:#8b949e} .t-h{color:var(--blue);font-weight:700} .t-w{color:var(--amber)} .t-b{color:#e6edf3;font-weight:700}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:760px){.cols{grid-template-columns:1fr}.nav nav{display:none}}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px}
+@media(max-width:760px){.steps{grid-template-columns:1fr}}
+.step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
+.step .n{font-family:var(--mono);font-size:12px;color:var(--rust)}
+.step h3{font-family:var(--serif);font-size:18px;margin:4px 0 6px}
+.step p{font-size:14px;color:var(--muted);margin:0}
+.step code{font-family:var(--mono);font-size:12.5px;background:var(--paper2);padding:1px 6px;border-radius:5px;color:var(--ink)}
+/* cards table */
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:760px){.cards{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--ink);border-radius:14px;padding:24px}
+.card h3{font-family:var(--serif);font-size:22px;margin:0 0 8px}
+.card p{font-size:14.5px;color:var(--muted);margin:0 0 14px}
+.card code{font-family:var(--mono);font-size:12.5px;background:var(--console);color:var(--green);display:block;border-radius:8px;padding:10px 12px;overflow-x:auto;white-space:pre}
+table.cmds{width:100%;border-collapse:collapse;font-size:14.5px;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+table.cmds th,table.cmds td{text-align:left;padding:11px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+table.cmds tr:last-child th,table.cmds tr:last-child td{border-bottom:none}
+table.cmds th{font-family:var(--mono);font-size:13px;white-space:nowrap;width:170px}
+table.cmds td code{font-family:var(--mono);font-size:12.5px;background:var(--paper2);padding:1px 6px;border-radius:5px}
+/* harness chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.chips span{font-family:var(--mono);font-size:13px;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:5px 12px}
+.chips span.plan{border-style:dashed;color:var(--muted)}
+.note{font-size:13.5px;color:var(--muted);margin-top:12px}
+/* privacy */
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:760px){.trio{grid-template-columns:1fr}}
+.trio div{background:var(--console);color:#e6edf3;border-radius:12px;padding:20px}
+.trio h3{font-family:var(--serif);margin:0 0 6px;font-size:18px;color:var(--green)}
+.trio p{font-size:14px;color:#a7b0ba;margin:0}
+/* install */
+.install-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:760px){.install-grid{grid-template-columns:1fr}}
+.install-grid div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
+.install-grid h3{font-family:var(--mono);font-size:14px;margin:0 0 8px}
+.install-grid code{display:block;font-family:var(--mono);font-size:12.5px;background:var(--console);color:var(--green);border-radius:8px;padding:10px 12px;overflow-x:auto;white-space:pre;margin-bottom:8px}
+.install-grid p{font-size:13.5px;color:var(--muted);margin:0}
+/* faq */
+details{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;padding:14px 18px}
+summary{cursor:pointer;font-weight:600;font-size:15.5px}
+details p{font-size:14.5px;color:#33363a;margin:8px 0 2px}
+details code{font-family:var(--mono);font-size:12.5px;background:var(--paper2);padding:1px 6px;border-radius:5px}
+/* footer */
+footer{border-top:1px solid var(--line);padding:30px 0 46px;font-size:13.5px;color:var(--muted)}
+footer .wrap{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+footer nav{display:flex;gap:14px;flex-wrap:wrap}
+footer a{color:var(--muted)}
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease}
+.reveal.on{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body data-lang="zh">
+<div class="nav"><div class="wrap">
+  <a class="brand" href="#top">⌕ <b>fms</b> · find-my-session</a>
+  <nav>
+    <a href="#flow"><span class="l-zh">用法</span><span class="l-en">Flow</span></a>
+    <a href="#commands"><span class="l-zh">命令</span><span class="l-en">Commands</span></a>
+    <a href="#harnesses"><span class="l-zh">支持列表</span><span class="l-en">Harnesses</span></a>
+    <a href="#install"><span class="l-zh">安装</span><span class="l-en">Install</span></a>
+    <a href="#faq">FAQ</a>
+  </nav>
+  <button class="langbtn" id="langbtn" aria-label="switch language">EN</button>
+  <a class="ghbtn" href="https://github.com/SomeNoneAI/find-my-session">GitHub</a>
+</div></div>
+
+<div class="wrap hero" id="top">
+  <div class="eyebrow">READ-ONLY · LOCAL · STDLIB-ONLY · NO TELEMETRY</div>
+  <h1>
+    <span class="l-zh">记得任务在哪开始，<em>却找不到那次会话？</em><br>一条命令，把它找回来。</span>
+    <span class="l-en">You remember starting the task.<br><em>But where is the session?</em> One command finds it.</span>
+  </h1>
+  <p class="lede">
+    <span class="l-zh">换编码 Agent 时额度用完，会话还躺在磁盘上，只是换了个工具就找不到了。find-my-session 跨 <b>21 个编码 Agent</b> 的本地存储做关键词 / 目录 / 时间检索，并输出低 token 的接力摘要（任务、todo、最近改动、用户提示词）——贴给下一个 Agent 就能继续。</span>
+    <span class="l-en">When a harness runs out of quota mid-task, the session still exists on disk — it just becomes unfindable from the next tool. find-my-session searches the local stores of <b>21 coding agents</b> by keyword, directory, and time, then prints a low-token handoff digest (task, todos, recent edits, prompts) you paste into the next harness and continue.</span>
+  </p>
+  <div class="installbar">
+    <div class="cmd"><span class="p">$</span><span id="installcmd">pipx install find-my-session</span></div>
+    <button class="copybtn" data-copy="installcmd"><span class="l-zh">复制</span><span class="l-en">Copy</span></button>
+  </div>
+  <div class="cta-row">
+    <a class="cta solid" href="https://github.com/SomeNoneAI/find-my-session"><span class="l-zh">去 GitHub 看演示 →</span><span class="l-en">See the demo on GitHub →</span></a>
+    <a class="cta ghost" href="https://github.com/SomeNoneAI/find-my-session/releases/latest"><span class="l-zh">下载 Skill / 面板 ZIP</span><span class="l-en">Download skill / UI ZIPs</span></a>
+  </div>
+  <div class="meta-chips">
+    <span>21 harnesses · 2 planned</span><span>agent skill + local web panel</span><span>Python 3.9–3.14</span><span>MIT</span>
+  </div>
+</div>
+
+<div class="wrap">
+<section class="block reveal" id="flow">
+  <div class="secnum">01 — FLOW</div>
+  <h2><span class="l-zh">三步，把断掉的活接上</span><span class="l-en">Three steps to pick up where you left off</span></h2>
+  <p class="sub"><span class="l-zh">先按关键词或目录找到会话，再打印接力摘要；额度恢复或换工具后，用 resume 跳回去。</span><span class="l-en">Find the session by keyword or directory, print the handoff digest, then jump back in with resume.</span></p>
+  <div class="term"><div class="bar"><span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span><span class="title">fms search → fms show</span></div><pre><span class="t-p">$</span> <span class="t-b">fms search "theme toggle" --harness qoder-cn</span>
+<span class="t-dim">ref                 updated         cwd                       title</span>
+qoder-cn:b2c3d4e5   2026-10-27 23:30  /Users/example/project…   Add a dark mode toggle…
+
+<span class="t-p">$</span> <span class="t-b">fms show qoder-cn:b2c3d4e5</span>
+<span class="t-h"># qoder-cn:b2c3d4e5</span>
+- harness: qoder-cn (desktop, cli)   - turns: 1
+<span class="t-h">## Task</span>
+Add a dark mode toggle to settings
+<span class="t-h">## Todos (1 open / 2 total)</span>
+<span class="t-w">- [pending] Verify contrast in light and dark themes</span>
+<span class="t-h">## Recent tools</span>
+- 22:00 Write: …/src/settings/ThemeToggle.tsx</pre></div>
+  <div class="steps">
+    <div class="step"><div class="n">STEP 1 · SEARCH</div><h3><span class="l-zh">按记忆搜</span><span class="l-en">Search by memory</span></h3><p><span class="l-zh">关键词、目录、时间任意组合；只输出元数据，不读全文。</span><span class="l-en">Keyword, cwd, and time filters; metadata-only output.</span> <code>fms latest --cwd .</code></p></div>
+    <div class="step"><div class="n">STEP 2 · SHOW</div><h3><span class="l-zh">拿接力摘要</span><span class="l-en">Take the digest</span></h3><p><span class="l-zh">任务、todo、最近工具调用，而非整段 transcript，省 token。</span><span class="l-en">Task, todos, recent tools — not the whole transcript.</span> <code>fms show &lt;ref&gt;</code></p></div>
+    <div class="step"><div class="n">STEP 3 · RESUME / PROMPTS</div><h3><span class="l-zh">跳回 / 翻提示词</span><span class="l-en">Jump back / page prompts</span></h3><p><span class="l-zh">能直跳的 harness 一键恢复；人类提示词可分页逐条看。</span><span class="l-en">One-key resume where supported; page every human prompt.</span> <code>fms prompts &lt;ref&gt; --limit 5</code></p></div>
+  </div>
+</section>
+
+<section class="block reveal" id="commands">
+  <div class="secnum">02 — TWO SHAPES</div>
+  <h2><span class="l-zh">一个内核，两种形态</span><span class="l-en">One core, two shapes</span></h2>
+  <p class="sub"><span class="l-zh">给 Agent 用的 skill（<code style="font-family:var(--mono)">fms</code> 命令行）与给人看的本地浏览器面板（<code style="font-family:var(--mono)">fms-ui</code>），共享同一份核心。</span><span class="l-en">An agent skill (the <code style="font-family:var(--mono)">fms</code> CLI) and a human browser panel (<code style="font-family:var(--mono)">fms-ui</code>) sharing one core.</span></p>
+  <div class="cards">
+    <div class="card"><h3>⌕ fms <span style="font-family:var(--sans);font-size:14px;color:var(--muted)">· agent skill</span></h3>
+      <p><span class="l-zh">额度耗尽时，Agent 自己用它找回上下文：search 定位、show 交接、prompts 翻历史、doctor 自检存储健康。</span><span class="l-en">When quota runs out, the agent itself recovers context: search, hand off with show, page history, check stores with doctor.</span></p>
+      <code>fms search "oauth token refresh" --harness claude-code
+fms show claude-code:e1a2b3c4
+fms resume claude-code:e1a2b3c4 --exec</code></div>
+    <div class="card"><h3>◧ fms-ui <span style="font-family:var(--sans);font-size:14px;color:var(--muted)">· local panel</span></h3>
+      <p><span class="l-zh">同一份数据的人类视图：关键词与元数据筛选、会话概览、分页的人类提示词、可复制引用。只绑 127.0.0.1。</span><span class="l-en">The human view of the same data: keyword and metadata filters, overviews, paged prompts, copyable refs. Binds 127.0.0.1 only.</span></p>
+      <code>fms-ui --no-browser --port 8765
+# or: python3 fms_ui/fms-ui   (from source)</code></div>
+  </div>
+  <div style="height:18px"></div>
+  <table class="cmds">
+    <tr><th>fms search</th><td><span class="l-zh">按关键词搜会话元数据；不给 query 则列最近会话。</span><span class="l-en">Search session metadata by keywords; empty query lists recent sessions.</span> <code>--harness</code> <code>--cwd</code> <code>--since</code></td></tr>
+    <tr><th>fms show</th><td><span class="l-zh">打印低 token 接力摘要，并给出原始文件路径。</span><span class="l-en">Print the handoff digest plus the raw source path.</span> <code>--messages</code> <code>--chars</code></td></tr>
+    <tr><th>fms prompts</th><td><span class="l-zh">只列人类提示词，可计数、分页、调序。</span><span class="l-en">Human prompts only, with count, paging, and ordering.</span> <code>--count</code> <code>--limit/--offset</code></td></tr>
+    <tr><th>fms resume</th><td><span class="l-zh">在原 harness 里跳回该会话；不支持则退回摘要。</span><span class="l-en">Reopen the session in its harness; falls back to the digest.</span> <code>--exec</code></td></tr>
+    <tr><th>fms stats</th><td><span class="l-zh">按 harness 聚合各家自己记录的 token / 费用。</span><span class="l-en">Aggregate the token/cost usage each harness records.</span> <code>--since 7d</code></td></tr>
+    <tr><th>fms doctor</th><td><span class="l-zh">检查解码器、存储可读性；<code>--fingerprint</code> 只上报结构不含内容。</span><span class="l-en">Check decoders and store health; <code>--fingerprint</code> reports shape, never content.</span></td></tr>
+  </table>
+</section>
+
+<section class="block reveal" id="harnesses">
+  <div class="secnum">03 — COVERAGE</div>
+  <h2><span class="l-zh">21 个已就绪，再加 2 个在路上</span><span class="l-en">21 harnesses ready, 2 more planned</span></h2>
+  <p class="sub"><span class="l-zh">桌面 / 命令行共用一份存储的算一个 harness。逐家验证版本与注意事项见兼容性矩阵。</span><span class="l-en">Desktop and CLI editions sharing one store count as one harness. Verified versions live in the compatibility matrix.</span></p>
+  <div class="chips">
+    <span>qoder-cn</span><span>qoder</span><span>kimi-code</span><span>zcode</span><span>codearts-agent</span><span>codex</span><span>deepseek</span><span>claude-code</span><span>cline</span><span>grok-build</span><span>workbuddy</span><span>workbuddy-cn</span><span>antigravity</span><span>antigravity-cli</span><span>minimax-code</span><span>cursor</span><span>opencode</span><span>gemini-cli</span><span>qwen</span><span>pi</span><span>omp</span><span class="plan">codebuddy · planned</span><span class="plan">cline-vscode · planned</span>
+  </div>
+  <p class="note"><a href="https://github.com/SomeNoneAI/find-my-session/blob/main/docs/compatibility.md"><span class="l-zh">查看兼容性矩阵（含已验证版本与 caveat）→</span><span class="l-en">See the compatibility matrix (verified versions and caveats) →</span></a></p>
+</section>
+
+<section class="block reveal" id="privacy">
+  <div class="secnum">04 — PRIVACY</div>
+  <h2><span class="l-zh">先讲隐私，再讲功能</span><span class="l-en">Privacy first, features second</span></h2>
+  <p class="sub"><span class="l-zh">找会话的工具本身必须值得信任：三条硬约束写死在设计里。</span><span class="l-en">A session finder must itself be trustworthy: three hard constraints by design.</span></p>
+  <div class="trio">
+    <div><h3><span class="l-zh">严格只读</span><span class="l-en">Strictly read-only</span></h3><p><span class="l-zh">只读打开会话文件与 SQLite（mode=ro），永不写入、删除或修改任何存储。</span><span class="l-en">Session files and SQLite stores open read-only (mode=ro); nothing is ever written or deleted.</span></p></div>
+    <div><h3><span class="l-zh">全本地运行</span><span class="l-en">Fully local</span></h3><p><span class="l-zh">CLI 不发任何网络请求；面板只绑 127.0.0.1。架构变化上报用去内容的 fingerprint。</span><span class="l-en">The CLI makes no network requests; the panel binds 127.0.0.1. Drift reports use content-free fingerprints.</span></p></div>
+    <div><h3><span class="l-zh">纯标准库</span><span class="l-en">Stdlib only</span></h3><p><span class="l-zh">零第三方依赖，一个 pipx 包即装即用；供应链面最小。</span><span class="l-en">Zero third-party dependencies; minimal supply-chain surface.</span></p></div>
+  </div>
+</section>
+
+<section class="block reveal" id="install">
+  <div class="secnum">05 — INSTALL</div>
+  <h2><span class="l-zh">四种安装，按需取用</span><span class="l-en">Four ways to install</span></h2>
+  <p class="sub"><span class="l-zh">日常用 pipx；只跑一次就用 uvx；给 Agent 装 skill、给人看面板都有离线 ZIP。</span><span class="l-en">pipx for daily use, uvx for one-offs, offline ZIPs for the skill and the panel.</span></p>
+  <div class="install-grid">
+    <div><h3>CLI + UI · pipx</h3><code>pipx install find-my-session</code><p><span class="l-zh">同时装上 fms 与 fms-ui。升级用 pipx upgrade，卸载用 pipx uninstall。</span><span class="l-en">Installs both fms and fms-ui in one shot.</span></p></div>
+    <div><h3>One-off · uvx</h3><code>uvx --from find-my-session fms search "quota handoff"</code><p><span class="l-zh">不安装直接跑当次命令，适合临时找回。</span><span class="l-en">Run once without installing — good for a quick rescue.</span></p></div>
+    <div><h3>Agent skill · ZIP</h3><code># releases/latest → find-my-session-skill.zip</code><p><span class="l-zh">解压后链到 harness 的 skills 目录（如 Qoder / Claude Code）。源码用户也可直接跑 skills/find-my-session/scripts/fms。</span><span class="l-en">Unzip and link into your harness skills folder. From source, run scripts/fms directly.</span></p></div>
+    <div><h3>UI panel · ZIP</h3><code>python3 fms-ui   # in the extracted dir</code><p><span class="l-zh">下载 find-my-session-ui.zip，解压即用；源码用户跑 fms_ui/fms-ui。</span><span class="l-en">Download find-my-session-ui.zip and run; from source use fms_ui/fms-ui.</span></p></div>
+  </div>
+</section>
+
+<section class="block reveal" id="faq">
+  <div class="secnum">06 — FAQ</div>
+  <h2><span class="l-zh">常见问题</span><span class="l-en">Questions, answered</span></h2>
+  <p class="sub"><span class="l-zh">完整版见文档 FAQ，这里只收最常被问到的五条。</span><span class="l-en">The full version lives in the docs FAQ; these are the top five.</span></p>
+  <details><summary><span class="l-zh">我的会话内容会被上传吗？</span><span class="l-en">Is my session content uploaded anywhere?</span></summary><p><span class="l-zh">不会。一切都在本地运行，CLI 零网络请求；面板只监听 127.0.0.1。注意 show / prompts 会打印对话原文，转贴时按原文对待即可。</span><span class="l-en">No. Everything runs locally with zero network requests; the panel binds 127.0.0.1 only. Note show/prompts print conversation text — treat reposts like the original transcript.</span></p></details>
+  <details><summary><span class="l-zh">它会改我的会话文件吗？</span><span class="l-en">Will it modify my session files?</span></summary><p><span class="l-zh">不会。所有存储都以只读方式打开（含 SQLite 的 mode=ro），search 输出甚至只有元数据。</span><span class="l-en">No. Every store opens read-only (SQLite via mode=ro), and search output is metadata-only.</span></p></details>
+  <details><summary><span class="l-zh">搜不到我记得的会话？</span><span class="l-en">Search finds nothing I remember?</span></summary><p><span class="l-zh">搜索是 AND 语义：先减一个关键词，去掉 --cwd / --since，再试一次 --include-archived（归档默认隐藏）。还不行就跑 fms doctor 看存储是否可读。</span><span class="l-en">Search is AND-only: drop a keyword, drop --cwd/--since, retry with --include-archived (archived hides by default). Then run fms doctor to check store readability.</span></p></details>
+  <details><summary><span class="l-zh">Codex / DeepSeek 的压缩会话被跳过了？</span><span class="l-en">Compressed Codex/DeepSeek sessions skipped?</span></summary><p><span class="l-zh">.jsonl.zst / .zstd 需要解码器：Python 3.14 自带，否则装 zstd 命令行；缺了会跳过并在 doctor 里报 decoder-missing。</span><span class="l-en">They need a zstd decoder: built into Python 3.14+, otherwise install the zstd CLI. Without it they are skipped and doctor reports decoder-missing.</span></p></details>
+  <details><summary><span class="l-zh">Windows 能用吗？</span><span class="l-en">Does it work on Windows?</span></summary><p><span class="l-zh">暂不正式支持：只有实验性、非阻塞的 CI 在跑。欢迎社区验证报告，路线见 ROADMAP。</span><span class="l-en">Not officially: only an experimental, non-blocking CI job. Community verification reports are welcome; see the roadmap.</span></p></details>
+</section>
+</div>
+
+<footer><div class="wrap">
+  <span>MIT · find-my-session</span>
+  <nav>
+    <a href="https://github.com/SomeNoneAI/find-my-session">GitHub</a>
+    <a href="https://github.com/SomeNoneAI/find-my-session/blob/main/docs/faq.md">FAQ</a>
+    <a href="https://github.com/SomeNoneAI/find-my-session/blob/main/docs/compatibility.md">Compatibility</a>
+    <a href="https://github.com/SomeNoneAI/find-my-session/blob/main/CHANGELOG.md">Changelog</a>
+    <a href="https://pypi.org/project/find-my-session/">PyPI</a>
+  </nav>
+  <span style="margin-left:auto;font-family:var(--mono)" id="year">2026</span>
+</div></footer>
+
+<script>
+(function(){
+  var KEY="fms-site-lang";
+  function apply(l){
+    document.body.dataset.lang=l;
+    document.documentElement.lang=(l==="zh"?"zh-CN":"en");
+    document.getElementById("langbtn").textContent=(l==="zh"?"EN":"中文");
+    try{localStorage.setItem(KEY,l)}catch(e){}
+  }
+  var init=null;
+  try{init=localStorage.getItem(KEY)}catch(e){}
+  if(!init) init=((navigator.language||"en").toLowerCase().indexOf("zh")===0)?"zh":"en";
+  apply(init);
+  document.getElementById("langbtn").addEventListener("click",function(){
+    apply(document.body.dataset.lang==="zh"?"en":"zh");
+  });
+  document.querySelectorAll("[data-copy]").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      var el=document.getElementById(btn.getAttribute("data-copy"));
+      var done=function(){var o=btn.textContent;btn.textContent="✓";setTimeout(function(){btn.textContent=o},1200);};
+      var txt=el?el.textContent:"";
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,done);}
+      else{var t=document.createElement("textarea");t.value=txt;document.body.appendChild(t);t.select();try{document.execCommand("copy")}catch(e){}document.body.removeChild(t);done();}
+    });
+  });
+  document.getElementById("year").textContent=new Date().getFullYear();
+  var io=("IntersectionObserver" in window)?new IntersectionObserver(function(es){
+    es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("on");io.unobserve(e.target);}});
+  },{threshold:.12}):null;
+  document.querySelectorAll(".reveal").forEach(function(el){if(io)io.observe(el);else el.classList.add("on");});
+})();
+</script>
+</body>
+</html>
