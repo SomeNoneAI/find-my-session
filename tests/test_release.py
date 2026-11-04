@@ -121,7 +121,7 @@ class WheelBuildTests(unittest.TestCase):
                 self.assertIn("fms_lib/cli.py", names)
                 self.assertIn("fms_lib/harnesses/__init__.py", names)
                 self.assertIn("fms_ui/server.py", names)
-                self.assertIn("fms_ui/static/index.html", names)
+                self.assertIn("fms_ui/static/harness-logos/qwen.png", names)
                 metadata_name = next(
                     n for n in names if n.endswith(".dist-info/METADATA")
                 )

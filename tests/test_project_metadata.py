@@ -31,6 +31,17 @@ class ProjectMetadataTests(unittest.TestCase):
             with self.subTest(harness=row["name"]):
                 self.assertIn("`%s`" % row["name"], matrix)
 
+    def test_compatibility_records_unreadable_trae_products(self) -> None:
+        matrix = (REPO_ROOT / "docs" / "compatibility.md").read_text(encoding="utf-8")
+        self.assertIn("## Not supported harnesses", matrix)
+        for name in ("trae", "trae-cn", "trae-bao"):
+            with self.subTest(harness=name):
+                self.assertIn("`%s`" % name, matrix)
+        self.assertIn("Trae 3.6.13", matrix)
+        self.assertIn("Trae CN 3.4.14", matrix)
+        self.assertIn("Not supported", matrix)
+        self.assertIn("2026-11-04", matrix)
+
     def test_readmes_link_compatibility_and_both_release_products(self) -> None:
         for name in ("README.md", "README.zh-CN.md"):
             with self.subTest(document=name):
@@ -40,7 +51,18 @@ class ProjectMetadataTests(unittest.TestCase):
                 self.assertIn("find-my-session-ui.zip", text)
                 for row in harness_rows():
                     self.assertIn("`%s`" % row["name"], text)
-
+    def test_skill_references_cover_every_ready_harness(self) -> None:
+        skill = (
+            REPO_ROOT / "skills" / "find-my-session" / "SKILL.md"
+        ).read_text(encoding="utf-8")
+        for row in harness_rows():
+            if row["status"] != "ready":
+                continue
+            with self.subTest(harness=row["name"]):
+                self.assertIn(
+                    "`references/%s.md`" % row["name"].replace("_", "-"),
+                    skill,
+                )
 
 if __name__ == "__main__":
     unittest.main()

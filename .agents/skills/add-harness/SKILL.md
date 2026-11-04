@@ -217,7 +217,7 @@ Update these files together:
 Run from the repository root:
 
 ```bash
-python3 -m compileall -q core ui skills/find-my-session/scripts tools tests
+python3 -m compileall -q core fms_ui skills/find-my-session/scripts tools tests
 python3 -m unittest discover -s tests -v
 python3 tools/build_artifacts.py
 ```
@@ -274,7 +274,9 @@ Finally, repeat read-only checks against one real store: list sessions, search w
 - Grok Build listing, generated-title fallback, subagent and empty-session exclusion, checkpoint compaction, plan todos, digest, prompts, cross-file deep search, and read-only tests: `tests/test_grok.py`, class `GrokBuildTests`; synthetic store builder `tests/grok_fixture.py`.
 - Antigravity listing, archive filtering, migrated IDE transcripts, checkpoint todos, metadata-only sessions, digest, prompts, database-fallback deep search, and read-only tests: `tests/test_antigravity.py`, classes `AntigravityTests` and `AntigravityCLITests`; synthetic store builder `tests/antigravity_fixture.py`.
 - DeepSeek listing, version selection, legacy transcript, archive filtering, subagent exclusion, digest, prompts, deep search, metadata-only session, and read-only tests: `tests/test_deepseek.py`, class `DeepSeekTests`; synthetic store builder `tests/deepseek_fixture.py`.
-- MiniMax Code listing, digest, prompts, deep search, archive, and read-only tests: `tests/test_minimax_code.py`, class `MiniMaxCodeTests`; synthetic store builder `tests/minimax_code_fixture.py`. The store is a dated `messages.jsonl` transcript plus one `runtime-state.sqlite`; the database is authoritative for listing, messages, todos, archive state, and deep search, while the transcript carries the compaction summary and is the fallback when the database is unavailable.
+- OpenCode listing, prompt filtering, deep search, archive, and read-only tests: `tests/test_opencode.py`; synthetic store builder `tests/opencode_fixture.py`.
+- Gemini CLI listing, replay snapshots, prompt filtering, and read-only tests: `tests/test_gemini_cli.py`; synthetic store builder `tests/gemini_cli_fixture.py`.
+- Qwen Code listing, prompt filtering, todos, and read-only tests: `tests/test_qwen.py`; synthetic store builder `tests/qwen_fixture.py`.
 - Cursor listing, cwd recovery, digest, prompts, deep search, archive, subagent filtering, and read-only tests: `tests/test_cursor.py`, class `CursorTests`; synthetic store builder `tests/cursor_fixture.py`.
 - Pi listing, title fallback, compaction, prompt filtering, deep search, usage, resume, and read-only tests: `tests/test_pi.py`, class `PiTests`; synthetic store builder `tests/pi_fixture.py`.
 - Oh My Pi listing, subagent exclusion, title change, attribution-based prompt filtering, deep search, usage, resume, and read-only tests: `tests/test_omp.py`, class `OmpTests`; synthetic store builder `tests/omp_fixture.py`.

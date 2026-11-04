@@ -30,6 +30,19 @@ All notable changes to this project are documented here. The format follows
   is not verified yet. Adapters opt in via the new optional `resume_argv`
   hook.
 
+### Fixed
+
+- The `find-my-session` wheel now ships `fms_ui/static/harness-logos/*`,
+  so `pip`/`pipx` installs serve harness logos instead of 404ing.
+- `skills/find-my-session/SKILL.md` references now link all 21 ready
+  harnesses (`opencode`, `gemini-cli`, `qwen`, `pi`, `omp` were missing),
+  and the Cursor troubleshooting entry lives under Troubleshooting again.
+- CI `packaging` now waits for `test`, `frontend`, and `build`, so broken
+  tests or artifacts block wheel/sdist builds.
+- `fms prompts` counts and pages in a single `iter_prompts` pass: the
+  newest-first path keeps a bounded trailing window instead of replaying
+  large transcripts twice, with identical paging semantics.
+
 ## [0.1.2] - 2026-11-04
 
 ### Added

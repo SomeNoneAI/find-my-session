@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple
+from typing import Any, Callable, Deque, Dict, List, Optional, Sequence, Set, Tuple
 
 from .diagnostics import ScanReport, environment, issue_dicts, store_home
 from .errors import UserError
@@ -334,33 +335,49 @@ def load_session(ref: str, harness: Optional[Sequence[str]] = None) -> SessionDe
     return adapter.load(summary)
 
 
-def _select_prompt_page(
+def _collect_prompt_page(
     adapter: HarnessAdapter,
     summary: SessionSummary,
-    total: int,
     offset: int,
     limit: int,
     order: str,
-) -> Tuple[List[Tuple[int, UserPrompt]], bool]:
-    if total == 0 or offset >= total:
-        return [], False
-    if limit <= 0:
-        first, last = 1, total
-    elif order == "newest":
-        last = total - offset
-        first = max(1, last - limit + 1)
-    else:
-        first = offset + 1
-        last = min(total, offset + limit)
+) -> Tuple[List[Tuple[int, UserPrompt]], int, bool]:
+    """Walk iter_prompts once, counting every prompt and keeping one page.
+
+    Oldest-first pages take a direct index window; newest-first pages keep a
+    trailing deque so the total is known without a second pass.
+    """
+    if order == "newest" and limit > 0:
+        window: Deque[Tuple[int, UserPrompt]] = deque(maxlen=offset + limit)
+        total = 0
+        for prompt in adapter.iter_prompts(summary):
+            total += 1
+            window.append((total, prompt))
+        if offset >= total:
+            return [], total, False
+        items = list(window)
+        if offset > 0:
+            items = items[: max(0, len(items) - offset)]
+        items.reverse()
+        return items, total, offset + limit < total
     selected: List[Tuple[int, UserPrompt]] = []
-    for index, prompt in enumerate(adapter.iter_prompts(summary), 1):
-        if index > last:
-            break
-        if index >= first:
-            selected.append((index, prompt))
+    total = 0
+    if limit <= 0:
+        for prompt in adapter.iter_prompts(summary):
+            total += 1
+            selected.append((total, prompt))
+        if offset >= total:
+            return [], total, False
+        selected = selected[offset:]
+    else:
+        first, last = offset + 1, offset + limit
+        for prompt in adapter.iter_prompts(summary):
+            total += 1
+            if first <= total <= last:
+                selected.append((total, prompt))
     if order == "newest":
         selected.reverse()
-    return selected, limit > 0 and offset + limit < total
+    return selected, total, limit > 0 and offset + limit < total
 
 
 def list_prompts(
@@ -373,19 +390,23 @@ def list_prompts(
 ) -> PromptListing:
     adapter, summary = resolve_session(ref, get_adapters(harness))
     try:
-        total = sum(1 for _ in adapter.iter_prompts(summary))
         listing = PromptListing(
             summary=summary,
-            total=total,
+            total=0,
             offset=offset,
             limit=limit,
             order=order,
             count_only=count_only,
         )
-        if not count_only:
-            listing.prompts, listing.has_more = _select_prompt_page(
-                adapter, summary, total, offset, limit, order
+        if count_only:
+            listing.total = sum(1 for _ in adapter.iter_prompts(summary))
+        else:
+            prompts, total, has_more = _collect_prompt_page(
+                adapter, summary, offset, limit, order
             )
+            listing.prompts = prompts
+            listing.total = total
+            listing.has_more = has_more
     except NotImplementedError:
         raise UserError("harness '%s' cannot list user prompts yet" % adapter.name)
     return listing

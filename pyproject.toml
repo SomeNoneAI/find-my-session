@@ -63,7 +63,7 @@ package-dir = { "fms_lib" = "core/fms_lib", "fms_ui" = "fms_ui" }
 packages = ["fms_lib", "fms_lib.harnesses", "fms_ui"]
 
 [tool.setuptools.package-data]
-fms_ui = ["static/*"]
+fms_ui = ["static/*", "static/harness-logos/*"]
 
 [tool.setuptools.dynamic]
 version = { attr = "fms_lib.__version__" }
