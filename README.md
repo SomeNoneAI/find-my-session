@@ -157,6 +157,7 @@ harness has a verified resume command (see `fms resume --help`). Desktop/CLI sur
 - [CONTRIBUTING.md](CONTRIBUTING.md) — setup, tests, and how to add or verify a harness.
 - [docs/compatibility.md](docs/compatibility.md) — the detailed, per-harness compatibility matrix.
 - [docs/json-output.md](docs/json-output.md) — the `--json` field contract and pre-1.0 stability policy.
+- [docs/faq.md](docs/faq.md) — 5-minute tutorial and answers to the most common "where is my session" questions.
 - [ROADMAP.md](ROADMAP.md) — near-term plans.
 - [SECURITY.md](SECURITY.md) — supported versions and private vulnerability reporting.
 - [skills/find-my-session/references/](skills/find-my-session/references/) — per-harness store schemas and verification recipes; start with [extending.md](skills/find-my-session/references/extending.md) to add a harness.

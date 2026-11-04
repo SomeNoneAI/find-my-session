@@ -51,7 +51,12 @@ class ProjectMetadataTests(unittest.TestCase):
                 self.assertIn("find-my-session-ui.zip", text)
                 for row in harness_rows():
                     self.assertIn("`%s`" % row["name"], text)
-    def test_skill_references_cover_every_ready_harness(self) -> None:
+    def test_readmes_link_faq_page(self) -> None:
+        for name in ("README.md", "README.zh-CN.md"):
+            with self.subTest(document=name):
+                text = (REPO_ROOT / name).read_text(encoding="utf-8")
+                self.assertIn("docs/faq.md", text)
+        self.assertTrue((REPO_ROOT / "docs" / "faq.md").is_file())
         skill = (
             REPO_ROOT / "skills" / "find-my-session" / "SKILL.md"
         ).read_text(encoding="utf-8")

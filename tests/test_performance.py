@@ -165,6 +165,91 @@ class LargeSessionTests(unittest.TestCase):
         self.assertIn("Summarize only the current state", output)
         self.assertLess(len(output), 20_000)
 
+def _write_small_session(path: Path, index: int) -> None:
+    """Synthesize one tiny qoder-cn session with three human prompts."""
+    session_id = "perf-%06d-1111-4a1b-8c1d-111111111111" % index
+    cwd = "/Users/example/project-%d" % (index % 50)
+    records = [
+        {
+            "type": "user",
+            "sessionId": session_id,
+            "timestamp": "2026-10-20T09:00:05.000Z",
+            "cwd": cwd,
+            "isSidechain": False,
+            "humanInput": {"text": "Start task number %d" % index},
+        },
+        {
+            "type": "user",
+            "sessionId": session_id,
+            "timestamp": "2026-10-20T09:05:05.000Z",
+            "cwd": cwd,
+            "isSidechain": False,
+            "humanInput": {"text": "Continue task number %d" % index},
+        },
+        {
+            "type": "user",
+            "sessionId": session_id,
+            "timestamp": "2026-10-20T09:10:05.000Z",
+            "cwd": cwd,
+            "isSidechain": False,
+            "humanInput": {"text": "Finish task number %d apple" % index},
+        },
+    ]
+    with path.open("w", encoding="utf-8") as handle:
+        for record in records:
+            handle.write(json.dumps(record) + "\n")
+
+
+def _build_scale_home(root: Path, count: int) -> Path:
+    home = root / ("scale-%d" % count)
+    project = home / "projects" / "-Users-example-project-scale"
+    project.mkdir(parents=True)
+    for index in range(count):
+        session_id = "perf-%06d-1111-4a1b-8c1d-111111111111" % index
+        _write_small_session(project / (session_id + ".jsonl"), index)
+    return home
+
+
+class SessionScaleTests(unittest.TestCase):
+    """End-to-end budgets for many small sessions on one harness.
+
+    These assert generous CI-safe budgets, not precise timings: the goal
+    is to catch accidental quadratic behavior, not to benchmark hardware.
+    Durations are printed so local runs show real numbers.
+    """
+
+    def _measure_search(self, count: int, budget_seconds: float) -> None:
+        import time  # noqa: E402
+
+        from fms_lib.service import search_sessions  # noqa: E402
+
+        with tempfile.TemporaryDirectory(prefix="fms-scale-") as raw:
+            home = _build_scale_home(Path(raw), count)
+            environment = mock.patch.dict(
+                os.environ,
+                {
+                    "FMS_QODER_CN_HOME": str(home),
+                    "FMS_QODER_CN_APP_DB": str(Path(raw) / "missing.sqlite"),
+                },
+            )
+            environment.start()
+            try:
+                started = time.perf_counter()
+                results = search_sessions(
+                    query=["apple"], harness=["qoder-cn"], limit=0
+                )
+                elapsed = time.perf_counter() - started
+            finally:
+                environment.stop()
+        print("\nsearch %d sessions: %.2fs (budget %.0fs)" % (count, elapsed, budget_seconds))
+        self.assertEqual(len(results), count)
+        self.assertLess(elapsed, budget_seconds)
+
+    def test_search_one_thousand_sessions(self) -> None:
+        self._measure_search(1000, 5.0)
+
+    def test_search_ten_thousand_sessions(self) -> None:
+        self._measure_search(10000, 30.0)
 
 if __name__ == "__main__":
     unittest.main()

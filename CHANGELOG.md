@@ -29,6 +29,10 @@ All notable changes to this project are documented here. The format follows
   today, with a handoff-digest fallback for harnesses whose resume command
   is not verified yet. Adapters opt in via the new optional `resume_argv`
   hook.
+- `docs/faq.md`: 5-minute tutorial plus answers to the most common
+  search/resume/archive questions, linked from both READMEs.
+- Session-scale regression budgets: 1k sessions under 5s and 10k under
+  30s end-to-end for keyword search (measured ~0.2s/~2s locally).
 
 ### Fixed
 
@@ -42,7 +46,6 @@ All notable changes to this project are documented here. The format follows
 - `fms prompts` counts and pages in a single `iter_prompts` pass: the
   newest-first path keeps a bounded trailing window instead of replaying
   large transcripts twice, with identical paging semantics.
-
 ## [0.1.2] - 2026-11-04
 
 ### Added

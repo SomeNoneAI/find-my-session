@@ -155,7 +155,7 @@ fms search --limit 0 --include-archived | fzf --with-nth=2,4 | cut -f1 | xargs -
 
 - [CONTRIBUTING.md](CONTRIBUTING.md) —— 环境搭建、测试，以及如何新增或实测一个 harness。
 - [docs/compatibility.md](docs/compatibility.md) —— 详细的逐 harness 兼容矩阵。
-- [docs/json-output.md](docs/json-output.md) —— `--json` 字段约定与 1.0 前的稳定性策略。
+- [docs/faq.md](docs/faq.md) —— 5 分钟上手与最常见的"会话去哪了"解答。
 - [ROADMAP.md](ROADMAP.md) —— 近期计划。
 - [SECURITY.md](SECURITY.md) —— 支持版本与私密漏洞上报。
 - [skills/find-my-session/references/](skills/find-my-session/references/) —— 各 harness 的存储 schema 与验证方法；新增 harness 请先读 [extending.md](skills/find-my-session/references/extending.md)。
