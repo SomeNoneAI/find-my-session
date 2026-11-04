@@ -19,6 +19,7 @@ from .harnesses.gemini_cli import GeminiCLIAdapter
 from .harnesses.grok_build import GrokBuildAdapter
 from .harnesses.kimi_code import KimiCodeAdapter
 from .harnesses.minimax_code import MiniMaxCodeAdapter
+from .harnesses.omp import OmpAdapter
 from .harnesses.opencode import OpenCodeAdapter
 from .harnesses.pi import PiAdapter
 from .harnesses.qoder import QoderAdapter
@@ -55,6 +56,7 @@ READY: Tuple[HarnessAdapter, ...] = (
     MiniMaxCodeAdapter(),
     CursorAdapter(),
     PiAdapter(),
+    OmpAdapter(),
     OpenCodeAdapter(),
     GeminiCLIAdapter(),
     QwenAdapter(),
