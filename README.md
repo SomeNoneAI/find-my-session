@@ -1,4 +1,5 @@
 # find-my-session
+> 🌐 [中文说明](README.zh-CN.md)
 
 [![CI](https://github.com/SomeNoneAI/find-my-session/actions/workflows/ci.yml/badge.svg)](https://github.com/SomeNoneAI/find-my-session/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/SomeNoneAI/find-my-session/badge)](https://scorecard.dev/viewer.html?url=github.com/SomeNoneAI/find-my-session)
@@ -21,7 +22,17 @@ When a harness runs out of quota, you usually remember *what* you were doing but
 
 Screenshots use synthetic fixture data.
 
-[中文说明](README.zh-CN.md)
+## Ask your agent
+
+If the skill is installed, just talk to your agent in plain language — no `fms` flags needed:
+
+- `/find-my-session 找到 claude-code 最近的一个会话，继续那个任务`
+- `/find-my-session find the most recent claude-code session and continue that task`
+- `/find-my-session 额度用完了，在 claude-code 里找昨天关于鉴权的那次会话并接力`
+- `/find-my-session search my claude-code sessions about token refresh and show the handoff digest`
+- `/find-my-session 列出这个项目最近一次 claude-code 会话里我提过的所有需求`
+
+The agent resolves the harness, runs `search` / `latest` / `show` / `prompts`, and continues the work.
 
 ## Supported harnesses
 
@@ -68,13 +79,13 @@ Twenty-one adapters are ready; two more are planned. Verified versions, surfaces
 
 ### For agents: the skill
 
-1. **Release ZIP.** Each GitHub Release publishes `find-my-session-skill.zip`. Download it from the [latest release](https://github.com/SomeNoneAI/find-my-session/releases/latest), then install it into your harness (for example, upload it in Qoder Desktop under **Extensions → Skills**, or unzip it and link the directory into your harness's skills folder).
+1. **Release ZIP.** Each GitHub Release publishes `find-my-session-skill.zip`. Download it from the [latest release](https://github.com/SomeNoneAI/find-my-session/releases/latest), then install it into your harness (for example, unzip it into `~/.claude/skills` for Claude Code, or link the directory into your harness's skills folder).
 2. **Source checkout.**
 
    ```bash
    git clone https://github.com/SomeNoneAI/find-my-session.git
    cd find-my-session
-   qoderclicn skills link "$PWD/skills/find-my-session"   # Qoder CN CLI; Claude Code: symlink into ~/.claude/skills
+   ln -s "$PWD/skills/find-my-session" ~/.claude/skills/find-my-session   # Claude Code; adapt the path for your harness
    ```
 
    From a checkout you can also run the CLI directly as `python3 skills/find-my-session/scripts/fms`, or run `python3 tools/build_artifacts.py` to build `dist/find-my-session-skill.zip` yourself. To remove a linked skill, delete its symlink from the harness's skills folder.
@@ -90,13 +101,13 @@ The panel starts a read-only server on `127.0.0.1` with keyword and metadata fil
 ## Quick start
 
 ```bash
-fms harnesses                                   # list ready and planned harnesses
-fms search "quota handoff" --harness kimi-code  # find sessions by keywords
-fms latest --harness kimi-code --cwd .          # most recent session in this repo
-fms show kimi-code:e5f6a7b8                     # low-token handoff digest
-fms prompts kimi-code:e5f6a7b8 --count          # count human prompts, then page with --limit/--offset
-fms resume claude-code:e1a2b3c4 --exec          # jump straight back into a session
-fms stats --since 7d                            # token/cost totals across harnesses
+fms harnesses                                     # list ready and planned harnesses
+fms search "quota handoff" --harness claude-code  # find sessions by keywords
+fms latest --harness claude-code --cwd .          # most recent session in this repo
+fms show claude-code:c1a0de01                     # low-token handoff digest
+fms prompts claude-code:c1a0de01 --count          # count human prompts, then page with --limit/--offset
+fms resume claude-code:e1a2b3c4 --exec            # jump straight back into a session
+fms stats --since 7d                              # token/cost totals across harnesses
 ```
 
 Search prefers an explicit `--harness`; omit the query to list recent sessions. Archived sessions are excluded from `search`/`latest` unless `--include-archived` is passed. `show` stays read-only and prints the raw source path so an agent can grep the original file when the digest is not enough.
@@ -132,7 +143,7 @@ Search prefers an explicit `--harness`; omit the query to list recent sessions. 
 | `--messages N` / `--chars N` / `--summary-chars N` | show | Cap turns, per-message characters, and summary characters. |
 | `--json` | harnesses, search, latest, prompts, doctor | Machine-readable output; use `--format json` for `show`. See [docs/json-output.md](docs/json-output.md) for the field contract. |
 
-Session references use `harness:session-prefix` (for example `kimi-code:e5f6a7b8`); a raw transcript path from a supported store works too.
+Session references use `harness:session-prefix` (for example `claude-code:c1a0de01`); a raw transcript path from a supported store works too.
 
 ### Picking with fzf
 

@@ -1,4 +1,5 @@
 # find-my-session
+> 🌐 [English README](README.md)
 
 [![CI](https://github.com/SomeNoneAI/find-my-session/actions/workflows/ci.yml/badge.svg)](https://github.com/SomeNoneAI/find-my-session/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/SomeNoneAI/find-my-session/badge)](https://scorecard.dev/viewer.html?url=github.com/SomeNoneAI/find-my-session)
@@ -21,7 +22,18 @@
 
 截图使用合成 fixture 数据。
 
-[English README](README.md)
+## 直接对 agent 说话
+
+装好 skill 之后，不用记 `fms` 参数，直接用自然语言跟 agent 说就行：
+
+- `/find-my-session 找到 claude-code 最近的一个会话，继续那个任务`
+- `/find-my-session find the most recent claude-code session and continue that task`
+- `/find-my-session 额度用完了，在 claude-code 里找昨天关于鉴权的那次会话并接力`
+- `/find-my-session search my claude-code sessions about token refresh and show the handoff digest`
+- `/find-my-session 列出这个项目最近一次 claude-code 会话里我提过的所有需求`
+
+agent 会自己选 harness，跑 `search` / `latest` / `show` / `prompts`，然后继续干活。
+
 
 ## 支持的 harness
 
@@ -68,13 +80,13 @@
 
 ### 面向 agent：skill
 
-1. **Release ZIP**：每个 GitHub Release 会发布 `find-my-session-skill.zip`。从 [latest release](https://github.com/SomeNoneAI/find-my-session/releases/latest) 下载后安装到你的 harness（例如在 Qoder 桌面端通过 **扩展 → 技能** 上传，或解压后链接到 harness 的 skills 目录）。
+1. **Release ZIP**：每个 GitHub Release 会发布 `find-my-session-skill.zip`。从 [latest release](https://github.com/SomeNoneAI/find-my-session/releases/latest) 下载后安装到你的 harness（例如解压到 `~/.claude/skills` 给 Claude Code 用，或链接到 harness 的 skills 目录）。
 2. **源码检出**：
 
    ```bash
    git clone https://github.com/SomeNoneAI/find-my-session.git
    cd find-my-session
-   qoderclicn skills link "$PWD/skills/find-my-session"   # Qoder CN CLI；Claude Code：软链到 ~/.claude/skills
+   ln -s "$PWD/skills/find-my-session" ~/.claude/skills/find-my-session   # Claude Code；其他 harness 请调整路径
    ```
 
    检出后也可以直接运行 `python3 skills/find-my-session/scripts/fms`，或运行 `python3 tools/build_artifacts.py` 自行构建 `dist/find-my-session-skill.zip`。删除 harness skills 目录中的软链即可卸载链接安装的 skill。
@@ -91,10 +103,10 @@
 
 ```bash
 fms harnesses                                   # 列出可用与计划中的 harness
-fms search "额度 接力" --harness kimi-code        # 按关键字查找会话
-fms latest --harness kimi-code --cwd .          # 当前仓库最近一次的会话
-fms show kimi-code:e5f6a7b8                     # 低 token 接力摘要
-fms prompts kimi-code:e5f6a7b8 --count          # 先统计用户输入，再用 --limit/--offset 分页
+fms search "额度 接力" --harness claude-code      # 按关键字查找会话
+fms latest --harness claude-code --cwd .        # 当前仓库最近一次的会话
+fms show claude-code:c1a0de01                   # 低 token 接力摘要
+fms prompts claude-code:c1a0de01 --count        # 先统计用户输入，再用 --limit/--offset 分页
 fms resume claude-code:e1a2b3c4 --exec          # 直接跳回某个会话
 fms stats --since 7d                            # 跨 harness 的 token/费用汇总
 ```
@@ -132,7 +144,7 @@ fms stats --since 7d                            # 跨 harness 的 token/费用�
 | `--messages N` / `--chars N` / `--summary-chars N` | show | 限制对话轮数、单条字符数与摘要字符数。 |
 | `--json` | harnesses, search, latest, prompts, doctor | 结构化输出；`show` 使用 `--format json`。字段约定见 [docs/json-output.md](docs/json-output.md)。 |
 
-会话引用格式为 `harness:session-prefix`（例如 `kimi-code:e5f6a7b8`）；也接受受支持 harness 下的原始 transcript 路径。
+会话引用格式为 `harness:session-prefix`（例如 `claude-code:c1a0de01`）；也接受受支持 harness 下的原始 transcript 路径。
 
 ### 用 fzf 交互选择
 

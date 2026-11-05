@@ -6,25 +6,25 @@
 <text x="490" y="27" text-anchor="middle" font-family="SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="13" fill="#8b949e">find-my-session — fms prompts paging</text>
 <g xml:space="preserve" font-family="SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="14.5">
 <text x="26" y="74" fill="#7ee787">$</text>
-<text x="44" y="74" fill="#e6edf3" font-weight="600">fms prompts kimi-code:e5f6a7b8 --count</text>
-<text x="44" y="96" fill="#c9d1d9">5</text>
+<text x="44" y="74" fill="#e6edf3" font-weight="600">fms prompts claude-code:c1a0de01 --count</text>
+<text x="44" y="96" fill="#c9d1d9">6</text>
 <text x="26" y="140" fill="#7ee787">$</text>
-<text x="44" y="140" fill="#e6edf3" font-weight="600">fms prompts kimi-code:e5f6a7b8 --limit 2</text>
-<text x="44" y="162" fill="#7ee787" font-weight="600"># kimi-code:e5f6a7b8 user prompts</text>
-<text x="44" y="206" fill="#c9d1d9">total: 5, returned: 2, order: oldest</text>
-<text x="44" y="250" fill="#79c0ff" font-weight="600">## 1 · 2026-10-26 17:00</text>
-<text x="44" y="272" fill="#c9d1d9">Refactor handoff parser for the CLI</text>
-<text x="44" y="316" fill="#79c0ff" font-weight="600">## 2 · 2026-10-26 17:01</text>
-<text x="44" y="338" fill="#c9d1d9">Also list every edited file</text>
+<text x="44" y="140" fill="#e6edf3" font-weight="600">fms prompts claude-code:c1a0de01 --limit 2</text>
+<text x="44" y="162" fill="#7ee787" font-weight="600"># claude-code:c1a0de01 user prompts</text>
+<text x="44" y="206" fill="#c9d1d9">total: 6, returned: 2, order: oldest</text>
+<text x="44" y="250" fill="#79c0ff" font-weight="600">## 1 · 2026-10-20 17:10</text>
+<text x="44" y="272" fill="#c9d1d9">Please refactor the handoff digest so the CLI stays bounded</text>
+<text x="44" y="316" fill="#79c0ff" font-weight="600">## 2 · 2026-10-20 17:30</text>
+<text x="44" y="338" fill="#c9d1d9">继续</text>
 <text x="44" y="382" fill="#e3b341">next: --offset 2 --limit 2</text>
 <text x="26" y="426" fill="#7ee787">$</text>
-<text x="44" y="426" fill="#e6edf3" font-weight="600">fms prompts kimi-code:e5f6a7b8 --limit 2 --offset 2</text>
-<text x="44" y="448" fill="#7ee787" font-weight="600"># kimi-code:e5f6a7b8 user prompts</text>
-<text x="44" y="492" fill="#c9d1d9">total: 5, returned: 2, order: oldest</text>
-<text x="44" y="536" fill="#79c0ff" font-weight="600">## 3 · 2026-10-26 17:02</text>
-<text x="44" y="558" fill="#c9d1d9">Keep the output under two pages</text>
-<text x="44" y="602" fill="#79c0ff" font-weight="600">## 4 · 2026-10-26 17:03</text>
-<text x="44" y="624" fill="#c9d1d9">继续</text>
+<text x="44" y="426" fill="#e6edf3" font-weight="600">fms prompts claude-code:c1a0de01 --limit 2 --offset 2</text>
+<text x="44" y="448" fill="#7ee787" font-weight="600"># claude-code:c1a0de01 user prompts</text>
+<text x="44" y="492" fill="#c9d1d9">total: 6, returned: 2, order: oldest</text>
+<text x="44" y="536" fill="#79c0ff" font-weight="600">## 3 · 2026-10-20 17:45</text>
+<text x="44" y="558" fill="#c9d1d9">Ship the compact summary fallback</text>
+<text x="44" y="602" fill="#79c0ff" font-weight="600">## 4 · 2026-10-20 17:50</text>
+<text x="44" y="624" fill="#c9d1d9">Tighten the digest tests</text>
 <text x="44" y="668" fill="#e3b341">next: --offset 4 --limit 2</text>
 </g>
 </svg>

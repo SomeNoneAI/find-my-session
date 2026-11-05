@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3] - 2026-11-05
+
+### Changed
+
+- README examples (including `docs/assets/demo.svg` and
+  `docs/assets/prompts-paging.svg`) now use Claude Code (`claude-code`)
+  instead of Qoder CN, and both READMEs lead with the language-switch link
+  plus copy-paste agent prompts such as
+  `/find-my-session 找到 claude-code 最近的一个会话，继续那个任务`.
+
 ## [Unreleased]
 
 ### Added
