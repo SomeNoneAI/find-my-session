@@ -14,7 +14,7 @@ All notable changes to this project are documented here. The format follows
   plus copy-paste agent prompts such as
   `/find-my-session 找到 claude-code 最近的一个会话，继续那个任务`.
 
-## [Unreleased]
+## [0.1.4] - 2026-11-06
 
 ### Added
 
@@ -79,6 +79,9 @@ All notable changes to this project are documented here. The format follows
 - `fms prompts` counts and pages in a single `iter_prompts` pass: the
   newest-first path keeps a bounded trailing window instead of replaying
   large transcripts twice, with identical paging semantics.
+
+## [Unreleased]
+
 ## [0.1.2] - 2026-11-04
 
 ### Added
