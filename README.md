@@ -36,7 +36,7 @@ The agent resolves the harness, runs `search` / `latest` / `show` / `prompts`, a
 
 ## Supported harnesses
 
-Twenty-one adapters are ready; two more are planned. Verified versions, surfaces, and caveats live in the [compatibility matrix](docs/compatibility.md); per-harness store details live in [references/](skills/find-my-session/references/).
+Twenty-two adapters are ready; one more is planned. Verified versions, surfaces, and caveats live in the [compatibility matrix](docs/compatibility.md); per-harness store details live in [references/](skills/find-my-session/references/).
 
 | Harness | Ref prefix | Store |
 | --- | --- | --- |
@@ -61,7 +61,7 @@ Twenty-one adapters are ready; two more are planned. Verified versions, surfaces
 | Qwen Code | `qwen` | `~/.qwen` |
 | Pi | `pi` | `~/.pi/agent/sessions` |
 | Oh My Pi | `omp` | `~/.omp/agent/sessions` |
-| CodeBuddy | `codebuddy` (planned) | `~/.codebuddy` |
+| CodeBuddy CN | `codebuddy-cn` | `CodeBuddy CN/codebuddy-sessions.vscdb` |
 | Cline (VS Code extension) | `cline-vscode` (planned) | VS Code globalStorage |
 
 ## Requirements

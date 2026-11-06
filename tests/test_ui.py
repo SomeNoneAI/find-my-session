@@ -60,6 +60,7 @@ def synthetic_environment(root: Path) -> dict:
         "FMS_QWEN_HOME": str(empty),
         "FMS_PI_HOME": str(empty),
         "FMS_OMP_HOME": str(empty),
+        "FMS_CODEBUDDY_CN_HOME": str(empty),
         "PI_CODING_AGENT_SESSION_DIR": "",
         "FMS_QODER_CN_APP_DB": str(missing_db),
         "FMS_QODER_APP_DB": str(missing_db),

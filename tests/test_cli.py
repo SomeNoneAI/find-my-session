@@ -213,7 +213,7 @@ class HarnessListingTests(FixtureTestCase):
         self.assertIn("fms harnesses", err)
 
     def test_planned_harness_errors(self) -> None:
-        code, out, err = self.run_cli("search", "--harness", "codebuddy", "anything")
+        code, out, err = self.run_cli("search", "--harness", "cline-vscode", "anything")
         self.assertEqual(code, 2)
         self.assertIn("planned but not implemented", err)
         self.assertIn("qoder-cn", err)

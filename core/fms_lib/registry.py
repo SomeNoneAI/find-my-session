@@ -12,6 +12,7 @@ from .harnesses.base import HarnessAdapter
 from .harnesses.claude_code import ClaudeCodeAdapter
 from .harnesses.cline import ClineAdapter
 from .harnesses.codearts_agent import CodeArtsAgentAdapter
+from .harnesses.codebuddy_cn import CodeBuddyCNAdapter
 from .harnesses.codex import CodexAdapter
 from .harnesses.cursor import CursorAdapter
 from .harnesses.deepseek import DeepSeekAdapter
@@ -41,6 +42,7 @@ class PlannedHarness:
 READY: Tuple[HarnessAdapter, ...] = (
     QoderCNAdapter(),
     QoderAdapter(),
+    CodeBuddyCNAdapter(),
     KimiCodeAdapter(),
     ZCodeAdapter(),
     CodeArtsAgentAdapter(),
@@ -63,12 +65,6 @@ READY: Tuple[HarnessAdapter, ...] = (
 )
 
 PLANNED: Tuple[PlannedHarness, ...] = (
-    PlannedHarness(
-        name="codebuddy",
-        aliases=("codebuddy", "codebuddy-cn"),
-        variants="desktop, ide",
-        store_hint="~/.codebuddy",
-    ),
     PlannedHarness(
         name="cline-vscode",
         aliases=("cline-vscode",),

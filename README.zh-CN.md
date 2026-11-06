@@ -37,7 +37,7 @@ agent 会自己选 harness，跑 `search` / `latest` / `show` / `prompts`，然�
 
 ## 支持的 harness
 
-已有二十一个可用适配器，另有两个在计划中。实测版本、端与注意事项见[兼容矩阵](docs/compatibility.md)；各 harness 的存储细节见 [references/](skills/find-my-session/references/)。
+已有二十二个可用适配器，另有一个在计划中。实测版本、端与注意事项见[兼容矩阵](docs/compatibility.md)；各 harness 的存储细节见 [references/](skills/find-my-session/references/)。
 
 | Harness | 引用前缀 | 默认目录 |
 | --- | --- | --- |
@@ -62,7 +62,7 @@ agent 会自己选 harness，跑 `search` / `latest` / `show` / `prompts`，然�
 | Qwen Code | `qwen` | `~/.qwen` |
 | Pi | `pi` | `~/.pi/agent/sessions` |
 | Oh My Pi | `omp` | `~/.omp/agent/sessions` |
-| CodeBuddy | `codebuddy`（计划中） | `~/.codebuddy` |
+| CodeBuddy CN（国内版） | `codebuddy-cn` | `CodeBuddy CN/codebuddy-sessions.vscdb` |
 | Cline（VS Code 扩展） | `cline-vscode`（计划中） | VS Code globalStorage |
 
 ## 环境要求

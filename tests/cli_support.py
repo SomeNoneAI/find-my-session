@@ -237,6 +237,7 @@ from cursor_fixture import build_cursor_home  # noqa: E402
 from opencode_fixture import build_opencode_home  # noqa: E402
 from pi_fixture import build_pi_home  # noqa: E402
 from omp_fixture import build_omp_home  # noqa: E402
+from codebuddy_cn_fixture import build_codebuddy_cn_home  # noqa: E402
 
 FIXTURE_GEMINI_HOME = Path(__file__).resolve().parent / "fixtures" / "gemini-cli-home"
 FIXTURE_QWEN_HOME = Path(__file__).resolve().parent / "fixtures" / "qwen-home"
@@ -400,6 +401,9 @@ class FixtureTestCase(unittest.TestCase):
         cls.omp_home = build_omp_home(root / "omp-home")
         cls.empty_omp_home = root / "empty-omp-home"
         cls.empty_omp_home.mkdir()
+        cls.codebuddy_cn_home = build_codebuddy_cn_home(root / "codebuddy-cn-home")
+        cls.empty_codebuddy_cn_home = root / "empty-codebuddy-cn-home"
+        cls.empty_codebuddy_cn_home.mkdir()
         cls.qwen_home = _copy_fixture_home(FIXTURE_QWEN_HOME, root / "qwen-home")
         cls.empty_qwen_home = root / "empty-qwen-home"
         cls.empty_qwen_home.mkdir()
@@ -451,6 +455,7 @@ class FixtureTestCase(unittest.TestCase):
         qwen_home: Path = None,
         pi_home: Path = None,
         omp_home: Path = None,
+        codebuddy_cn_home: Path = None,
         cn_db: Path = None,
         qoder_db: Path = None,
         zcode_app_db: Path = None,
@@ -464,6 +469,7 @@ class FixtureTestCase(unittest.TestCase):
         env = {
             "FMS_PI_HOME": str(pi_home or self.pi_home),
             "FMS_OMP_HOME": str(omp_home or self.omp_home),
+            "FMS_CODEBUDDY_CN_HOME": str(codebuddy_cn_home or self.codebuddy_cn_home),
             "PI_CODING_AGENT_SESSION_DIR": "",
             "FMS_QODER_CN_HOME": str(home or self.home),
             "FMS_QODER_HOME": str(qoder_home or self.qoder_home),
@@ -537,6 +543,7 @@ class FixtureTestCase(unittest.TestCase):
         qwen_home: Path = None,
         pi_home: Path = None,
         omp_home: Path = None,
+        codebuddy_cn_home: Path = None,
         cn_db: Path = None,
         qoder_db: Path = None,
         zcode_app_db: Path = None,
@@ -577,6 +584,7 @@ class FixtureTestCase(unittest.TestCase):
             qwen_home=qwen_home,
             pi_home=pi_home,
             omp_home=omp_home,
+            codebuddy_cn_home=codebuddy_cn_home,
         )
         self.assertEqual(code, 0, err)
         return json.loads(out)

@@ -18,6 +18,17 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- CodeBuddy CN (`codebuddy-cn`) adapter. The desktop app keeps a session
+  index in `CodeBuddy CN/codebuddy-sessions.vscdb` (SQLite `ItemTable`
+  with one `session:<id>` row per conversation), message bodies in
+  `message-queue/*.json` (`status: sent` items with text blocks),
+  per-session todos in `todos/<id>.json`, edited-file snapshots in
+  `file-changes/<id>/`, and archive state in Electron Local Storage
+  (`genie-archived-session-ids` in `Local Storage/leveldb/*.log`).
+  Sessions without a queue file still list and show from index metadata.
+  No verified resume command, no usage totals. Documented in
+  `skills/find-my-session/references/codebuddy-cn.md`.
+
 - Pi (`pi`) and Oh My Pi (`omp`) adapters. Pi reads the JSONL session tree
   under `~/.pi/agent/sessions`; OMP is a separate fork with its own store
   at `~/.omp/agent/sessions`, `title`/`title_change` records, per-message
