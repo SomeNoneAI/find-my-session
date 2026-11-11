@@ -1,0 +1,1 @@
+{"businessInfo": {"version": "1.0.0-preview", "id": "task-2", "model_key": "synthetic-qwen-2", "product": "cli", "type": "agent", "name": "Ship the gamma rollout.", "begin_at": 1762759500000, "stage": "done"}, "id": "2", "subject": "Ship the gamma rollout", "description": "Tag and publish the gamma release."}

@@ -1,0 +1,1 @@
+{"businessInfo": {"version": "1.0.0-preview", "id": "task-1", "model_key": "synthetic-qwen-2", "product": "cli", "type": "agent", "name": "Review the gamma rollout plan.", "begin_at": 1762759200000, "stage": "processing"}, "id": "1", "subject": "Audit the gamma rollout plan", "description": "Check rollout, monitoring, and rollback steps."}

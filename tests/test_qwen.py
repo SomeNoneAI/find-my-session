@@ -1,9 +1,11 @@
 """Tests for the Qwen Code adapter.
 
-The fixture is a committed synthetic store: two project directories with
-``chats/<uuid>.jsonl`` logs plus a per-session todo file, exercising prompt
-extraction, tool calls, telemetry skipping, deep search, todos, and a
-partially written trailing record. Every identifier and prompt is invented.
+The fixture is a committed synthetic store: three project directories with
+``chats/<uuid>.jsonl`` logs (0.x layout) plus a flat ``<uuid>.jsonl`` log
+(1.0-preview layout) with per-session task files, exercising prompt
+extraction, tool calls, telemetry skipping, deep search, todos, API-error
+surfacing, and a partially written trailing record. Every identifier and
+prompt is invented.
 """
 
 from __future__ import annotations
@@ -17,9 +19,11 @@ from cli_support import FixtureTestCase  # noqa: E402
 REF_MAIN = "qwen:aaaaaaaa"
 REF_MINI = "qwen:bbbbbbbb"
 REF_BETA = "qwen:cccccccc"
+REF_GAMMA = "qwen:dddddddd"
 
 PROJECT_ALPHA = "/Users/example/project-alpha"
 PROJECT_BETA = "/Users/example/project-beta"
+PROJECT_GAMMA = "/Users/example/project-gamma"
 
 PROMPTS_MAIN = (
     "Refactor the handoff digest so the CLI stays bounded.",
@@ -27,6 +31,13 @@ PROMPTS_MAIN = (
     "Run the parser tests and fix the failures.",
 )
 MODEL_MAIN = "synthetic-qwen-1"
+PROMPTS_GAMMA = (
+    "Review the gamma rollout plan.",
+    "Ship the gamma rollout.",
+)
+MODEL_GAMMA = "synthetic-qwen-2"
+GAMMA_TITLE = "Gamma rollout review"
+GAMMA_FILE = "dddddddd-4444-4d4e-8f4a-444444444444.jsonl"
 PROMPT_BETA = "Draft the migration notes for the digest."
 NEEDLE_DEEP_ONLY = "qwen-deep-only-needle"
 MAIN_FILE = "aaaaaaaa-1111-4a1b-8c1d-111111111111.jsonl"
@@ -44,9 +55,10 @@ class QwenTests(FixtureTestCase):
         code, out, err = self.run_cli("search", "--harness", "qwen")
         self.assertEqual(code, 0, err)
         refs = [line.split("\t")[0] for line in out.strip().splitlines()[1:]]
-        self.assertEqual(refs, [REF_BETA, REF_MINI, REF_MAIN])
+        self.assertEqual(refs, [REF_GAMMA, REF_BETA, REF_MINI, REF_MAIN])
         self.assertIn(PROJECT_BETA, out)
         self.assertIn(PROJECT_ALPHA, out)
+        self.assertIn(PROJECT_GAMMA, out)
 
     def test_keyword_cwd_and_no_match(self) -> None:
         code, out, err = self.run_cli("search", "--harness", "qwen", "migration notes")
@@ -74,10 +86,13 @@ class QwenTests(FixtureTestCase):
         self.assertEqual(by_ref[REF_MAIN]["version"], "0.8.2")
         self.assertEqual(by_ref[REF_MAIN]["model"], MODEL_MAIN)
         self.assertGreater(by_ref[REF_MAIN]["size_bytes"], 0)
+        self.assertEqual(by_ref[REF_GAMMA]["title"], GAMMA_TITLE)
+        self.assertEqual(by_ref[REF_GAMMA]["version"], "1.0.0-preview")
+        self.assertEqual(by_ref[REF_GAMMA]["model"], MODEL_GAMMA)
 
         code, out, err = self.run_cli("latest", "--harness", "qwen")
         self.assertEqual(code, 0, err)
-        self.assertIn(REF_BETA, out)
+        self.assertIn(REF_GAMMA, out)
 
     def test_generic_prompt_session_falls_back_to_id_title(self) -> None:
         code, out, err = self.run_cli("show", REF_MINI)
@@ -99,6 +114,59 @@ class QwenTests(FixtureTestCase):
         self.assertIn(REF_MAIN, out)
         self.assertNotIn(REF_BETA, out)
         self.assertNotIn(REF_MINI, out)
+        self.assertNotIn(REF_GAMMA, out)
+
+    def test_v1_layout_digest_prefers_ai_title(self) -> None:
+        code, out, err = self.run_cli("search", "--harness", "qwen")
+        self.assertEqual(code, 0, err)
+        gamma_row = next(
+            line for line in out.strip().splitlines() if line.startswith(REF_GAMMA)
+        )
+        self.assertIn(GAMMA_TITLE, gamma_row)
+
+        code, out, err = self.run_cli("show", REF_GAMMA)
+        self.assertEqual(code, 0, err)
+        self.assertIn("# qwen:dddddddd", out)
+        self.assertIn("- cwd: `%s`" % PROJECT_GAMMA, out)
+        self.assertIn("- branch: `main`", out)
+        self.assertIn("- version: `1.0.0-preview`", out)
+        self.assertIn("- model: `%s`" % MODEL_GAMMA, out)
+        self.assertIn("- turns: 2", out)
+        self.assertIn("## Todos (1 open / 2 total)", out)
+        self.assertIn("[in_progress] Audit the gamma rollout plan", out)
+        self.assertIn("Bash: ls gamma/", out)
+        self.assertIn("Synthetic provider error: socket closed", out)
+        self.assertNotIn("gamma plan files listed", out)
+        self.assertNotIn("synthetic skill reference", out)
+        self.assertIn(GAMMA_FILE, out)
+
+    def test_v1_prompts_exclude_tool_results_meta_and_attachments(self) -> None:
+        code, out, err = self.run_cli("prompts", REF_GAMMA, "--count")
+        self.assertEqual(code, 0, err)
+        self.assertEqual(out.strip(), "2")
+
+        code, out, err = self.run_cli("prompts", REF_GAMMA)
+        self.assertEqual(code, 0, err)
+        for prompt in PROMPTS_GAMMA:
+            self.assertIn(prompt, out)
+        self.assertNotIn("gamma plan files listed", out)
+        self.assertNotIn("synthetic local command output", out)
+        self.assertNotIn("synthetic skill reference", out)
+        self.assertNotIn("/status", out)
+
+    def test_v1_todos_and_tools_in_json_digest(self) -> None:
+        code, out, err = self.run_cli("show", REF_GAMMA, "--format", "json")
+        self.assertEqual(code, 0, err)
+        detail = json.loads(out)
+        self.assertEqual(detail["session_id"], "dddddddd-4444-4d4e-8f4a-444444444444")
+        self.assertEqual(detail["cwd"], PROJECT_GAMMA)
+        self.assertEqual(detail["model"], MODEL_GAMMA)
+        self.assertEqual(detail["turn_count"], 2)
+        self.assertEqual(
+            [todo["status"] for todo in detail["todos"]],
+            ["in_progress", "completed"],
+        )
+        self.assertEqual(detail["tool_counts"], {"Bash": 1})
 
     def test_show_markdown_digest(self) -> None:
         code, out, err = self.run_cli("show", REF_MAIN)
@@ -197,12 +265,12 @@ class QwenTests(FixtureTestCase):
             item for item in payload["stores"] if item["harness"] == "qwen"
         )
         self.assertTrue(store["present"])
-        self.assertEqual(store["candidates"], 3)
-        self.assertEqual(store["readable"], 3)
+        self.assertEqual(store["candidates"], 4)
+        self.assertEqual(store["readable"], 4)
         self.assertEqual(store["skipped"], 0)
         self.assertEqual(store["home"], "<custom>")
         kinds = store["fingerprint"]["kinds"]
-        self.assertEqual(kinds["jsonl"]["files"], 3)
+        self.assertEqual(kinds["jsonl"]["files"], 4)
         serialized = json.dumps(payload, ensure_ascii=False)
         self.assertNotIn(PROJECT_ALPHA, serialized)
         self.assertNotIn("/Users/example", serialized)
@@ -221,12 +289,14 @@ class QwenTests(FixtureTestCase):
             for path in sorted(root.rglob("*"))
             if path.is_file()
         }
-        self.run_cli("search", "--harness", "qwen")
-        self.run_cli("latest", "--harness", "qwen")
-        self.run_cli("show", REF_MAIN)
-        self.run_cli("prompts", REF_MAIN, "--count")
-        self.run_cli("search", "--harness", "qwen", "--deep", NEEDLE_DEEP_ONLY)
-        self.run_cli("doctor", "--harness", "qwen")
+        self.run_cli_checked("search", "--harness", "qwen")
+        self.run_cli_checked("latest", "--harness", "qwen")
+        self.run_cli_checked("show", REF_MAIN)
+        self.run_cli_checked("prompts", REF_MAIN, "--count")
+        self.run_cli_checked("show", REF_GAMMA)
+        self.run_cli_checked("prompts", REF_GAMMA, "--count")
+        self.run_cli_checked("search", "--harness", "qwen", "--deep", NEEDLE_DEEP_ONLY)
+        self.run_cli_checked("doctor", "--harness", "qwen")
         after = {
             str(path.relative_to(root)): (path.read_bytes(), path.stat().st_mtime_ns)
             for path in sorted(root.rglob("*"))
