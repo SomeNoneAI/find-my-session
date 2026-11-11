@@ -152,7 +152,10 @@ jobs:
           path: dist
 
       - name: Verify Python distribution checksums
-        run: cd dist && sha256sum -c python-dists.sha256
+        run: |
+          cd dist
+          sha256sum -c python-dists.sha256
+          rm python-dists.sha256
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1
