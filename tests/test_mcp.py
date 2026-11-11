@@ -23,11 +23,13 @@ class McpProtocolTests(FixtureTestCase):
         from fms_lib import mcp
 
         env = {
+            "PATH": os.environ.get("PATH", ""),
+            "HOME": str(self.home),
             "FMS_OPENCODE_HOME": str(self.opencode_home),
             "FMS_QWEN_HOME": str(self.qwen_home),
             "FMS_QODER_CN_HOME": str(self.home),
         }
-        with mock.patch.dict(os.environ, env):
+        with mock.patch.dict(os.environ, env, clear=True):
             response = mcp.handle_message(message)
         assert response is not None
         return response
@@ -151,7 +153,6 @@ class McpProtocolTests(FixtureTestCase):
         self.assertIn("turn_count", detail)
 
     def test_session_prompts_tool(self) -> None:
-        session = self.run_json("latest", "--harness", "qwen")[0]
         response = self.handle(
             {
                 "jsonrpc": "2.0",
@@ -159,7 +160,7 @@ class McpProtocolTests(FixtureTestCase):
                 "method": "tools/call",
                 "params": {
                     "name": "session_prompts",
-                    "arguments": {"ref": session["ref"]},
+                    "arguments": {"ref": "qwen:cccccccc"},
                 },
             }
         )
@@ -210,14 +211,13 @@ class McpStdioRoundTripTests(FixtureTestCase):
     def test_stdio_round_trip(self) -> None:
         import os
 
-        env = dict(os.environ)
-        env.update(
-            {
-                "FMS_OPENCODE_HOME": str(self.opencode_home),
-                "FMS_QWEN_HOME": str(self.qwen_home),
-                "FMS_QODER_CN_HOME": str(self.home),
-            }
-        )
+        env = {
+            "PATH": os.environ.get("PATH", ""),
+            "HOME": str(self.home),
+            "FMS_OPENCODE_HOME": str(self.opencode_home),
+            "FMS_QWEN_HOME": str(self.qwen_home),
+            "FMS_QODER_CN_HOME": str(self.home),
+        }
         messages = [
             {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}},
             {"jsonrpc": "2.0", "method": "notifications/initialized"},
