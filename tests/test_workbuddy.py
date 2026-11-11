@@ -374,7 +374,7 @@ class WorkBuddyTests(FixtureTestCase):
         self.assertTrue(data["has_more"])
         self.assertEqual([prompt["index"] for prompt in data["prompts"]], [1, 2])
         self.assertEqual(data["prompts"][0]["text"], WORKBUDDY_PROMPTS[0])
-        self.assertIsNotNone(data["prompts"][0]["timestamp"])
+        self.assertEqual(data["prompts"][0]["timestamp"], '2026-10-20T09:10:00Z')
 
         data = self.run_json("prompts", "workbuddy:c0de2003", "--count")
         self.assertTrue(data["archived"])
@@ -440,14 +440,14 @@ class WorkBuddyTests(FixtureTestCase):
             return files
 
         before = snapshot()
-        self.run_cli("search", "--harness", "workbuddy")
-        self.run_cli("search", "--harness", "workbuddy", "--include-archived")
-        self.run_cli("search", "--harness", "workbuddy", "--deep", "deep-only-needle")
-        self.run_cli("latest", "--harness", "workbuddy")
-        self.run_cli("show", "workbuddy:c0de2001")
-        self.run_cli("show", "workbuddy:c0de2003", "--format", "json")
-        self.run_cli("prompts", "workbuddy:c0de2001")
-        self.run_cli("prompts", "workbuddy:c0de2001", "--count")
+        self.run_cli_checked("search", "--harness", "workbuddy")
+        self.run_cli_checked("search", "--harness", "workbuddy", "--include-archived")
+        self.run_cli_checked("search", "--harness", "workbuddy", "--deep", "deep-only-needle")
+        self.run_cli_checked("latest", "--harness", "workbuddy")
+        self.run_cli_checked("show", "workbuddy:c0de2001")
+        self.run_cli_checked("show", "workbuddy:c0de2003", "--format", "json")
+        self.run_cli_checked("prompts", "workbuddy:c0de2001")
+        self.run_cli_checked("prompts", "workbuddy:c0de2001", "--count")
         self.assertEqual(snapshot(), before)
         self.assertFalse(
             any(
@@ -892,7 +892,7 @@ class WorkBuddyCNTests(FixtureTestCase):
         self.assertEqual(
             data["prompts"][0]["text"], WORKBUDDY_CN_PROMPTS[0]
         )
-        self.assertIsNotNone(data["prompts"][0]["timestamp"])
+        self.assertEqual(data["prompts"][0]["timestamp"], '2026-10-20T09:10:00Z')
 
         data = self.run_json("prompts", "workbuddy-cn:d0d0c003", "--count")
         self.assertTrue(data["archived"])
@@ -1004,18 +1004,18 @@ class WorkBuddyCNTests(FixtureTestCase):
             return files
 
         before = snapshot()
-        self.run_cli("search", "--harness", "workbuddy-cn")
-        self.run_cli(
+        self.run_cli_checked("search", "--harness", "workbuddy-cn")
+        self.run_cli_checked(
             "search", "--harness", "workbuddy-cn", "--include-archived"
         )
-        self.run_cli(
+        self.run_cli_checked(
             "search", "--harness", "workbuddy-cn", "--deep", "deep-only-needle"
         )
-        self.run_cli("latest", "--harness", "workbuddy-cn")
-        self.run_cli("show", "workbuddy-cn:d0d0c001")
-        self.run_cli("show", "workbuddy-cn:d0d0c003", "--format", "json")
-        self.run_cli("prompts", "workbuddy-cn:d0d0c001")
-        self.run_cli("prompts", "workbuddy-cn:d0d0c001", "--count")
+        self.run_cli_checked("latest", "--harness", "workbuddy-cn")
+        self.run_cli_checked("show", "workbuddy-cn:d0d0c001")
+        self.run_cli_checked("show", "workbuddy-cn:d0d0c003", "--format", "json")
+        self.run_cli_checked("prompts", "workbuddy-cn:d0d0c001")
+        self.run_cli_checked("prompts", "workbuddy-cn:d0d0c001", "--count")
         self.assertEqual(snapshot(), before)
         self.assertFalse(
             any(

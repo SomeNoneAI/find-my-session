@@ -965,23 +965,23 @@ class SafetyTests(FixtureTestCase):
             return files
 
         before = snapshot()
-        self.run_cli("search", "--harness", "qcn")
-        self.run_cli("latest", "--harness", "qcn")
-        self.run_cli("show", "qoder-cn:a1b2c3d4")
-        self.run_cli("show", "qoder-cn:b2c3d4e5", "--format", "json")
-        self.run_cli("search", "--harness", "qoder")
-        self.run_cli("latest", "--harness", "qoder")
-        self.run_cli("show", "qoder:c3d4e5f6")
-        self.run_cli("show", "qoder:d4e5f6a7", "--format", "json")
-        self.run_cli("prompts", "qoder-cn:a1b2c3d4")
-        self.run_cli("prompts", "qoder-cn:a1b2c3d4", "--count")
-        self.run_cli(
+        self.run_cli_checked("search", "--harness", "qcn")
+        self.run_cli_checked("latest", "--harness", "qcn")
+        self.run_cli_checked("show", "qoder-cn:a1b2c3d4")
+        self.run_cli_checked("show", "qoder-cn:b2c3d4e5", "--format", "json")
+        self.run_cli_checked("search", "--harness", "qoder")
+        self.run_cli_checked("latest", "--harness", "qoder")
+        self.run_cli_checked("show", "qoder:c3d4e5f6")
+        self.run_cli_checked("show", "qoder:d4e5f6a7", "--format", "json")
+        self.run_cli_checked("prompts", "qoder-cn:a1b2c3d4")
+        self.run_cli_checked("prompts", "qoder-cn:a1b2c3d4", "--count")
+        self.run_cli_checked(
             "prompts", "qoder:d4e5f6a7", "--order", "newest", "--limit", "1"
         )
-        self.run_cli("search", "--harness", "kimi-code")
-        self.run_cli("latest", "--harness", "kimi-code", "--include-archived")
-        self.run_cli("show", "kimi-code:e5f6a7b8")
-        self.run_cli("prompts", "kimi-code:a7b8c9d0", "--count")
+        self.run_cli_checked("search", "--harness", "kimi-code")
+        self.run_cli_checked("latest", "--harness", "kimi-code", "--include-archived")
+        self.run_cli_checked("show", "kimi-code:e5f6a7b8")
+        self.run_cli_checked("prompts", "kimi-code:a7b8c9d0", "--count")
         self.assertEqual(snapshot(), before)
 
 
@@ -1104,3 +1104,57 @@ class ProjectGuidanceTests(unittest.TestCase):
     def test_add_harness_skill_has_no_extra_files(self) -> None:
         skill_dir = REPO_ROOT / ".agents" / "skills" / "add-harness"
         self.assertEqual({path.name for path in skill_dir.iterdir()}, {"SKILL.md"})
+
+
+class HomeFallbackIsolationTests(FixtureTestCase):
+    """No adapter may fall back to the real home directory.
+
+    Every store is redirected to a fixture by environment variables in
+    ``run_cli``. If an adapter ignored its override (or the clean-room env
+    leaked the real HOME back in), a recognizable decoy store planted in the
+    home directory would show up in search results.
+    """
+
+    NEEDLE = "zzz-real-home-decoy-qqq"
+
+    def _plant_decoy(self, home: Path) -> None:
+        project = home / ".claude" / "projects" / "-tmp-decoy"
+        project.mkdir(parents=True)
+        record = {
+            "type": "user",
+            "uuid": "decoy-0001",
+            "parentUuid": None,
+            "sessionId": "decoy0000-0000-4000-8000-000000000001",
+            "timestamp": "2026-11-10T12:00:00.000Z",
+            "cwd": "/tmp/decoy-project",
+            "gitBranch": "main",
+            "version": "1.0.0",
+            "message": {"role": "user", "content": self.NEEDLE},
+        }
+        (project / "decoy0000-0000-4000-8000-000000000001.jsonl").write_text(
+            json.dumps(record) + "\n", encoding="utf-8"
+        )
+
+    def test_search_never_reads_the_real_home(self) -> None:
+        from claude_code_fixture import build_claude_code_home
+
+        with tempfile.TemporaryDirectory(prefix="fms-decoy-home-") as raw:
+            decoy_home = Path(raw)
+            self._plant_decoy(decoy_home)
+            with mock.patch.object(Path, "home", return_value=decoy_home):
+                # The decoy store is complete enough to list on its own:
+                # pointing the adapter at it proves the test would catch a leak.
+                probe_home = decoy_home / "probe"
+                build_claude_code_home(probe_home)
+                code, out, err = self.run_cli_checked(
+                    "search",
+                    "--harness",
+                    "claude-code",
+                    claude_home=probe_home,
+                )
+                self.assertIn("claude-code:", out)
+                # A full cross-harness search must still not see the decoy,
+                # even though Path.home() points straight at it.
+                code, out, err = self.run_cli_checked("search", self.NEEDLE)
+                self.assertNotIn(self.NEEDLE, out)
+                self.assertIn("no sessions matched", out)

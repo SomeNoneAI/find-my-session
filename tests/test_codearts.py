@@ -402,7 +402,7 @@ class CodeArtsAgentTests(FixtureTestCase):
         self.assertTrue(data["has_more"])
         self.assertEqual([prompt["index"] for prompt in data["prompts"]], [1, 2])
         self.assertEqual(data["prompts"][0]["text"], CODEARTS_PROMPTS[0])
-        self.assertIsNotNone(data["prompts"][0]["timestamp"])
+        self.assertEqual(data["prompts"][0]["timestamp"], '2026-10-20T09:10:00Z')
 
         data = self.run_json("prompts", "codearts-agent:c0de1003", "--count")
         self.assertTrue(data["archived"])
@@ -454,16 +454,16 @@ class CodeArtsAgentTests(FixtureTestCase):
             return files
 
         before = snapshot()
-        self.run_cli("search", "--harness", "codearts-agent")
-        self.run_cli("search", "--harness", "codearts-agent", "--include-archived")
-        self.run_cli(
+        self.run_cli_checked("search", "--harness", "codearts-agent")
+        self.run_cli_checked("search", "--harness", "codearts-agent", "--include-archived")
+        self.run_cli_checked(
             "search", "--harness", "codearts-agent", "--deep", "deep-only-needle"
         )
-        self.run_cli("latest", "--harness", "codearts-agent")
-        self.run_cli("show", "codearts-agent:c0de1001")
-        self.run_cli("show", "codearts-agent:c0de1003", "--format", "json")
-        self.run_cli("prompts", "codearts-agent:c0de1001")
-        self.run_cli("prompts", "codearts-agent:c0de1001", "--count")
+        self.run_cli_checked("latest", "--harness", "codearts-agent")
+        self.run_cli_checked("show", "codearts-agent:c0de1001")
+        self.run_cli_checked("show", "codearts-agent:c0de1003", "--format", "json")
+        self.run_cli_checked("prompts", "codearts-agent:c0de1001")
+        self.run_cli_checked("prompts", "codearts-agent:c0de1001", "--count")
         self.assertEqual(snapshot(), before)
         self.assertFalse(
             any(

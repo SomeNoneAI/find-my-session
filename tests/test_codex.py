@@ -443,7 +443,7 @@ class CodexTests(FixtureTestCase):
         self.assertTrue(data["has_more"])
         self.assertEqual([prompt["index"] for prompt in data["prompts"]], [1, 2])
         self.assertEqual(data["prompts"][0]["text"], CODEX_PROMPTS[0])
-        self.assertIsNotNone(data["prompts"][0]["timestamp"])
+        self.assertEqual(data["prompts"][0]["timestamp"], '2026-10-20T09:11:00Z')
 
         data = self.run_json("prompts", "codex:c0de0006", "--count")
         self.assertTrue(data["archived"])
@@ -504,15 +504,15 @@ class CodexTests(FixtureTestCase):
             return files
 
         before = snapshot()
-        self.run_cli("search", "--harness", "codex")
-        self.run_cli("search", "--harness", "codex", "--include-archived")
-        self.run_cli("search", "--harness", "codex", "--deep", "deep-only-needle")
-        self.run_cli("latest", "--harness", "codex")
-        self.run_cli("show", "codex:c0de0001")
-        self.run_cli("show", "codex:c0de0002")
-        self.run_cli("show", "codex:c0de0006", "--format", "json")
-        self.run_cli("prompts", "codex:c0de0001")
-        self.run_cli("prompts", "codex:c0de0001", "--count")
+        self.run_cli_checked("search", "--harness", "codex")
+        self.run_cli_checked("search", "--harness", "codex", "--include-archived")
+        self.run_cli_checked("search", "--harness", "codex", "--deep", "deep-only-needle")
+        self.run_cli_checked("latest", "--harness", "codex")
+        self.run_cli_checked("show", "codex:c0de0001")
+        self.run_cli_checked("show", "codex:c0de0002")
+        self.run_cli_checked("show", "codex:c0de0006", "--format", "json")
+        self.run_cli_checked("prompts", "codex:c0de0001")
+        self.run_cli_checked("prompts", "codex:c0de0001", "--count")
         self.assertEqual(snapshot(), before)
         self.assertFalse(
             any(

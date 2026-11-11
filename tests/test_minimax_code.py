@@ -513,7 +513,7 @@ class MiniMaxCodeTests(FixtureTestCase):
             [prompt["index"] for prompt in data["prompts"]], [1, 2]
         )
         self.assertEqual(data["prompts"][0]["text"], PROMPTS_MAIN[0])
-        self.assertIsNotNone(data["prompts"][0]["timestamp"])
+        self.assertEqual(data["prompts"][0]["timestamp"], '2026-10-27T14:00:00Z')
         self.assertTrue(data["path"].endswith("messages.jsonl"))
 
         data = self.run_json(
@@ -650,19 +650,19 @@ class MiniMaxCodeTests(FixtureTestCase):
             return files
 
         before = snapshot()
-        self.run_cli("search", "--harness", "minimax-code")
-        self.run_cli(
+        self.run_cli_checked("search", "--harness", "minimax-code")
+        self.run_cli_checked(
             "search", "--harness", "minimax-code", "--include-archived"
         )
-        self.run_cli(
+        self.run_cli_checked(
             "search", "--harness", "minimax-code", "--deep", "deep-only-needle"
         )
-        self.run_cli("latest", "--harness", "minimax-code")
-        self.run_cli("show", "minimax-code:c0de4001")
-        self.run_cli("show", "minimax-code:c0de4003", "--format", "json")
-        self.run_cli("prompts", "minimax-code:c0de4001")
-        self.run_cli("prompts", "minimax-code:c0de4001", "--count")
-        self.run_cli("doctor", "--harness", "minimax-code")
+        self.run_cli_checked("latest", "--harness", "minimax-code")
+        self.run_cli_checked("show", "minimax-code:c0de4001")
+        self.run_cli_checked("show", "minimax-code:c0de4003", "--format", "json")
+        self.run_cli_checked("prompts", "minimax-code:c0de4001")
+        self.run_cli_checked("prompts", "minimax-code:c0de4001", "--count")
+        self.run_cli_checked("doctor", "--harness", "minimax-code")
         self.assertEqual(snapshot(), before)
         self.assertFalse(
             any(

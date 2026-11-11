@@ -651,7 +651,7 @@ class AntigravityTests(FixtureTestCase):
             [prompt["index"] for prompt in data["prompts"]], [1, 2]
         )
         self.assertEqual(data["prompts"][0]["text"], ANTIGRAVITY_PROMPTS[0])
-        self.assertIsNotNone(data["prompts"][0]["timestamp"])
+        self.assertEqual(data["prompts"][0]["timestamp"], '2026-09-01T10:05:00Z')
 
     def test_non_human_records_never_become_prompts(self) -> None:
         prompts = self.run_json(

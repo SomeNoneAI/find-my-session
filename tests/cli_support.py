@@ -13,6 +13,7 @@ import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Tuple
 from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -466,7 +467,21 @@ class FixtureTestCase(unittest.TestCase):
     ):
         out = io.StringIO()
         err = io.StringIO()
+        sentinel_home = str(home or self.home)
         env = {
+            # Clean-room base: the real HOME/XDG/APPDATA cannot leak into
+            # adapters, while PATH and the temp vars keep the zstd CLI
+            # usable for compressed fixtures.
+            "PATH": os.environ.get("PATH", ""),
+            "HOME": sentinel_home,
+            "TEMP": os.environ.get("TEMP", ""),
+            "TMP": os.environ.get("TMP", ""),
+            "SYSTEMROOT": os.environ.get("SYSTEMROOT", ""),
+            "XDG_DATA_HOME": sentinel_home,
+            "XDG_CONFIG_HOME": sentinel_home,
+            "XDG_CACHE_HOME": sentinel_home,
+            "APPDATA": sentinel_home,
+            "LOCALAPPDATA": sentinel_home,
             "FMS_PI_HOME": str(pi_home or self.pi_home),
             "FMS_OMP_HOME": str(omp_home or self.omp_home),
             "FMS_CODEBUDDY_CN_HOME": str(codebuddy_cn_home or self.codebuddy_cn_home),
@@ -513,10 +528,24 @@ class FixtureTestCase(unittest.TestCase):
                 minimax_code_app_db or self.minimax_code_db
             ),
         }
-        with mock.patch.dict(os.environ, env):
+        with mock.patch.dict(os.environ, env, clear=True):
             with redirect_stdout(out), redirect_stderr(err):
                 code = cli.main(list(args))
         return code, out.getvalue(), err.getvalue()
+
+    def run_cli_checked(self, *args: str, **kwargs) -> Tuple[int, str, str]:
+        """Run a command that must succeed and produce output.
+
+        Read-only store tests use this so a silently failing command cannot
+        vacuously pass the before/after byte comparison.
+        """
+        code, out, err = self.run_cli(*args, **kwargs)
+        label = " ".join(str(arg) for arg in args)
+        self.assertEqual(code, 0, "%s exited with %d: %s" % (label, code, err))
+        self.assertTrue(
+            out.strip() or err.strip(), "%s produced no output at all" % label
+        )
+        return code, out, err
 
     def run_json(
         self,

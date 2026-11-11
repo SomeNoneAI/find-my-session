@@ -402,7 +402,7 @@ class ZCodeTests(FixtureTestCase):
         self.assertTrue(data["has_more"])
         self.assertEqual([prompt["index"] for prompt in data["prompts"]], [1, 2])
         self.assertEqual(data["prompts"][0]["text"], PROMPTS_DESKTOP[0])
-        self.assertIsNotNone(data["prompts"][0]["timestamp"])
+        self.assertEqual(data["prompts"][0]["timestamp"], '2026-10-20T09:10:00Z')
 
         data = self.run_json("prompts", "zcode:c0de0003", "--count")
         self.assertTrue(data["archived"])
@@ -439,14 +439,14 @@ class ZCodeTests(FixtureTestCase):
             return files
 
         before = snapshot()
-        self.run_cli("search", "--harness", "zcode")
-        self.run_cli("search", "--harness", "zcode", "--include-archived")
-        self.run_cli("search", "--harness", "zcode", "--deep", "deep-only-needle")
-        self.run_cli("latest", "--harness", "zcode")
-        self.run_cli("show", "zcode:c0de0001")
-        self.run_cli("show", "zcode:c0de0003", "--format", "json")
-        self.run_cli("prompts", "zcode:c0de0001")
-        self.run_cli("prompts", "zcode:c0de0001", "--count")
+        self.run_cli_checked("search", "--harness", "zcode")
+        self.run_cli_checked("search", "--harness", "zcode", "--include-archived")
+        self.run_cli_checked("search", "--harness", "zcode", "--deep", "deep-only-needle")
+        self.run_cli_checked("latest", "--harness", "zcode")
+        self.run_cli_checked("show", "zcode:c0de0001")
+        self.run_cli_checked("show", "zcode:c0de0003", "--format", "json")
+        self.run_cli_checked("prompts", "zcode:c0de0001")
+        self.run_cli_checked("prompts", "zcode:c0de0001", "--count")
         self.assertEqual(snapshot(), before)
         self.assertFalse(
             any(

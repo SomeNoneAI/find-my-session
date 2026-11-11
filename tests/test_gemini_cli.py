@@ -243,12 +243,12 @@ class GeminiCLITests(FixtureTestCase):
             for path in sorted(root.rglob("*"))
             if path.is_file()
         }
-        self.run_cli("search", "--harness", "gemini-cli")
-        self.run_cli("latest", "--harness", "gemini-cli")
-        self.run_cli("show", REF_MAIN)
-        self.run_cli("prompts", REF_MAIN, "--count")
-        self.run_cli("search", "--harness", "gemini-cli", "--deep", "parser module")
-        self.run_cli("doctor", "--harness", "gemini-cli")
+        self.run_cli_checked("search", "--harness", "gemini-cli")
+        self.run_cli_checked("latest", "--harness", "gemini-cli")
+        self.run_cli_checked("show", REF_MAIN)
+        self.run_cli_checked("prompts", REF_MAIN, "--count")
+        self.run_cli_checked("search", "--harness", "gemini-cli", "--deep", "parser module")
+        self.run_cli_checked("doctor", "--harness", "gemini-cli")
         after = {
             str(path.relative_to(root)): (path.read_bytes(), path.stat().st_mtime_ns)
             for path in sorted(root.rglob("*"))

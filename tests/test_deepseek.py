@@ -475,7 +475,7 @@ class DeepSeekTests(FixtureTestCase):
             [prompt["index"] for prompt in data["prompts"]], [1, 2]
         )
         self.assertEqual(data["prompts"][0]["text"], DEEPSEEK_PROMPTS[0])
-        self.assertIsNotNone(data["prompts"][0]["timestamp"])
+        self.assertEqual(data["prompts"][0]["timestamp"], '2026-10-20T09:10:00Z')
 
         data = self.run_json("prompts", "deepseek:d5ee0002", "--count")
         self.assertTrue(data["archived"])
@@ -553,17 +553,17 @@ class DeepSeekTests(FixtureTestCase):
             return files
 
         before = snapshot()
-        self.run_cli("search", "--harness", "deepseek")
-        self.run_cli("search", "--harness", "deepseek", "--include-archived")
-        self.run_cli(
+        self.run_cli_checked("search", "--harness", "deepseek")
+        self.run_cli_checked("search", "--harness", "deepseek", "--include-archived")
+        self.run_cli_checked(
             "search", "--harness", "deepseek", "--deep", DEEPSEEK_DEEP_ONLY_NEEDLE
         )
-        self.run_cli("latest", "--harness", "deepseek")
-        self.run_cli("show", "deepseek:d5ee0001")
-        self.run_cli("show", "deepseek:d5ee0003")
-        self.run_cli("show", "deepseek:d5ee0002", "--format", "json")
-        self.run_cli("prompts", "deepseek:d5ee0001")
-        self.run_cli("prompts", "deepseek:d5ee0001", "--count")
+        self.run_cli_checked("latest", "--harness", "deepseek")
+        self.run_cli_checked("show", "deepseek:d5ee0001")
+        self.run_cli_checked("show", "deepseek:d5ee0003")
+        self.run_cli_checked("show", "deepseek:d5ee0002", "--format", "json")
+        self.run_cli_checked("prompts", "deepseek:d5ee0001")
+        self.run_cli_checked("prompts", "deepseek:d5ee0001", "--count")
         self.assertEqual(snapshot(), before)
         self.assertFalse(
             any(

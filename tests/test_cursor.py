@@ -386,7 +386,7 @@ class CursorTests(FixtureTestCase):
             ("prompts", "cursor:f1c00001", "--count"),
             ("doctor", "--harness", "cursor"),
         ):
-            self.run_cli(*args)
+            self.run_cli_checked(*args)
         after = snapshot()
         self.assertEqual(before, after)
         self.assertFalse(list(self.cursor_home.rglob("*-wal")))

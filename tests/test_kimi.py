@@ -494,10 +494,10 @@ class KimiCodeTests(FixtureTestCase):
             return files
 
         before = snapshot()
-        self.run_cli("search", "--harness", "kimi-code")
-        self.run_cli("latest", "--harness", "kimi-code", "--include-archived")
-        self.run_cli("show", "kimi-code:e5f6a7b8")
-        self.run_cli("show", "kimi-code:f6a7b8c9", "--format", "json")
-        self.run_cli("prompts", "kimi-code:e5f6a7b8")
-        self.run_cli("prompts", "kimi-code:a7b8c9d0", "--count")
+        self.run_cli_checked("search", "--harness", "kimi-code")
+        self.run_cli_checked("latest", "--harness", "kimi-code", "--include-archived")
+        self.run_cli_checked("show", "kimi-code:e5f6a7b8")
+        self.run_cli_checked("show", "kimi-code:f6a7b8c9", "--format", "json")
+        self.run_cli_checked("prompts", "kimi-code:e5f6a7b8")
+        self.run_cli_checked("prompts", "kimi-code:a7b8c9d0", "--count")
         self.assertEqual(snapshot(), before)

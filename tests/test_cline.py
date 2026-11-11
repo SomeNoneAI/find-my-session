@@ -407,7 +407,7 @@ class ClineTests(FixtureTestCase):
         self.assertTrue(data["has_more"])
         self.assertEqual([prompt["index"] for prompt in data["prompts"]], [1, 2])
         self.assertEqual(data["prompts"][0]["text"], CLINE_PROMPTS[0])
-        self.assertIsNotNone(data["prompts"][0]["timestamp"])
+        self.assertEqual(data["prompts"][0]["timestamp"], '2026-10-25T09:00:05Z')
 
     def test_non_human_records_never_become_prompts(self) -> None:
         prompts = self.run_json("prompts", "cline:c1a0d", "--limit", "0")
@@ -439,15 +439,15 @@ class ClineTests(FixtureTestCase):
             return files
 
         before = snapshot()
-        self.run_cli("search", "--harness", "cline")
-        self.run_cli("search", "--harness", "cline", "--deep", CLINE_DEEP_ONLY_NEEDLE)
-        self.run_cli("latest", "--harness", "cline")
-        self.run_cli("show", "cline:c1a0d")
-        self.run_cli("show", "cline:c1a0d", "--format", "json")
-        self.run_cli("show", "cline:c1a0g")
-        self.run_cli("prompts", "cline:c1a0d", "--count")
-        self.run_cli("prompts", "cline:c1a0d", "--order", "newest", "--limit", "2")
-        self.run_cli(
+        self.run_cli_checked("search", "--harness", "cline")
+        self.run_cli_checked("search", "--harness", "cline", "--deep", CLINE_DEEP_ONLY_NEEDLE)
+        self.run_cli_checked("latest", "--harness", "cline")
+        self.run_cli_checked("show", "cline:c1a0d")
+        self.run_cli_checked("show", "cline:c1a0d", "--format", "json")
+        self.run_cli_checked("show", "cline:c1a0g")
+        self.run_cli_checked("prompts", "cline:c1a0d", "--count")
+        self.run_cli_checked("prompts", "cline:c1a0d", "--order", "newest", "--limit", "2")
+        self.run_cli_checked(
             "search", "--harness", "cline", "--include-archived", "--limit", "0"
         )
         self.assertEqual(snapshot(), before)

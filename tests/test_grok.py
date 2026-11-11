@@ -513,7 +513,7 @@ class GrokBuildTests(FixtureTestCase):
         self.assertTrue(data["has_more"])
         self.assertEqual([prompt["index"] for prompt in data["prompts"]], [1, 2])
         self.assertEqual(data["prompts"][0]["text"], GROK_PROMPTS[0])
-        self.assertIsNotNone(data["prompts"][0]["timestamp"])
+        self.assertEqual(data["prompts"][0]["timestamp"], '2026-10-20T09:10:00Z')
 
     def test_non_human_records_never_become_prompts(self) -> None:
         prompts = self.run_json("prompts", "grok-build:9a0b1c01", "--limit", "0")
@@ -596,17 +596,17 @@ class GrokBuildTests(FixtureTestCase):
             return files
 
         before = snapshot()
-        self.run_cli("search", "--harness", "grok-build")
-        self.run_cli("search", "--harness", "grok-build", "--include-archived")
-        self.run_cli(
+        self.run_cli_checked("search", "--harness", "grok-build")
+        self.run_cli_checked("search", "--harness", "grok-build", "--include-archived")
+        self.run_cli_checked(
             "search", "--harness", "grok-build", "--deep", GROK_DEEP_ONLY_NEEDLE
         )
-        self.run_cli("latest", "--harness", "grok-build")
-        self.run_cli("show", "grok-build:9a0b1c01")
-        self.run_cli("show", "grok-build:9a0b1c02")
-        self.run_cli("show", "grok-build:9a0b1c04", "--format", "json")
-        self.run_cli("prompts", "grok-build:9a0b1c01")
-        self.run_cli("prompts", "grok-build:9a0b1c01", "--count")
+        self.run_cli_checked("latest", "--harness", "grok-build")
+        self.run_cli_checked("show", "grok-build:9a0b1c01")
+        self.run_cli_checked("show", "grok-build:9a0b1c02")
+        self.run_cli_checked("show", "grok-build:9a0b1c04", "--format", "json")
+        self.run_cli_checked("prompts", "grok-build:9a0b1c01")
+        self.run_cli_checked("prompts", "grok-build:9a0b1c01", "--count")
         self.assertEqual(snapshot(), before)
         self.assertFalse(
             any(

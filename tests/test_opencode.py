@@ -351,12 +351,12 @@ class OpenCodeTests(FixtureTestCase):
             path.name for path in self.opencode_home.rglob("*") if path.is_file()
         )
 
-        self.run_cli("search", "--harness", "opencode")
-        self.run_cli("latest", "--harness", "opencode")
-        self.run_cli("show", REF_MAIN)
-        self.run_cli("prompts", REF_MAIN, "--count")
-        self.run_cli("search", "--harness", "opencode", "--deep", NEEDLE_DEEP_ONLY)
-        self.run_cli("doctor", "--harness", "opencode")
+        self.run_cli_checked("search", "--harness", "opencode")
+        self.run_cli_checked("latest", "--harness", "opencode")
+        self.run_cli_checked("show", REF_MAIN)
+        self.run_cli_checked("prompts", REF_MAIN, "--count")
+        self.run_cli_checked("search", "--harness", "opencode", "--deep", NEEDLE_DEEP_ONLY)
+        self.run_cli_checked("doctor", "--harness", "opencode")
 
         for name, (data, mtime) in snapshot.items():
             path = self.opencode_home / name
