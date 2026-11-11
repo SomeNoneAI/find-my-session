@@ -121,7 +121,7 @@ Search prefers an explicit `--harness`; omit the query to list recent sessions. 
 | `fms latest` | Return the most recent matching session. |
 | `fms show <ref>` | Print a handoff digest for one session. |
 | `fms prompts <ref>` | List every human prompt in one session; count, page, and order them. |
-| `fms mcp` | Run the Model Context Protocol server on stdio: exposes search/show/prompts/stats/doctor as read-only MCP tools for MCP-native hosts. See [docs/mcp.md](docs/mcp.md). |
+| `fms mcp` | Run the Model Context Protocol server on stdio: exposes harnesses/search/latest/show/prompts/stats/doctor as read-only MCP tools for MCP-native hosts. See [docs/mcp.md](docs/mcp.md). |
 | `fms stats [--harness] [--since] [--json]` | Aggregate the token/cost usage that harnesses themselves record; harnesses without recorded usage show `-`. |
 | `fms resume <ref> [--exec]` | Print (or run) the harness command that reopens the session; falls back to the handoff digest when no resume command is verified. |
 | `fms doctor [--harness] [--json] [--fingerprint]` | Check the local environment and stores (decoder availability, readable roots, per-harness health); `--fingerprint` adds a content-free shape summary for drift reports. |
@@ -130,7 +130,7 @@ Search prefers an explicit `--harness`; omit the query to list recent sessions. 
 
 | Option | Applies to | Meaning |
 | --- | --- | --- |
-| `--harness NAME[,NAME]` | search, latest, show, prompts, doctor | Restrict lookup to a harness. Recommended for speed and precision. |
+| `--harness NAME[,NAME]` | search, latest, stats, resume, show, prompts, doctor | Restrict lookup to a harness. Recommended for speed and precision. |
 | `--cwd PATH` | search, latest | Match a session whose working directory contains, or is contained by, `PATH`. |
 | `--since 7d` / `--since 2026-10-01` | search, latest | Filter by last update time. |
 | `--limit N` | search, latest, prompts | Limit results or prompts; `0` means unlimited. |
@@ -138,10 +138,12 @@ Search prefers an explicit `--harness`; omit the query to list recent sessions. 
 | `--order oldest/newest` | prompts | Page order; original indices are preserved. |
 | `--count` | prompts | Print only the total prompt count. |
 | `--deep` | search, latest | Also scan full transcripts. Slower; still prints metadata only. |
+| `--explain` | search, latest | Print per-token scoring breakdowns to stderr. |
+| `--timeout SECONDS` | search, latest | Stop deep scanning after N seconds and show partial results; `0` means no limit. |
 | `--include-archived` | search, latest | Include archived sessions. Off by default. |
 | `--verbose` | search, latest | Warn about skipped sessions on stderr without changing stdout. |
 | `--messages N` / `--chars N` / `--summary-chars N` | show | Cap turns, per-message characters, and summary characters. |
-| `--json` | harnesses, search, latest, prompts, doctor | Machine-readable output; use `--format json` for `show`. See [docs/json-output.md](docs/json-output.md) for the field contract. |
+| `--json` | harnesses, search, latest, stats, resume, prompts, doctor | Machine-readable output; use `--format json` for `show`. See [docs/json-output.md](docs/json-output.md) for the field contract. |
 
 Session references use `harness:session-prefix` (for example `claude-code:c1a0de01`); a raw transcript path from a supported store works too.
 

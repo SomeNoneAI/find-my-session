@@ -122,7 +122,7 @@ fms stats --since 7d                            # 跨 harness 的 token/费用�
 | `fms latest` | 返回最近一个匹配会话。 |
 | `fms show <ref>` | 输出单个会话的接力摘要。 |
 | `fms prompts <ref>` | 列出单个会话的全部用户输入，支持计数、分页与排序。 |
-| `fms mcp` | 在 stdio 上运行 Model Context Protocol 服务器：把 search/show/prompts/stats/doctor 暴露为只读 MCP 工具。见 [docs/mcp.md](docs/mcp.md)。 |
+| `fms mcp` | 在 stdio 上运行 Model Context Protocol 服务器：把 harnesses/search/latest/show/prompts/stats/doctor 暴露为只读 MCP 工具。见 [docs/mcp.md](docs/mcp.md)。 |
 | `fms stats [--harness] [--since] [--json]` | 汇总各 harness 自身记录的 token/费用；未记录 usage 的显示 `-`。 |
 | `fms resume <ref> [--exec]` | 输出（用 `--exec` 则直接运行）在该 harness 中重新打开此会话的命令；未验证续接命令时回退为接力摘要。 |
 | `fms doctor [--harness] [--json] [--fingerprint]` | 检查本地环境与存储（解码器可用性、目录可读性、各 harness 健康状况）；`--fingerprint` 额外输出不含内容的存储形态摘要，便于上报格式漂移。 |
@@ -131,7 +131,7 @@ fms stats --since 7d                            # 跨 harness 的 token/费用�
 
 | 选项 | 适用命令 | 含义 |
 | --- | --- | --- |
-| `--harness NAME[,NAME]` | search, latest, show, prompts, doctor | 限定 harness，推荐用于提速和减少误匹配。 |
+| `--harness NAME[,NAME]` | search, latest, stats, resume, show, prompts, doctor | 限定 harness，推荐用于提速和减少误匹配。 |
 | `--cwd PATH` | search, latest | 匹配工作目录与 PATH 相同、包含或被包含的会话。 |
 | `--since 7d` / `--since 2026-10-01` | search, latest | 按最后更新时间过滤。 |
 | `--limit N` | search, latest, prompts | 限制结果或用户输入条数；`0` 表示不限。 |
@@ -139,10 +139,12 @@ fms stats --since 7d                            # 跨 harness 的 token/费用�
 | `--order oldest/newest` | prompts | 分页顺序；条目仍保留原始时间序号。 |
 | `--count` | prompts | 只输出用户输入总数。 |
 | `--deep` | search, latest | 额外扫描完整 transcript；更慢，输出仍只有元数据。 |
+| `--explain` | search, latest | 在 stderr 输出逐词评分明细。 |
+| `--timeout SECONDS` | search, latest | deep 扫描 N 秒后停止并给出部分结果；`0` 表示不限。 |
 | `--include-archived` | search, latest | 纳入归档会话。默认关闭。 |
 | `--verbose` | search, latest | 在 stderr 警告被跳过的会话，不改变 stdout。 |
 | `--messages N` / `--chars N` / `--summary-chars N` | show | 限制对话轮数、单条字符数与摘要字符数。 |
-| `--json` | harnesses, search, latest, prompts, doctor | 结构化输出；`show` 使用 `--format json`。字段约定见 [docs/json-output.md](docs/json-output.md)。 |
+| `--json` | harnesses, search, latest, stats, resume, prompts, doctor | 结构化输出；`show` 使用 `--format json`。字段约定见 [docs/json-output.md](docs/json-output.md)。 |
 
 会话引用格式为 `harness:session-prefix`（例如 `claude-code:c1a0de01`）；也接受受支持 harness 下的原始 transcript 路径。
 

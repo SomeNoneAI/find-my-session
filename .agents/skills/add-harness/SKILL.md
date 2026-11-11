@@ -36,6 +36,7 @@ Every ready adapter must cover all of these, even if the harness supplies the da
 | Usage totals | optional `usage_summary` | When the store records token/cost data, `fms stats` aggregates it; only store-carried numbers, never estimates. |
 | Resume command | optional `resume_argv` | When the harness CLI can reopen a session by id, `fms resume` prints (and `--exec` runs) the exact command; only verified commands are mapped. |
 | Store fingerprint | nothing (shared, derived from candidates) | `doctor --fingerprint` yields content-free shape summaries over the fixture (kinds, field names, counts) with no values, ids, or paths; no adapter code is involved. |
+| MCP exposure | nothing (shared) | Once the adapter registers, `fms mcp` exposes it through the read-only MCP tools with no adapter code; verify search/latest/show/prompts/stats/doctor over the fixture store. |
 | Read-only operation | Every file and database path | Byte and mtime snapshot unchanged; no WAL or SHM side effects. |
 
 If a capability genuinely does not exist for the harness, document the gap in the reference and keep the shared behavior safe. Never invent data to satisfy the checklist.

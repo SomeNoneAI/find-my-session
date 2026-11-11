@@ -92,7 +92,7 @@ Use `ToolCall`, `Exchange`, and `UserPrompt` from `models.py`; do not invent par
 9. Character caps. Truncate prompts, assistant text, summaries, and tool details so one pathological session cannot flood the context window.
 10. Deterministic ordering. Sort by update time where possible; the CLI re-sorts results.
 11. Archive state is metadata, not a separate store. If the harness records archive or delete state outside the transcript (for example in an app SQLite database), read it read-only and set `SessionSummary.archived`. Missing records mean active; missing or unreadable metadata must degrade to all-active. The CLI filters archived sessions before search, including `--deep`, so the adapter never needs its own flag.
-12. Complete prompt listing is streaming. `iter_prompts` yields every human-authored prompt once, including duplicate and short prompts, in transcript order. Skip tool results, sidechains, injected/meta records, compaction summaries, and denormalized latest-prompt records. Return cleaned text without paging or caps; the CLI counts in one pass and selects a page in a second pass, retaining only that page.
+12. Complete prompt listing is streaming. `iter_prompts` yields every human-authored prompt once, including duplicate and short prompts, in transcript order. Skip tool results, sidechains, injected/meta records, compaction summaries, and denormalized latest-prompt records. Return cleaned text without paging or caps; the CLI walks the iterator once, counting every prompt and retaining only the requested page.
 13. Database-backed stores. If sessions are rows in an application SQLite database, open it read-only through a URI such as `file:/path/db.sqlite?mode=ro`, never copy it into the store, and never create a cache or journal file. There is no per-session file, so set `session_roots()` to `[]`, override `owns()` to accept the database path and its virtual `<db>#<session id>` form, and print that virtual path as the digest's `source:`. `show`/`prompts` accept it as a path. Implement `contains()` as a per-session row scan; the default file scan cannot work. Prefer the harness's own record semantics for prompts, and exclude subagent child rows from listing.
 14. Deep search is per session. `contains()` must return true only when every token appears in that session's own content. The shared CLI filters archived sessions before calling it, so the adapter never needs its own archive check.
 
@@ -151,7 +151,7 @@ Add tests to `tests/test_cli.py` or a new `tests/test_<harness>.py`:
 - `doctor --harness <name>` candidate/readable/skipped counts and sanitized failure categories; `search --verbose` warns without polluting stdout.
 - `doctor --fingerprint` works over the same candidates with no adapter work: fixture transcripts keep producing content-free shape summaries (no values, ids, or paths in the fingerprint).
 - Optional `usage_summary(summary)`: return the recorded token/cost totals for one session as a flat dict (`tokens_input`, `tokens_output`, `tokens_cache_read`, `cost`), or inherit the `None` default so `fms stats` reports the harness as unrecorded. Only return numbers the store itself carries.
-- Optional `resume_argv(summary)`: return the verified argv that reopens a session in the harness's own CLI (Claude Code and Codex today), or inherit the `None` default so `fms resume` falls back to the handoff digest. Only implement it for commands verified against the real app.
+- Optional `resume_argv(summary)`: return the verified argv that reopens a session in the harness's own CLI (Claude Code, Codex, Pi, OMP, Cursor, Cline, OpenCode, Qwen, Kimi Code, and ZCode today), or inherit the `None` default so `fms resume` falls back to the handoff digest. Only implement it for commands verified against the real app.
 - Read-only snapshot: file bytes and mtimes are unchanged after commands.
 - Fixture validity and privacy markers.
 
@@ -162,7 +162,7 @@ Set the adapter's `FMS_<NAME>_HOME` override to a temporary copy of the fixture.
 Before opening a pull request:
 
 ```bash
-python3 -m compileall -q core ui skills/find-my-session/scripts tools tests
+python3 -m compileall -q core fms_ui skills/find-my-session/scripts tools tests
 python3 -m unittest discover -s tests -v
 python3 tools/build_artifacts.py
 ```

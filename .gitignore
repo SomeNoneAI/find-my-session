@@ -37,3 +37,13 @@ tmp/
 !tests/fixtures/gemini-cli-home/tmp/
 !tests/fixtures/gemini-cli-home/tmp/**
 .workbuddy-ai/
+.qwen/
+
+# Scratch session exports and local databases never belong in the repo;
+# committed synthetic fixtures under tests/fixtures stay tracked.
+*.db
+*.sqlite
+*.sqlite3
+*.jsonl
+!tests/fixtures/**
+

@@ -4,11 +4,11 @@ Public direction for find-my-session. No dates are promised; order is roughly pr
 
 ## Near term: release and distribution
 
-- **PyPI.** The release workflow builds the wheel and sdist and publishes them through Trusted Publishing. The first tagged release makes `pipx install find-my-session` and `uvx --from find-my-session fms` work.
-- **Releases.** Automated GitHub Releases publish both ZIPs (`find-my-session-skill.zip`, `find-my-session-ui.zip`), the Python distributions, and a `SHA256SUMS.txt`, with build provenance attestations.
+- **PyPI.** Shipped with the first tagged release: the release workflow builds the wheel and sdist and publishes them through Trusted Publishing, so `pipx install find-my-session` and `uvx --from find-my-session fms` work.
+- **Releases.** Shipped: automated GitHub Releases publish both ZIPs (`find-my-session-skill.zip`, `find-my-session-ui.zip`), the Python distributions, and a `SHA256SUMS.txt`, with build provenance attestations.
 - **Diagnostics.** `fms doctor [--harness] [--json]` checks decoder availability, readable stores, and per-harness health; `--verbose` on `search`/`latest` reports skipped sessions, so a broken or drifted store is obvious before it wastes a handoff.
 - **JSON contract.** Keep `--json` additive before 1.0 and document every field in [docs/json-output.md](docs/json-output.md).
-- **Supply-chain checks.** CodeQL analyzes Python on every change; the OpenSSF Scorecard evaluation and adoption plan is documented in [docs/scorecard.md](docs/scorecard.md).
+- **Supply-chain checks.** CodeQL analyzes Python on every change; the OpenSSF Scorecard evaluation and adoption plan is documented in [docs/scorecard.md](docs/scorecard.md). Ongoing: keep the release workflow's tag-only publishing gate and pinned, checksum-verified publisher tooling intact.
 
 ## Python support
 

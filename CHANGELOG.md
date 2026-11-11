@@ -4,15 +4,67 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.3] - 2026-11-05
+## [Unreleased]
+
+### Added
+
+- UI panel authentication: `fms-ui` generates a random token at startup,
+  passes it through the launch URL, and checks it on every API request,
+  together with `Origin`/`Sec-Fetch-Site` validation and exact Host
+  matching; write and metadata methods answer 405. Documented in
+  `fms_ui/README.md` and `SECURITY.md`.
+- Release workflow hardening: every publishing job now requires a `v*` tag
+  ref (manual dispatch removed), releases never overwrite existing assets,
+  a concurrency group serializes publishes, Python distribution checksums
+  are verified before PyPI upload, and the MCP publisher binary is
+  downloaded and checksum-verified in a credential-free job.
+- Shared presentation defaults in `fms_lib.limits`: CLI and MCP surfaces
+  read their `show`/`search`/`prompts` defaults from one module, and the
+  MCP `show_session` tool honors its documented `messages`/`chars`
+  arguments instead of ignoring them.
+- Shared zstd support (`fms_lib.harnesses.zstd_support`): the zstd CLI is
+  looked up once per process, and bounded metadata scans of compressed
+  Codex/DeepSeek transcripts are memoized by file identity (path, mtime,
+  size) in a bounded LRU cache, so long-lived hosts re-query without
+  re-decompressing.
+- `fms search`/`latest` now truncate with a bounded heap while scoring, so
+  a small `--limit` no longer sorts the whole candidate set.
 
 ### Changed
 
-- README examples (including `docs/assets/demo.svg` and
-  `docs/assets/prompts-paging.svg`) now use Claude Code (`claude-code`)
-  instead of Qoder CN, and both READMEs lead with the language-switch link
-  plus copy-paste agent prompts such as
-  `/find-my-session 找到 claude-code 最近的一个会话，继续那个任务`.
+- Qwen Code adapter now reads the 1.0-preview store alongside the 0.x one:
+  session logs sit flat at
+  `~/.qwen/projects/<encoded-cwd>/<session-uuid>.jsonl` (0.x kept them under
+  `chats/`), human turns carry Anthropic-style `message.content` blocks with
+  `origin.kind: "human"` instead of Gemini-style parts, tool invocations are
+  `content[].tool_use` blocks, titles come from `ai-title` records, API
+  failures surface via `errorFallbackMessage`, and per-session todos live in
+  `~/.qwen/tasks/<session-id>/<n>.json` (`businessInfo.stage`). The 0.x
+  layout, record shapes, and `~/.qwen/todos/` files keep working unchanged.
+- Documentation consistency pass: `SKILL.md` gains an `fms mcp` section and
+  a Qwen troubleshooting entry, both READMEs list all seven MCP tools plus
+  the `--explain`/`--timeout` options and the full `--harness`/`--json`
+  coverage, `references/extending.md` describes the single-pass prompt
+  listing and the ten verified resume commands, the capability checklist in
+  `.agents/skills/add-harness/SKILL.md` gains an MCP row, `ROADMAP.md` marks
+  the shipped release/distribution items, and the changelog is ordered
+  Unreleased-first with versions descending.
+- Frontend supply chain: `package-lock.json` is rebuilt from the official
+  npm registry (no more npmmirror URLs), `package.json` pins
+  `engines.node >= 22` and `packageManager`, a `.nvmrc` pins Node 22,
+  `@types/node` matches the runtime, and CI/release install with
+  `npm ci --engine-strict` via `node-version-file`.
+- Tests run in a clean-room environment (`clear=True` with a sentinel
+  HOME/XDG/APPDATA), read-only store tests assert every command exits 0
+  with output before comparing byte snapshots, prompt timestamp assertions
+  compare exact instants, and a decoy-store test proves no adapter falls
+  back to the real home directory.
+
+### Housekeeping
+
+- `code-review-report.md` moved into `docs/`; `.gitignore` now covers
+  scratch session exports (`*.jsonl`/`*.db`/`*.sqlite*`) with a
+  `tests/fixtures` exception, plus the project-local `.qwen/` settings.
 
 ## [0.1.4] - 2026-11-06
 
@@ -80,7 +132,15 @@ All notable changes to this project are documented here. The format follows
   newest-first path keeps a bounded trailing window instead of replaying
   large transcripts twice, with identical paging semantics.
 
-## [Unreleased]
+## [0.1.3] - 2026-11-05
+
+### Changed
+
+- README examples (including `docs/assets/demo.svg` and
+  `docs/assets/prompts-paging.svg`) now use Claude Code (`claude-code`)
+  instead of Qoder CN, and both READMEs lead with the language-switch link
+  plus copy-paste agent prompts such as
+  `/find-my-session 找到 claude-code 最近的一个会话，继续那个任务`.
 
 ## [0.1.2] - 2026-11-04
 
