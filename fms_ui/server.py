@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import mimetypes
+import secrets
 import socketserver
 import sys
 import threading
@@ -33,6 +34,16 @@ except ImportError:  # standalone extracted layout: fms-ui puts this dir on sys.
     import session_cache  # type: ignore
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
+
+# Frontend-owned presentation limits (the shared service owns counting and
+# paging; the panel decides how much to show by default).
+UI_SEARCH_LIMIT_DEFAULT = 50
+UI_SEARCH_LIMIT_MAX = 500
+UI_MESSAGES_DEFAULT = 20
+UI_MESSAGES_MAX = 100
+UI_PROMPTS_OFFSET_DEFAULT = 0
+UI_PROMPTS_LIMIT_DEFAULT = 20
+UI_PROMPTS_LIMIT_MAX = 200
 STATIC_FILES = {
     "/": "index.html",
     "/index.html": "index.html",
@@ -128,7 +139,7 @@ def api_response(path: str, params: Dict[str, List[str]]) -> object:
         }
     if path == "/api/sessions":
         query = _parameter(params, "query")
-        limit = _integer(params, "limit", 50, 500)
+        limit = _integer(params, "limit", UI_SEARCH_LIMIT_DEFAULT, UI_SEARCH_LIMIT_MAX)
         include_archived = _boolean(params, "archived")
         if _boolean(params, "deep"):
             sessions = search_sessions(
@@ -170,7 +181,9 @@ def api_response(path: str, params: Dict[str, List[str]]) -> object:
             _required_ref(params), get_adapters(None)
         )
         detail = adapter.load(summary)
-        payload = detail.to_dict(max_exchanges=_integer(params, "messages", 20, 100))
+        payload = detail.to_dict(
+            max_exchanges=_integer(params, "messages", UI_MESSAGES_DEFAULT, UI_MESSAGES_MAX)
+        )
         payload["resume_argv"] = adapter.resume_argv(summary)
         return payload
     if path == "/api/prompts":
@@ -179,8 +192,12 @@ def api_response(path: str, params: Dict[str, List[str]]) -> object:
             raise ValueError("order must be oldest or newest")
         listing = list_prompts(
             _required_ref(params),
-            offset=_integer(params, "offset", 0, 0),
-            limit=_integer(params, "limit", 20, 200),
+            offset=_integer(
+                params, "offset", UI_PROMPTS_OFFSET_DEFAULT, UI_PROMPTS_OFFSET_DEFAULT
+            ),
+            limit=_integer(
+                params, "limit", UI_PROMPTS_LIMIT_DEFAULT, UI_PROMPTS_LIMIT_MAX
+            ),
             order=order,
         )
         return listing.to_dict()
@@ -216,11 +233,53 @@ class UIRequestHandler(BaseHTTPRequestHandler):
         self._send_bytes(status, "application/json; charset=utf-8", body)
 
     def _valid_host(self) -> bool:
-        try:
-            hostname = urlsplit("//" + self.headers.get("Host", "")).hostname
-        except ValueError:
+        host_header = self.headers.get("Host", "")
+        # Reject userinfo tricks like "evil.example@127.0.0.1" and match the
+        # full authority (host plus port), not just the parsed hostname.
+        if not host_header or "@" in host_header:
             return False
-        return hostname in ("127.0.0.1", "localhost", "::1")
+        if host_header.startswith("["):
+            end = host_header.find("]")
+            if end == -1:
+                return False
+            host = host_header[: end + 1]
+            rest = host_header[end + 1 :]
+        else:
+            host, _, port = host_header.partition(":")
+            rest = ":" + port if port else ""
+        if host not in ("127.0.0.1", "localhost", "[::1]"):
+            return False
+        if rest:
+            if not rest.startswith(":"):
+                return False
+            port = rest[1:]
+            if not port.isdigit() or int(port) != self.server.server_port:
+                return False
+        return True
+
+    def _allowed_origins(self) -> set:
+        port = self.server.server_port
+        return {
+            "http://127.0.0.1:%d" % port,
+            "http://localhost:%d" % port,
+            "http://[::1]:%d" % port,
+        }
+
+    def _api_auth_error(self) -> Optional[tuple]:
+        """Return (status, message) when an API request is not authorized."""
+        origin = self.headers.get("Origin")
+        if origin is not None and origin not in self._allowed_origins():
+            return (403, "forbidden origin")
+        fetch_site = self.headers.get("Sec-Fetch-Site")
+        if fetch_site is not None and fetch_site not in ("same-origin", "none"):
+            return (403, "forbidden cross-site request")
+        token = self.headers.get("X-FMS-Token", "")
+        expected = getattr(self.server, "auth_token", "")
+        if not expected or not secrets.compare_digest(
+            token.encode("utf-8"), expected.encode("utf-8")
+        ):
+            return (401, "unauthorized")
+        return None
 
     def do_GET(self) -> None:
         if not self._valid_host():
@@ -228,6 +287,11 @@ class UIRequestHandler(BaseHTTPRequestHandler):
             return
         parsed = urlsplit(self.path)
         if parsed.path.startswith("/api/"):
+            auth_error = self._api_auth_error()
+            if auth_error is not None:
+                status, message = auth_error
+                self._send_json(status, {"error": message})
+                return
             try:
                 data = api_response(parsed.path, parse_qs(parsed.query))
             except UserError as exc:
@@ -237,8 +301,10 @@ class UIRequestHandler(BaseHTTPRequestHandler):
                 self._send_json(400, {"error": str(exc)})
             except session_cache.ScanError as exc:
                 self._send_json(500, {"error": str(exc)})
-            except OSError as exc:
-                self._send_json(500, {"error": "cannot read session store: %s" % exc})
+            except OSError:
+                self._send_json(500, {"error": "cannot read session store"})
+            except Exception:
+                self._send_json(500, {"error": "internal server error"})
             else:
                 self._send_json(200, data)
             return
@@ -256,11 +322,22 @@ class UIRequestHandler(BaseHTTPRequestHandler):
             content_type += "; charset=utf-8"
         self._send_bytes(200, content_type, body, cache=filename == "favicon.svg")
 
+    def do_POST(self) -> None:
+        self._send_json(405, {"error": "method not allowed"})
+
+    def do_HEAD(self) -> None:
+        self._send_bytes(405, "application/json; charset=utf-8", b"")
+
+    def do_OPTIONS(self) -> None:
+        self._send_json(405, {"error": "method not allowed"})
+
     def log_message(self, format: str, *args: object) -> None:
         return
 
 
 class LocalHTTPServer(ThreadingHTTPServer):
+    auth_token: str = ""
+
     def server_bind(self) -> None:
         # Skip the reverse-DNS lookup in the base class: on some CI hosts it
         # blocks for many seconds, delaying startup past client timeouts.
@@ -272,8 +349,10 @@ class LocalHTTPServer(ThreadingHTTPServer):
         self.server_port = self.server_address[1]
 
 
-def create_server(port: int = 8765) -> ThreadingHTTPServer:
-    return LocalHTTPServer(("127.0.0.1", port), UIRequestHandler)
+def create_server(port: int = 8765) -> LocalHTTPServer:
+    server = LocalHTTPServer(("127.0.0.1", port), UIRequestHandler)
+    server.auth_token = secrets.token_urlsafe(32)
+    return server
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -300,7 +379,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         print("fms-ui: cannot start local server: %s" % exc, file=sys.stderr)
         return 2
     session_cache.start_background_maintenance()
-    url = "http://127.0.0.1:%d/" % server.server_address[1]
+    url = "http://127.0.0.1:%d/?token=%s" % (
+        server.server_address[1],
+        server.auth_token,
+    )
     print("Find My Session: %s" % url)
     print("Read-only local panel. Press Ctrl+C to stop.")
     if not args.no_browser:

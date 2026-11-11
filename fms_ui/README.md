@@ -38,6 +38,11 @@ the directory to uninstall. The UI does not install a background service.
 ## Privacy and safety
 
 - The server listens only on `127.0.0.1` and uses same-origin local APIs.
+- Every launch generates a random access token. The browser opens a URL that
+  carries the token once; the panel keeps it in session storage and sends it as
+  an `X-FMS-Token` header on each API request. Requests without a valid token
+  are rejected, so another local process cannot read your sessions by calling
+  the API directly. Cross-origin requests and non-`GET` methods are refused.
 - Session stores and application databases are opened read-only.
 - Search results contain metadata; session details and prompts can contain
   sensitive conversation text and local paths.

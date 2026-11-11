@@ -101,19 +101,32 @@ class UITestCase(unittest.TestCase):
         cls._environment_patch.stop()
         cls._temp.cleanup()
 
-    def request(self, path: str, host: str = None):
+    def request(
+        self,
+        path: str,
+        host: str = None,
+        headers: dict = None,
+        method: str = "GET",
+        with_token: bool = True,
+    ):
         connection = http.client.HTTPConnection("127.0.0.1", self.port, timeout=10)
-        headers = {"Host": host} if host else {}
+        send_headers = {}
+        if with_token:
+            send_headers["X-FMS-Token"] = self.server.auth_token
+        if host:
+            send_headers["Host"] = host
+        if headers:
+            send_headers.update(headers)
         try:
-            connection.request("GET", path, headers=headers)
+            connection.request(method, path, headers=send_headers)
             response = connection.getresponse()
             body = response.read()
             return response.status, dict(response.getheaders()), body
         finally:
             connection.close()
 
-    def request_json(self, path: str, host: str = None):
-        status, headers, body = self.request(path, host=host)
+    def request_json(self, path: str, host: str = None, **kwargs):
+        status, headers, body = self.request(path, host=host, **kwargs)
         return status, headers, json.loads(body)
 
     def search(self, **params) -> list:
@@ -311,6 +324,72 @@ class UIApiTests(UITestCase):
         self.request_json("/api/session?" + urlencode({"ref": ref}))
         self.request_json("/api/prompts?" + urlencode({"ref": ref, "limit": 1}))
         self.assertEqual(snapshot(), before)
+
+
+class UIAuthTests(UITestCase):
+    def test_api_requires_valid_token(self) -> None:
+        status, _, data = self.request_json("/api/harnesses", with_token=False)
+        self.assertEqual(status, 401)
+        self.assertEqual(data["error"], "unauthorized")
+
+        status, _, data = self.request_json(
+            "/api/harnesses", headers={"X-FMS-Token": "wrong-token"}
+        )
+        self.assertEqual(status, 401)
+        self.assertEqual(data["error"], "unauthorized")
+
+        status, _, data = self.request_json("/api/harnesses")
+        self.assertEqual(status, 200)
+        self.assertIn("harnesses", data)
+
+    def test_static_shell_does_not_require_token(self) -> None:
+        status, _, body = self.request("/", with_token=False)
+        self.assertEqual(status, 200)
+        self.assertIn(b"Find My Session", body)
+
+    def test_api_rejects_cross_origin_requests(self) -> None:
+        status, _, data = self.request_json(
+            "/api/harnesses", headers={"Origin": "http://evil.example"}
+        )
+        self.assertEqual(status, 403)
+        self.assertEqual(data["error"], "forbidden origin")
+
+        status, _, data = self.request_json(
+            "/api/harnesses", headers={"Sec-Fetch-Site": "cross-site"}
+        )
+        self.assertEqual(status, 403)
+        self.assertEqual(data["error"], "forbidden cross-site request")
+
+        status, _, _ = self.request_json(
+            "/api/harnesses",
+            headers={"Origin": "http://127.0.0.1:%d" % self.port},
+        )
+        self.assertEqual(status, 200)
+
+    def test_host_authority_is_matched_exactly(self) -> None:
+        for host in (
+            "evil.example@127.0.0.1",
+            "127.0.0.1:%d" % (self.port + 1),
+            "localhost.evil.example",
+        ):
+            status, _, data = self.request_json("/api/harnesses", host=host)
+            self.assertEqual(status, 403, host)
+            self.assertEqual(data["error"], "forbidden host")
+
+        status, _, _ = self.request_json(
+            "/api/harnesses", host="localhost:%d" % self.port
+        )
+        self.assertEqual(status, 200)
+
+    def test_non_get_methods_are_rejected(self) -> None:
+        for method in ("POST", "OPTIONS"):
+            status, _, data = self.request_json("/api/harnesses", method=method)
+            self.assertEqual(status, 405, method)
+            self.assertEqual(data["error"], "method not allowed")
+
+        status, _, body = self.request("/api/harnesses", method="HEAD")
+        self.assertEqual(status, 405)
+        self.assertEqual(body, b"")
 
 
 class UIEntrypointTests(unittest.TestCase):

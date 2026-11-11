@@ -1,3 +1,4 @@
+import { authHeaders } from "@/auth";
 import { t } from "@/i18n";
 import type { HarnessListResponse, ProjectListResponse, PromptListingDTO, SessionDetailDTO, SessionListResponse, StatsResponseDTO } from "@/types";
 import { isAbortError } from "@/utils";
@@ -7,7 +8,10 @@ export class ApiError extends Error {}
 export async function fetchJSON<T>(path: string, signal?: AbortSignal): Promise<T> {
   let response: Response;
   try {
-    response = await fetch(path, { signal, headers: { Accept: "application/json" } });
+    response = await fetch(path, {
+      signal,
+      headers: { Accept: "application/json", ...authHeaders() },
+    });
   } catch (error) {
     if (isAbortError(error)) throw error;
     throw new ApiError(t("localServiceUnavailable"));
@@ -19,6 +23,7 @@ export async function fetchJSON<T>(path: string, signal?: AbortSignal): Promise<
     throw new ApiError(t("invalidResponse"));
   }
   if (!response.ok) {
+    if (response.status === 401) throw new ApiError(t("unauthorized"));
     const message =
       data && typeof data === "object" && "error" in data
         ? String((data as { error: unknown }).error)
