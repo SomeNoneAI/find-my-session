@@ -54,10 +54,17 @@ it dynamically, and the release workflow refuses a tag that does not match it.
 
 - GitHub Release assets: `find-my-session-skill.zip`,
   `find-my-session-ui.zip`, the wheel, the sdist, and `SHA256SUMS.txt`.
-  Re-running a tag build refreshes existing assets with `--clobber`.
+  Releases are immutable: assets are uploaded without `--clobber`, so a re-run
+  never overwrites an already-published asset. Publishing only runs from a
+  `v*` tag (never a branch or manual dispatch), guarded by a `ref_type` check
+  and a per-ref concurrency group.
 - PyPI: the wheel and sdist, uploaded with `pypa/gh-action-pypi-publish`
-  through OIDC. `skip-existing` makes a re-run safe when the version was
-  already published.
+  through OIDC. The publish job re-verifies the distributions against
+  `python-dists.sha256` before uploading. `skip-existing` makes a re-run safe
+  when the version was already published.
+- MCP Registry: `server.json`, published with a version-pinned `mcp-publisher`
+  binary that is downloaded over HTTPS and checked against a known SHA-256 in a
+  job with no OIDC credentials before the publish job runs it.
 - Build provenance attestations for every release asset.
 
 After the first successful upload, users can install with:

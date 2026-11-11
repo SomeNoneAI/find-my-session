@@ -104,13 +104,13 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 22
+          node-version-file: fms_ui/frontend/.nvmrc
           cache: npm
           cache-dependency-path: fms_ui/frontend/package-lock.json
 
       - name: Install frontend dependencies
         working-directory: fms_ui/frontend
-        run: npm ci
+        run: npm ci --engine-strict
 
       - name: Type-check
         working-directory: fms_ui/frontend

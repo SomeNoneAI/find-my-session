@@ -4,13 +4,18 @@ on:
   push:
     tags:
       - "v*"
-  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   release:
+    # Publish only from a version tag, never from a branch or manual dispatch.
+    if: github.ref_type == 'tag' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -19,6 +24,8 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
@@ -41,14 +48,14 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 22
+          node-version-file: fms_ui/frontend/.nvmrc
           cache: npm
           cache-dependency-path: fms_ui/frontend/package-lock.json
 
       - name: Build frontend
         working-directory: fms_ui/frontend
         run: |
-          npm ci
+          npm ci --engine-strict
           npm run typecheck
           npm test
           npm run build
@@ -83,6 +90,7 @@ jobs:
           rm SHA256SUMS.txt
           sha256sum find-my-session-skill.zip find-my-session-ui.zip ./*.whl ./*.tar.gz > SHA256SUMS.txt
           sha256sum -c SHA256SUMS.txt
+          sha256sum ./*.whl ./*.tar.gz > python-dists.sha256
 
       - name: Upload Python distributions for publishing
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -91,6 +99,7 @@ jobs:
           path: |
             dist/*.whl
             dist/*.tar.gz
+            dist/python-dists.sha256
           if-no-files-found: error
 
       - name: Attest build provenance
@@ -103,7 +112,7 @@ jobs:
             dist/*.tar.gz
             dist/SHA256SUMS.txt
 
-      - name: Create or refresh release
+      - name: Create release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -113,8 +122,7 @@ jobs:
               dist/find-my-session-ui.zip \
               dist/*.whl \
               dist/*.tar.gz \
-              dist/SHA256SUMS.txt \
-              --clobber
+              dist/SHA256SUMS.txt
           else
             gh release create "${GITHUB_REF_NAME}" \
               --title "Find My Session ${GITHUB_REF_NAME#v}" \
@@ -128,6 +136,7 @@ jobs:
 
   publish-pypi:
     needs: release
+    if: github.ref_type == 'tag' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     environment:
       name: pypi
@@ -142,13 +151,45 @@ jobs:
           name: python-distributions
           path: dist
 
+      - name: Verify Python distribution checksums
+        run: cd dist && sha256sum -c python-dists.sha256
+
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1
         with:
           skip-existing: true
 
+  prepare-mcp-publisher:
+    # Download and verify the publisher in a job with no OIDC credentials, so
+    # the binary is checksum-validated before it ever runs near a token.
+    needs: release
+    if: github.ref_type == 'tag' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Download and verify mcp-publisher
+        env:
+          MCP_PUBLISHER_VERSION: "1.8.9"
+          MCP_PUBLISHER_SHA256: "4d527ca8f1ced0394c962dc925c2a4a4addef441cbefd62501c875e9481823a8"
+        run: |
+          set -euo pipefail
+          curl --fail --proto '=https' --location --silent --show-error \
+            -o mcp-publisher.tar.gz \
+            "https://github.com/modelcontextprotocol/registry/releases/download/v${MCP_PUBLISHER_VERSION}/mcp-publisher_linux_amd64.tar.gz"
+          echo "${MCP_PUBLISHER_SHA256}  mcp-publisher.tar.gz" | sha256sum -c -
+          tar xzf mcp-publisher.tar.gz mcp-publisher
+
+      - name: Upload verified mcp-publisher
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: mcp-publisher
+          path: mcp-publisher
+          if-no-files-found: error
+
   publish-mcp:
-    needs: publish-pypi
+    needs: [publish-pypi, prepare-mcp-publisher]
+    if: github.ref_type == 'tag' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -156,6 +197,8 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Check tag matches server manifest
         run: |
@@ -164,12 +207,16 @@ jobs:
           echo "tag: ${TAG_VERSION}, manifest: ${MANIFEST_VERSION}"
           test "${TAG_VERSION}" = "${MANIFEST_VERSION}"
 
-      - name: Install mcp-publisher
-        run: |
-          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+      - name: Download verified mcp-publisher
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: mcp-publisher
+          path: .
 
       - name: Authenticate to MCP Registry
-        run: ./mcp-publisher login github-oidc
+        run: |
+          chmod +x mcp-publisher
+          ./mcp-publisher login github-oidc
 
       - name: Publish server to MCP Registry
         run: ./mcp-publisher publish
