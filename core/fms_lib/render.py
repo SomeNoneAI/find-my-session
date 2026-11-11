@@ -4,6 +4,11 @@ import json
 from collections import Counter
 from typing import Any, Dict, List
 
+from .limits import (
+    SHOW_CHARS_DEFAULT,
+    SHOW_MESSAGES_DEFAULT,
+    SHOW_SUMMARY_CHARS_DEFAULT,
+)
 from .models import Exchange, PromptListing, SessionDetail, SessionSummary
 from .util import abbreviate_path, block_text, format_local, normalize_text, one_line
 
@@ -142,9 +147,9 @@ def _exchange_tools(exchange: Exchange) -> str:
 
 def render_show_markdown(
     detail: SessionDetail,
-    messages: int = 2,
-    chars: int = 600,
-    summary_chars: int = 1000,
+    messages: int = SHOW_MESSAGES_DEFAULT,
+    chars: int = SHOW_CHARS_DEFAULT,
+    summary_chars: int = SHOW_SUMMARY_CHARS_DEFAULT,
     include_todos: bool = True,
     include_tools: bool = True,
 ) -> str:
@@ -255,9 +260,9 @@ def render_show_markdown(
 
 def render_show_json(
     detail: SessionDetail,
-    messages: int = 10,
-    chars: int = 0,
-    summary_chars: int = 0,
+    messages: int = SHOW_MESSAGES_DEFAULT,
+    chars: int = SHOW_CHARS_DEFAULT,
+    summary_chars: int = SHOW_SUMMARY_CHARS_DEFAULT,
     include_todos: bool = True,
     include_tools: bool = True,
 ) -> str:

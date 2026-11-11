@@ -20,7 +20,12 @@ from typing import Any, Dict, List, Optional, Sequence
 from . import __version__
 from .errors import UserError
 from .registry import harness_rows
-from .render import json_dump, render_prompts_json
+from .limits import (
+    SHOW_CHARS_DEFAULT,
+    SHOW_MESSAGES_DEFAULT,
+    SHOW_SUMMARY_CHARS_DEFAULT,
+)
+from .render import json_dump, render_prompts_json, render_show_json
 from .service import (
     doctor,
     list_prompts,
@@ -112,7 +117,11 @@ TOOL_DEFINITIONS: List[Dict[str, Any]] = [
                     "minimum": 0,
                     "description": "Recent user/assistant turns to include (default 2).",
                 },
-                "chars": {"type": "integer", "minimum": 0},
+                "chars": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Max characters per message block (default 600, 0 means unlimited).",
+                },
             },
             "required": ["ref"],
         },
@@ -214,11 +223,16 @@ def call_tool(name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
                 str(arguments["ref"]),
                 harness=[arguments["harness"]] if arguments.get("harness") else None,
             )
+            messages = arguments.get("messages")
+            chars = arguments.get("chars")
             return _text_result(
-                json_dump(
-                    detail.to_dict(
-                        max_exchanges=10,
-                    )
+                render_show_json(
+                    detail,
+                    messages=(
+                        int(messages) if messages is not None else SHOW_MESSAGES_DEFAULT
+                    ),
+                    chars=int(chars) if chars is not None else SHOW_CHARS_DEFAULT,
+                    summary_chars=SHOW_SUMMARY_CHARS_DEFAULT,
                 )
             )
         if name == "session_prompts":

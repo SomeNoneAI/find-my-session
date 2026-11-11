@@ -21,6 +21,16 @@ from .render import (
     render_show_markdown,
     render_stats_text,
 )
+from .limits import (
+    LATEST_LIMIT_DEFAULT,
+    PROMPTS_CHARS_DEFAULT,
+    PROMPTS_LIMIT_DEFAULT,
+    PROMPTS_OFFSET_DEFAULT,
+    SEARCH_LIMIT_DEFAULT,
+    SHOW_CHARS_DEFAULT,
+    SHOW_MESSAGES_DEFAULT,
+    SHOW_SUMMARY_CHARS_DEFAULT,
+)
 from .search import explain_score, tokenize_query
 from .service import (
     doctor,
@@ -350,13 +360,13 @@ def build_parser() -> argparse.ArgumentParser:
     search = subparsers.add_parser(
         "search", help="find sessions by fuzzy keywords or metadata"
     )
-    add_search_options(search, 10)
+    add_search_options(search, SEARCH_LIMIT_DEFAULT)
     search.set_defaults(func=cmd_search)
 
     latest = subparsers.add_parser(
         "latest", help="show the most recently updated matching sessions"
     )
-    add_search_options(latest, 1)
+    add_search_options(latest, LATEST_LIMIT_DEFAULT)
     latest.set_defaults(func=cmd_latest)
 
     doctor_parser = subparsers.add_parser(
@@ -458,23 +468,25 @@ def build_parser() -> argparse.ArgumentParser:
     show.add_argument(
         "--messages",
         type=_positive_or_zero,
-        default=2,
+        default=SHOW_MESSAGES_DEFAULT,
         metavar="N",
-        help="recent user/assistant turns to include (default: 2, 0 disables)",
+        help="recent user/assistant turns to include (default: %d, 0 disables)"
+        % SHOW_MESSAGES_DEFAULT,
     )
     show.add_argument(
         "--chars",
         type=_positive_or_zero,
-        default=600,
+        default=SHOW_CHARS_DEFAULT,
         metavar="N",
-        help="max characters per message block (default: 600)",
+        help="max characters per message block (default: %d)" % SHOW_CHARS_DEFAULT,
     )
     show.add_argument(
         "--summary-chars",
         type=_positive_or_zero,
-        default=1000,
+        default=SHOW_SUMMARY_CHARS_DEFAULT,
         metavar="N",
-        help="max characters for the compact summary (default: 1000, 0 disables)",
+        help="max characters for the compact summary (default: %d, 0 disables)"
+        % SHOW_SUMMARY_CHARS_DEFAULT,
     )
     show.add_argument(
         "--format",
@@ -506,23 +518,24 @@ def build_parser() -> argparse.ArgumentParser:
     prompts.add_argument(
         "--offset",
         type=_positive_or_zero,
-        default=0,
+        default=PROMPTS_OFFSET_DEFAULT,
         metavar="N",
-        help="skip the first N prompts (default: 0)",
+        help="skip the first N prompts (default: %d)" % PROMPTS_OFFSET_DEFAULT,
     )
     prompts.add_argument(
         "--limit",
         type=_positive_or_zero,
-        default=0,
+        default=PROMPTS_LIMIT_DEFAULT,
         metavar="N",
-        help="max prompts to print; 0 means all (default: 0)",
+        help="max prompts to print; 0 means all (default: %d)" % PROMPTS_LIMIT_DEFAULT,
     )
     prompts.add_argument(
         "--chars",
         type=_positive_or_zero,
-        default=0,
+        default=PROMPTS_CHARS_DEFAULT,
         metavar="N",
-        help="max characters per prompt; 0 means full text (default: 0)",
+        help="max characters per prompt; 0 means full text (default: %d)"
+        % PROMPTS_CHARS_DEFAULT,
     )
     prompts.add_argument(
         "--order",
