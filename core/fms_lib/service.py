@@ -36,6 +36,8 @@ def _gather_summaries(
     pairs: List[Tuple[HarnessAdapter, Path]] = []
     for adapter in adapters:
         try:
+            if not adapter.home().is_dir():
+                continue
             paths = list(adapter.iter_session_paths())
         except OSError as exc:
             if report is not None:
@@ -117,7 +119,7 @@ def query_summaries(
 ) -> List[SessionSummary]:
     """Apply the standard metadata filter/score/order pipeline without scanning."""
     selected = _filter_summaries(summaries, cwd, since, include_archived)
-    results = search_summaries(selected, tokenize_query(query))
+    results = search_summaries(selected, tokenize_query(query), limit=limit)
     if latest:
         results.sort(key=lambda summary: summary.updated, reverse=True)
     return _limit(results, limit)
@@ -145,7 +147,9 @@ def search_sessions(
     deep_match = _deep_matcher(adapters) if deep else None
     deadline = (_time.perf_counter() + timeout) if timeout > 0 else None
     try:
-        results = search_summaries(summaries, tokens, deep, deep_match, deadline)
+        results = search_summaries(
+            summaries, tokens, deep, deep_match, deadline, limit=limit
+        )
     except DeepTimeout as exc:
         import sys as _sys
 

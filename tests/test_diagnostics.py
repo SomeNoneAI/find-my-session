@@ -122,10 +122,12 @@ def _build_home(root: Path, *, corrupt: bool = False) -> Path:
 
 def _no_decoder():
     """Simulate a host without any zstd decoder (module or CLI)."""
+    from fms_lib.harnesses import zstd_support
+
     return mock.patch.multiple(
-        deepseek_module,
+        zstd_support,
         _zstd=None,
-        shutil=mock.MagicMock(which=lambda *args, **kwargs: None),
+        zstd_cli=lambda: None,
     )
 
 

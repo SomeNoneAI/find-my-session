@@ -17,8 +17,6 @@ from __future__ import annotations
 
 import os
 import re
-import shutil
-import subprocess
 from collections import Counter, OrderedDict, deque
 from datetime import datetime
 from pathlib import Path
@@ -28,7 +26,6 @@ from typing import (
     Dict,
     Iterator,
     List,
-    Literal,
     Optional,
     Sequence,
     Tuple,
@@ -47,11 +44,13 @@ from .base import HarnessAdapter
 from .common import choose_title as _choose_title
 from .common import file_path
 from .common import is_generic as _is_generic
-
-try:  # Python 3.14+
-    from compression import zstd as _zstd  # type: ignore[import-not-found]
-except ImportError:  # pragma: no cover - exercised on older interpreters
-    _zstd = None
+from .zstd_support import (
+    _zstd,
+    cached_scan,
+    iter_raw_lines,
+    open_zstd,
+    scan_cache_key,
+)
 
 HEAD_BYTES = 512_000
 HEAD_RECORDS = 120
@@ -114,66 +113,8 @@ def _parse_rollout_name(path: Path) -> Optional[Tuple[str, str, Tuple[str, str]]
     return session_id, segment_id, stamp
 
 
-class _ProcessStream:
-    """Wrap a ``zstd`` subprocess stdout as a context-managed binary stream."""
-
-    def __init__(self, process: "subprocess.Popen[bytes]") -> None:
-        self._process = process
-
-    def __enter__(self):
-        return self._process.stdout
-
-    def __exit__(self, exc_type, exc, tb) -> "Literal[False]":
-        stream = self._process.stdout
-        if stream is not None:
-            try:
-                stream.close()
-            except OSError:
-                pass
-        if self._process.poll() is None:
-            self._process.kill()
-        try:
-            self._process.wait(timeout=5)
-        except (OSError, subprocess.TimeoutExpired):
-            pass
-        return False
-
-
-def _open_zstd(path: Path):
-    if _zstd is not None:
-        return _zstd.ZstdFile(path, "rb")
-    executable = shutil.which("zstd")
-    if not executable:
-        raise ValueError(
-            "zstd decoder unavailable; install the zstd CLI or use Python 3.14+"
-        )
-    process = subprocess.Popen(
-        [executable, "-dc", "--quiet", "--", str(path)],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.DEVNULL,
-    )
-    return _ProcessStream(process)
-
-
 def _iter_raw_lines(path: Path) -> Iterator[bytes]:
-    if not path.name.endswith(".zst"):
-        with open(path, "rb") as handle:
-            for raw in handle:
-                yield raw
-        return
-
-    with _open_zstd(path) as handle:
-        iterator = iter(handle)
-        while True:
-            try:
-                raw = next(iterator)
-            except StopIteration:
-                return
-            except OSError:
-                raise
-            except Exception as exc:
-                raise OSError("cannot decompress %s: %s" % (path, exc)) from exc
-            yield raw
+    yield from iter_raw_lines(path, path.name.endswith(".zst"))
 
 
 def _iter_head_records(
@@ -213,7 +154,7 @@ def _iter_raw_chunks(
                     return
                 yield chunk
 
-    with _open_zstd(path) as handle:
+    with open_zstd(path) as handle:
         while True:
             try:
                 chunk = handle.read(chunk_size)
@@ -234,8 +175,13 @@ def _scan_session(path: Path) -> Tuple[List[bytes], List[bytes]]:
     """One streaming pass returning bounded head lines and tail lines.
 
     The split point is included in the head, so every line of a short session
-    ends up in the head and the tail stays empty.
+    ends up in the head and the tail stays empty. Results are memoized by
+    file identity so repeated scans skip the decompression.
     """
+    return cached_scan(scan_cache_key(path), lambda: _scan_session_uncached(path))
+
+
+def _scan_session_uncached(path: Path) -> Tuple[List[bytes], List[bytes]]:
 
     head: List[bytes] = []
     tail: Deque[bytes] = deque()

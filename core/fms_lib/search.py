@@ -107,23 +107,45 @@ def search_summaries(
     deep: bool = False,
     deep_match: Optional[Callable[[SessionSummary, Sequence[str]], bool]] = None,
     deadline: Optional[float] = None,
+    limit: int = 0,
 ) -> List[SessionSummary]:
+    import heapq as _heapq
     import time as _time
 
     if not tokens:
+        if limit > 0:
+            return _heapq.nlargest(
+                limit, summaries, key=lambda summary: summary.updated
+            )
         return sorted(summaries, key=lambda summary: summary.updated, reverse=True)
-    scored: List[Tuple[int, SessionSummary]] = []
+    best: List[Tuple[Tuple[int, Any], int, SessionSummary]] = []
+    seq = 0
     scanned = 0
+
+    def consider(score: int, summary: SessionSummary) -> None:
+        nonlocal seq
+        key = (score, summary.updated)
+        if limit > 0:
+            if len(best) < limit:
+                _heapq.heappush(best, (key, seq, summary))
+            elif key > best[0][0]:
+                _heapq.heapreplace(best, (key, seq, summary))
+        else:
+            best.append((key, seq, summary))
+        seq += 1
+
+    def ranked() -> List[SessionSummary]:
+        best.sort(key=lambda pair: pair[0], reverse=True)
+        return [summary for _, _, summary in best]
+
     for summary in summaries:
         score = score_summary(summary, tokens)
         if score is None and deep and deep_match is not None:
             if deadline is not None and _time.perf_counter() >= deadline:
-                partial = [summary for _, summary in scored]
-                raise DeepTimeout(partial, scanned)
+                raise DeepTimeout(ranked(), scanned)
             scanned += 1
             if deep_match(summary, tokens):
                 score = 1
         if score is not None:
-            scored.append((score, summary))
-    scored.sort(key=lambda pair: (pair[0], pair[1].updated), reverse=True)
-    return [summary for _, summary in scored]
+            consider(score, summary)
+    return ranked()
