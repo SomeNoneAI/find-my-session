@@ -12,7 +12,7 @@ Public direction for find-my-session. No dates are promised; order is roughly pr
 
 ## Python support
 
-- 0.1.x supports Python 3.9–3.14. Python 3.9 is end-of-life upstream; 0.2 is planned to require 3.10+ once CI capacity for 3.9 becomes a burden. Any change will be called out in the changelog and both READMEs.
+- Python 3.9 is end-of-life upstream and is no longer supported: the minimum is Python 3.10, and the supported range is 3.10–3.14. The CI matrix, package metadata, and both READMEs reflect this. Any future change to the supported range will be called out in the changelog and both READMEs.
 - Python 3.14 provides native zstd support; older interpreters can use the `zstd` CLI for compressed stores.
 
 ## Ongoing: schema compatibility

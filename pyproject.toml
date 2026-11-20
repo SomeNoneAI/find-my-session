@@ -7,7 +7,7 @@ name = "find-my-session"
 dynamic = ["version"]
 description = "Read-only, cross-harness agent-session finder and handoff tool"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "find-my-session contributors" }]
@@ -29,7 +29,6 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -69,7 +68,7 @@ fms_ui = ["static/*", "static/harness-logos/*"]
 version = { attr = "fms_lib.__version__" }
 
 [tool.ruff]
-target-version = "py39"
+target-version = "py310"
 line-length = 100
 extend-exclude = [
     "dist",
@@ -88,7 +87,7 @@ select = ["E4", "E7", "E9", "F", "I"]
 "tests/*" = ["I001"]
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.10"
 mypy_path = "core"
 files = ["core/fms_lib", "fms_ui"]
 check_untyped_defs = true
