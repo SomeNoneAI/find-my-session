@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- Minimum supported Python is now 3.10 (`requires-python = ">=3.10"`). The
+  3.9 classifier, CI matrix entry, and Ruff/mypy target versions were removed.
+  Python 3.9 is end-of-life upstream. The supported range is 3.10–3.14. See #14.
+
 ## [0.2.0] - 2026-11-11
 
 ### Added
