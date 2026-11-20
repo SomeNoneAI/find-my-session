@@ -4,7 +4,7 @@
 [![CI](https://github.com/SomeNoneAI/find-my-session/actions/workflows/ci.yml/badge.svg)](https://github.com/SomeNoneAI/find-my-session/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/SomeNoneAI/find-my-session/badge)](https://scorecard.dev/viewer.html?url=github.com/SomeNoneAI/find-my-session)
 [![PyPI](https://img.shields.io/pypi/v/find-my-session.svg)](https://pypi.org/project/find-my-session/)
-[![Python 3.9–3.14](https://img.shields.io/badge/python-3.9%E2%80%933.14-blue.svg)](pyproject.toml)
+[![Python 3.10–3.14](https://img.shields.io/badge/python-3.10%E2%80%933.14-blue.svg)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 A local, read-only session finder and handoff tool for coding agents, shipped in two forms that share one `fms_lib` core:
@@ -66,7 +66,7 @@ Twenty-two adapters are ready; one more is planned. Verified versions, surfaces,
 
 ## Requirements
 
-- Python 3.9 or newer; macOS or Linux. Python 3.9 is end-of-life upstream and 0.2 is planned to require 3.10+ (see [ROADMAP.md](ROADMAP.md)).
+- Python 3.10 or newer; macOS or Linux. Python 3.9 is end-of-life upstream and is no longer supported (see [ROADMAP.md](ROADMAP.md)).
 - No third-party Python packages
 - Compressed stores (`codex` `.jsonl.zst`, `deepseek` `.zstd`) need a zstd decoder: Python 3.14+ or the `zstd` CLI; otherwise those sessions are skipped
 - Windows is exercised by an experimental, non-blocking CI job but is not supported yet; see [ROADMAP.md](ROADMAP.md)

@@ -4,7 +4,7 @@
 [![CI](https://github.com/SomeNoneAI/find-my-session/actions/workflows/ci.yml/badge.svg)](https://github.com/SomeNoneAI/find-my-session/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/SomeNoneAI/find-my-session/badge)](https://scorecard.dev/viewer.html?url=github.com/SomeNoneAI/find-my-session)
 [![PyPI](https://img.shields.io/pypi/v/find-my-session.svg)](https://pypi.org/project/find-my-session/)
-[![Python 3.9–3.14](https://img.shields.io/badge/python-3.9%E2%80%933.14-blue.svg)](pyproject.toml)
+[![Python 3.10–3.14](https://img.shields.io/badge/python-3.10%E2%80%933.14-blue.svg)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 面向编程 agent 的本地、只读会话查找与接力工具，以两种形态发布，共享同一个 `fms_lib` 核心：
@@ -67,7 +67,7 @@ agent 会自己选 harness，跑 `search` / `latest` / `show` / `prompts`，然�
 
 ## 环境要求
 
-- Python 3.9 或更高版本；macOS 或 Linux。Python 3.9 已在上游停止维护，0.2 计划要求 3.10+（见 [ROADMAP.md](ROADMAP.md)）。
+- Python 3.10 或更高版本；macOS 或 Linux。Python 3.9 已在上游停止维护，现已不再支持（见 [ROADMAP.md](ROADMAP.md)）。
 - 无第三方 Python 依赖
 - 压缩存储（`codex` 的 `.jsonl.zst`、`deepseek` 的 `.zstd`）需要 zstd 解码器：Python 3.14+ 或 `zstd` 命令行；两者都没有时会跳过这些会话
 - Windows 有实验性、非阻塞的 CI 任务，但尚不支持；见 [ROADMAP.md](ROADMAP.md)
