@@ -17,7 +17,7 @@ find-my-session is a read-only, cross-harness agent-session finder and handoff t
 
 ## Invariants
 
-- Python 3.9+. Standard library only.
+- Python 3.10+. Standard library only.
 - Read-only. Never write to session stores, app databases, or caches inside them.
 - Fixtures must be synthetic. Never commit real transcripts, paths, emails, tokens, or other session data.
 - Keep harness-specific knowledge in adapters; the shared CLI, service, and UI stay format-neutral.
