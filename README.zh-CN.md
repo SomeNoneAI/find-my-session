@@ -65,6 +65,8 @@ agent 会自己选 harness，跑 `search` / `latest` / `show` / `prompts`，然�
 | CodeBuddy CN（国内版） | `codebuddy-cn` | `CodeBuddy CN/codebuddy-sessions.vscdb` |
 | Cline（VS Code 扩展） | `cline-vscode`（计划中） | VS Code globalStorage |
 
+OpenCode 会话搜索与回读支持旧版和 V2 的 SQLite 消息表。
+
 ## 环境要求
 
 - Python 3.9 或更高版本；macOS 或 Linux。Python 3.9 已在上游停止维护，0.2 计划要求 3.10+（见 [ROADMAP.md](ROADMAP.md)）。

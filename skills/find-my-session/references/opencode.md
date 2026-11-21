@@ -17,7 +17,9 @@
   the database bytes and mtime were unchanged afterwards.
 - No live row had `time_archived` set, so archive filtering is verified by
   the synthetic fixture only.
-- Linux is expected to work (same XDG layout) but was not verified.
+- Linux x86_64, OpenCode CLI 2.2.0, and macOS arm64, OpenCode CLI 2.3.0,
+  2026-11-22. Session digests and deep search verified against V2-only
+  transcripts. Legacy-only and migrated sessions also verified on Linux.
 - Windows store location is unverified; the adapter falls back to the XDG
   path and reports the store as not found.
 
@@ -30,14 +32,14 @@ One SQLite database, WAL mode:
   stores; it is **not** read and those sessions are invisible to `fms`.
 - `auth.json`, `log/`, `bin/`, `snapshot/` are ignored.
 
-The schema is the one CodeArts Agent builds on (`session`, `message`,
-`part`, `todo`), but 2.2.5 is mid-migration and the adapter follows it:
+SQLite stores can contain both OpenCode schema families:
 
-- `session_v2` is authoritative when present and strictly newer than the
-  `session` mirror; the adapter reads `session_v2` and falls back to
-  `session` on older stores. One live session existed only in `session_v2`.
-- `message` and `part` remain authoritative for content; the extra
-  `session_message` mirror may lag the newest message, so it is not read.
+- Session metadata comes from `session_v2` when the session has a row there.
+  Other legacy sessions are discoverable in `session`.
+- V1 message metadata and parts are in `message` and `part`. V2 stores its
+  typed messages together with their content in `session_message`.
+- For sessions that use both formats, matching message IDs are read once.
+  Messages that exist in only one format remain available.
 - Timestamps are epoch milliseconds.
 
 ## Sessions
@@ -88,7 +90,13 @@ order, survive these filters:
 
 `继续`/`ok`-style generic prompts stay in the prompt listing (they are
 human-authored) but never become the title. Ordering is `message.time_created`,
-then `part.time_created`, then ids.
+then `part.time_created`, then IDs. V2-only transcripts use
+`session_message.seq`. Mixed transcripts merge by creation time.
+
+In V2, a `user` row has `data.text`. An `assistant` row has typed parts in
+`data.content`, with tool input under `state.input` and output under
+`state.content`. Control rows such as `idle` and `agent-switched` do not
+produce conversation turns.
 
 ## Compaction
 
@@ -98,8 +106,8 @@ A compaction summary is an assistant message with `summary: true` or
 
 ## Deep search
 
-`--deep` scans the `message` and `part` rows of that one session only
-(`WHERE session_id = ?`), so a match never leaks across sessions. A match
+`--deep` scans legacy `message` and `part` rows and V2
+`session_message` payloads for the matched session ID. A match
 inside tool output — which the head/tail prompt metadata never sees — is a
 deep-search hit. The largest observed top-level session carried ~12 MB of
 part data; the scan is a bounded per-session pass.

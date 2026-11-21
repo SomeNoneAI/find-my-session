@@ -64,6 +64,8 @@ Twenty-two adapters are ready; one more is planned. Verified versions, surfaces,
 | CodeBuddy CN | `codebuddy-cn` | `CodeBuddy CN/codebuddy-sessions.vscdb` |
 | Cline (VS Code extension) | `cline-vscode` (planned) | VS Code globalStorage |
 
+OpenCode search and session digests read both legacy and V2 SQLite message tables.
+
 ## Requirements
 
 - Python 3.9 or newer; macOS or Linux. Python 3.9 is end-of-life upstream and 0.2 is planned to require 3.10+ (see [ROADMAP.md](ROADMAP.md)).

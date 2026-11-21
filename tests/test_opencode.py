@@ -30,6 +30,7 @@ from opencode_fixture import (  # noqa: E402
     PROJECT_GAMMA,
     PROMPTS_MAIN,
     SESSION_MAIN,
+    SESSION_V2ONLY,
     TITLE_PLAIN,
     TITLE_V2ONLY,
     VERSION_MAIN,
@@ -43,6 +44,104 @@ REF_NOTITLE = "opencode:" + DISPLAY_NOTITLE[:8]
 
 
 class OpenCodeTests(FixtureTestCase):
+    def copy_opencode_store(self) -> Path:
+        temp = tempfile.TemporaryDirectory()
+        self.addCleanup(temp.cleanup)
+        home = Path(temp.name)
+        shutil.copy2(self.opencode_home / "opencode.db", home / "opencode.db")
+        return home
+
+    def make_v2_message_table(self, db: sqlite3.Connection) -> None:
+        db.execute(
+            "CREATE TABLE session_message ("
+            "id TEXT, session_id TEXT, type TEXT, seq INTEGER, "
+            "time_created INTEGER, time_updated INTEGER, data TEXT)"
+        )
+
+    def insert_v2_message(self, db, session_id, message_id, kind, seq, created, data):
+        db.execute(
+            "INSERT INTO session_message VALUES (?,?,?,?,?,?,?)",
+            (message_id, session_id, kind, seq, created, created, json.dumps(data)),
+        )
+
+    def test_v2_only_store_reads_and_searches_native_transcript(self) -> None:
+        question = "Please inspect the note from the native store."
+        answer = "Here is the answer with the nativebodymarker."
+        home = self.copy_opencode_store()
+        with sqlite3.connect(home / "opencode.db") as db:
+            self.make_v2_message_table(db)
+            for table in ("part", "message", "session"):
+                db.execute("DROP TABLE " + table)
+            self.insert_v2_message(
+                db, SESSION_V2ONLY, "m1", "user", 1, 1792500000000,
+                {"text": question, "files": []},
+            )
+            self.insert_v2_message(
+                db, SESSION_V2ONLY, "m2", "assistant", 2, 1792500000001,
+                {"model": {"id": "fixture-v2"}, "content": [
+                    {"type": "text", "text": answer},
+                    {"type": "tool", "name": "read", "state": {
+                        "input": {"path": "note.txt"},
+                        "content": [{"type": "text", "text": "nativeoutputmarker"}],
+                    }},
+                ]},
+            )
+        code, out, err = self.run_cli(
+            "show", REF_V2ONLY, "--format", "json", opencode_home=home,
+        )
+        self.assertEqual(code, 0, err)
+        result = json.loads(out)
+        self.assertEqual([(e["user"], e["assistant"]) for e in result["exchanges"]],
+                         [(question, [answer])])
+        listing = self.run_json("prompts", REF_V2ONLY, opencode_home=home)
+        self.assertEqual([p["text"] for p in listing["prompts"]], [question])
+        results = self.run_json(
+            "search", "nativebodymarker", "--harness", "opencode", opencode_home=home,
+        )
+        self.assertEqual(results, [])
+        results = self.run_json("search", "nativebodymarker", "nativeoutputmarker",
+                                "--harness", "opencode", "--deep", opencode_home=home)
+        self.assertEqual([row["ref"] for row in results], [REF_V2ONLY])
+
+    def test_legacy_session_is_found_when_v2_table_also_exists(self) -> None:
+        home = self.copy_opencode_store()
+        with sqlite3.connect(home / "opencode.db") as db:
+            db.execute("DELETE FROM session_v2 WHERE id = ?", (SESSION_MAIN,))
+        code, out, err = self.run_cli(
+            "show", REF_MAIN, "--format", "json", opencode_home=home,
+        )
+        self.assertEqual(code, 0, err)
+        result = json.loads(out)
+        self.assertEqual(result["first_prompt"], PROMPTS_MAIN[0])
+        self.assertEqual(result["turn_count"], 3)
+
+    def test_migrated_and_new_messages_are_not_duplicated(self) -> None:
+        home = self.copy_opencode_store()
+        with sqlite3.connect(home / "opencode.db") as db:
+            self.make_v2_message_table(db)
+            message_id, created = db.execute(
+                "SELECT id, time_created FROM message WHERE session_id = ? "
+                "ORDER BY time_created, id LIMIT 1", (SESSION_MAIN,),
+            ).fetchone()
+            self.insert_v2_message(
+                db, SESSION_MAIN, message_id, "user", 1, created,
+                {"text": PROMPTS_MAIN[0]},
+            )
+            self.insert_v2_message(
+                db, SESSION_MAIN, "m-new", "user", 2, created + 86400000,
+                {"text": "Follow up after migration."},
+            )
+            self.insert_v2_message(
+                db, SESSION_MAIN, "m-new-reply", "assistant", 3, created + 86400001,
+                {"content": [{"type": "text", "text": "Follow-up reply with v2onlymarker."}]},
+            )
+        listing = self.run_json("prompts", REF_MAIN, opencode_home=home)
+        self.assertEqual([p["text"] for p in listing["prompts"]],
+                         list(PROMPTS_MAIN) + ["Follow up after migration."])
+        results = self.run_json("search", NEEDLE_DEEP_ONLY, "v2onlymarker",
+                                "--harness", "opencode", "--deep", opencode_home=home)
+        self.assertEqual([row["ref"] for row in results], [REF_MAIN])
+
     def test_harness_row(self) -> None:
         payload = self.run_json("harnesses")
         row = next(row for row in payload if row["name"] == "opencode")
