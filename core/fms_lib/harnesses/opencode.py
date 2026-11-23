@@ -1,10 +1,10 @@
 """Adapter for OpenCode, the open-source terminal coding agent.
 
-OpenCode (sst/opencode) keeps every session as rows in one SQLite database
-under ``~/.local/share/opencode/opencode.db``. Version 2.2.5 is mid-migration
-between two session tables: ``session_v2`` is authoritative and strictly
- newer, while ``session`` mirrors a subset of it. Messages and parts still
-live in the ``message`` and ``part`` tables in both generations.
+OpenCode stores sessions in one SQLite database at
+``~/.local/share/opencode/opencode.db``. V2 uses ``session_v2`` and
+``session_message``, with typed conversation rows ordered by sequence.
+Legacy stores split message metadata and content across ``message`` and
+``part``. During migration, both formats can exist for the same session.
 
 Sessions are rows, not files, so the adapter uses virtual
 ``opencode.db#<session id>`` source paths and a per-session row scan for
@@ -19,6 +19,7 @@ import re
 import sqlite3
 from collections import Counter, OrderedDict, deque
 from datetime import datetime
+from heapq import merge
 from pathlib import Path
 from typing import Any, Deque, Dict, Iterator, List, Optional, Sequence, Set, Tuple
 
@@ -274,10 +275,17 @@ class OpenCodeAdapter(HarnessAdapter):
                 continue
         return matches
 
-    def _session_table(self, connection: sqlite3.Connection) -> str:
-        for table in self._SESSION_TABLES:
-            columns = _table_columns(connection, table)
-            if "id" in columns and "directory" in columns:
+    def _session_tables(self, connection: sqlite3.Connection) -> List[str]:
+        return [
+            table for table in self._SESSION_TABLES
+            if {"id", "directory"} <= _table_columns(connection, table)
+        ]
+
+    def _session_table(self, connection: sqlite3.Connection, raw_id: str) -> str:
+        for table in self._session_tables(connection):
+            if connection.execute(
+                "SELECT 1 FROM %s WHERE id = ?" % table, (raw_id,)
+            ).fetchone():
                 return table
         return ""
 
@@ -290,17 +298,19 @@ class OpenCodeAdapter(HarnessAdapter):
         except (OSError, sqlite3.Error, ValueError):
             return
         try:
-            table = self._session_table(connection)
-            if not table:
-                return
-            columns = _table_columns(connection, table)
-            query = "SELECT id FROM %s WHERE parent_id IS NULL" % table
-            query += " ORDER BY " + (
-                "time_updated DESC" if "time_updated" in columns else "id"
-            )
-            for (raw_id,) in connection.execute(query):
-                if raw_id:
-                    yield self._virtual_path(str(raw_id))
+            tables = self._session_tables(connection)
+            for index, table in enumerate(tables):
+                columns = _table_columns(connection, table)
+                query = "SELECT s.id FROM %s s WHERE s.parent_id IS NULL" % table
+                if index:
+                    query += (
+                        " AND NOT EXISTS (SELECT 1 FROM %s newer WHERE newer.id = s.id)"
+                        % tables[0]
+                    )
+                order = "s.time_updated DESC" if "time_updated" in columns else "s.id"
+                for (raw_id,) in connection.execute(query + " ORDER BY " + order):
+                    if raw_id:
+                        yield self._virtual_path(str(raw_id))
         except sqlite3.Error:
             return
         finally:
@@ -361,7 +371,7 @@ class OpenCodeAdapter(HarnessAdapter):
         )
 
     @classmethod
-    def _prompt_entries(
+    def _legacy_prompt_entries(
         cls,
         connection: sqlite3.Connection,
         raw_id: str,
@@ -415,7 +425,107 @@ class OpenCodeAdapter(HarnessAdapter):
         return entries
 
     @staticmethod
-    def _model_for(connection: sqlite3.Connection, raw_id: str) -> str:
+    def _has_legacy_messages(connection: sqlite3.Connection, raw_id: str) -> bool:
+        if not _table_columns(connection, "message") or not _table_columns(connection, "part"):
+            return False
+        return connection.execute(
+            "SELECT 1 FROM message WHERE session_id = ? LIMIT 1", (raw_id,)
+        ).fetchone() is not None
+
+    @staticmethod
+    def _has_v2_messages(connection: sqlite3.Connection) -> bool:
+        return {"id", "session_id", "type", "seq", "time_created", "data"} <= _table_columns(
+            connection, "session_message"
+        )
+
+    def _iter_v2_message_groups(
+        self,
+        connection: sqlite3.Connection,
+        raw_id: str,
+        legacy: bool,
+        *,
+        prompts_only: bool = False,
+        descending: bool = False,
+    ) -> Iterator[Tuple[Any, Dict[str, Any], List[Dict[str, Any]]]]:
+        if not self._has_v2_messages(connection):
+            return
+        query = (
+            "SELECT v.type, v.time_created, v.data FROM session_message v "
+            "WHERE v.session_id = ? "
+        )
+        if prompts_only:
+            query += "AND v.type = 'user' "
+        else:
+            query += "AND v.type IN ('user', 'assistant', 'compaction') "
+        if legacy:
+            # Migration preserves message IDs. The original legacy parts retain
+            # data that the V2 projection may omit.
+            query += (
+                "AND NOT EXISTS (SELECT 1 FROM message m "
+                "WHERE m.id = v.id AND m.session_id = v.session_id) "
+            )
+        order = " DESC" if descending else " ASC"
+        keys = ("v.time_created", "v.seq", "v.id") if legacy else ("v.seq", "v.id")
+        query += "ORDER BY " + ", ".join(key + order for key in keys)
+        for kind, created, raw in connection.execute(query, (raw_id,)):
+            message = load_json_object(raw)
+            if message is None:
+                continue
+            message["role"] = kind
+            if kind == "user":
+                parts = [{"type": "text", "text": message.get("text")}]
+            elif kind == "compaction":
+                text = message.get("summary") or message.get("text")
+                message.update(role="assistant", summary=True)
+                parts = [{"type": "text", "text": text}]
+            else:
+                model = message.get("model")
+                if isinstance(model, dict):
+                    message["modelID"] = model.get("id")
+                content = message.get("content")
+                parts = []
+                if isinstance(content, list):
+                    for part in content:
+                        if isinstance(part, dict):
+                            if part.get("type") == "tool" and "tool" not in part:
+                                part["tool"] = part.get("name")
+                            parts.append(part)
+            yield created, message, parts
+
+    def _prompt_entries(
+        self, connection: sqlite3.Connection, raw_id: str, descending: bool, limit: int
+    ) -> List[Tuple[str, Optional[datetime], Dict[str, Any]]]:
+        legacy = self._has_legacy_messages(connection, raw_id)
+        old = self._legacy_prompt_entries(connection, raw_id, descending, limit) if legacy else []
+        new = []
+        for timestamp, message, parts in self._iter_v2_message_groups(
+            connection, raw_id, legacy, prompts_only=True, descending=descending
+        ):
+            text = _message_text(parts)
+            if _is_human_message(message, text):
+                new.append((_clean_prompt(text), parse_timestamp(timestamp), message))
+                if len(new) == limit:
+                    break
+        if not old or not new:
+            return old or new
+        return sorted(
+            old + new,
+            key=lambda entry: entry[1] or datetime.min.replace(tzinfo=UTC),
+            reverse=descending,
+        )[:limit]
+
+    def _model_for(self, connection: sqlite3.Connection, raw_id: str) -> str:
+        if self._has_v2_messages(connection):
+            row = connection.execute(
+                "SELECT json_extract(data, '$.model.id') FROM session_message "
+                "WHERE session_id = ? AND type = 'assistant' AND json_valid(data) "
+                "AND json_extract(data, '$.model.id') IS NOT NULL ORDER BY seq DESC LIMIT 1",
+                (raw_id,),
+            ).fetchone()
+            if row and isinstance(row[0], str) and row[0].strip():
+                return row[0].strip()
+        if not _table_columns(connection, "message"):
+            return ""
         row = connection.execute(
             "SELECT json_extract(data, '$.modelID') FROM message "
             "WHERE session_id = ? AND json_valid(data) "
@@ -438,7 +548,7 @@ class OpenCodeAdapter(HarnessAdapter):
         except (OSError, sqlite3.Error, ValueError) as exc:
             raise ValueError("cannot read opencode store: %s" % exc)
         try:
-            table = self._session_table(connection)
+            table = self._session_table(connection, raw_id)
             if not table:
                 raise ValueError("opencode store has no session table: %s" % db)
             row = self._session_row(connection, table, raw_id)
@@ -502,6 +612,17 @@ class OpenCodeAdapter(HarnessAdapter):
         )
 
     def _iter_message_groups(
+        self, connection: sqlite3.Connection, raw_id: str
+    ) -> Iterator[Tuple[Any, Dict[str, Any], List[Dict[str, Any]]]]:
+        legacy = self._has_legacy_messages(connection, raw_id)
+        native = self._iter_v2_message_groups(connection, raw_id, legacy)
+        if legacy:
+            original = self._iter_legacy_message_groups(connection, raw_id)
+            yield from merge(original, native, key=lambda group: group[0] or 0)
+        else:
+            yield from native
+
+    def _iter_legacy_message_groups(
         self, connection: sqlite3.Connection, raw_id: str
     ) -> Iterator[Tuple[Any, Dict[str, Any], List[Dict[str, Any]]]]:
         query = (
@@ -756,7 +877,7 @@ class OpenCodeAdapter(HarnessAdapter):
         except (OSError, sqlite3.Error, ValueError):
             return None
         try:
-            table = self._session_table(connection)
+            table = self._session_table(connection, raw_id)
             if not table:
                 return None
             columns = _table_columns(connection, table)
@@ -797,10 +918,16 @@ class OpenCodeAdapter(HarnessAdapter):
         except (OSError, sqlite3.Error, ValueError):
             return False
         try:
-            for query in (
-                "SELECT data FROM message WHERE session_id = ?",
-                "SELECT data FROM part WHERE session_id = ?",
-            ):
+            queries = [
+                "SELECT data FROM %s WHERE session_id = ?" % table
+                for table in ("message", "part") if "data" in _table_columns(connection, table)
+            ]
+            if self._has_v2_messages(connection):
+                queries.append(
+                    "SELECT data FROM session_message WHERE session_id = ? "
+                    "AND type IN ('user', 'assistant', 'compaction')"
+                )
+            for query in queries:
                 for (data,) in connection.execute(query, (raw_id,)):
                     text = normalize_text(data)
                     for token in tuple(remaining):

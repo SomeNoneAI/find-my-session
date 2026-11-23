@@ -6,6 +6,11 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- Read OpenCode 2.x `session_message` transcripts for session digests, prompts,
+  and deep search. Keep legacy SQLite sessions and deduplicate migrated rows.
+
 ## [0.2.0] - 2026-11-11
 
 ### Added
