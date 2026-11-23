@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-23
+
 ### Fixed
 
 - Read OpenCode 2.x `session_message` transcripts for session digests, prompts,
